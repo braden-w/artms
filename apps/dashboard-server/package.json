@@ -8,12 +8,15 @@
   "dependencies": {
     "@elysiajs/trpc": "^1.1.0",
     "@elysiajs/websocket": "^0.2.8",
-    "@trpc/server": "^10.45.2",
+    "@trpc/server": "11.0.0-rc.569",
     "elysia": "latest",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "bun-types": "latest"
+  },
+  "exports": {
+    ".": "./src/index.ts"
   },
   "module": "src/index.js"
 }
