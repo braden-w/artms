@@ -1,23 +1,9 @@
-import { trpc } from "@elysiajs/trpc";
-import { initTRPC } from "@trpc/server";
-import { Elysia } from "elysia";
-import { z } from "zod";
+import { Hono } from 'hono'
 
-const t = initTRPC.create();
-const p = t.procedure;
+const app = new Hono()
 
-const router = t.router({
-	greet: p.input(z.string()).query(({ input }) => "Hello Elysia"),
-});
-
-export type Router = typeof router;
-
-const app = new Elysia({
-	prefix: "/api",
+app.get('/', (c) => {
+  return c.text('Hello Hono!')
 })
-	.use(trpc(router))
-	.listen(3000);
 
-console.log(
-	`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`,
-);
+export default app
