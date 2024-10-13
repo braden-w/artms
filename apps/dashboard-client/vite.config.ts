@@ -3,10 +3,16 @@ import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react-swc";
 import { defineConfig } from "vite";
 import { ViteImageOptimizer } from "vite-plugin-image-optimizer";
+import { imagetools } from "vite-imagetools";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-	plugins: [TanStackRouterVite(), react(), ViteImageOptimizer({})],
+	plugins: [
+		TanStackRouterVite(),
+		react(),
+		ViteImageOptimizer({}),
+		imagetools(),
+	],
 	resolve: {
 		alias: {
 			"@": path.resolve(__dirname, "./src"),
