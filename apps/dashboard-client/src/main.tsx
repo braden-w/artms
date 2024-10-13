@@ -1,10 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink } from "@trpc/client";
-import { trpc } from "./utils/trpc";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { httpBatchLink } from "@trpc/client";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
+import { trpc } from "./utils/trpc";
 import "./index.css";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 import { routeTree } from "./routeTree.gen";
 
 const router = createRouter({ routeTree });
@@ -33,7 +34,9 @@ if (!rootElement.innerHTML) {
 		<StrictMode>
 			<trpc.Provider client={trpcClient} queryClient={queryClient}>
 				<QueryClientProvider client={queryClient}>
-					<RouterProvider router={router} />
+					<ThemeProvider defaultTheme="dark" storageKey="ui-theme">
+						<RouterProvider router={router} />
+					</ThemeProvider>
 				</QueryClientProvider>
 			</trpc.Provider>
 		</StrictMode>,
