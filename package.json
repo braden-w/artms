@@ -5,7 +5,7 @@
 		"build": "turbo build",
 		"dev": "turbo dev",
 		"format": "biome format --write .",
-		"lint": "biome lint --apply-unsafe .",
+		"lint": "biome lint --write --unsafe .",
 		"format-and-lint": "biome check --apply-unsafe ."
 	},
 	"devDependencies": {
