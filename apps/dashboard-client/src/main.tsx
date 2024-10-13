@@ -5,7 +5,7 @@ import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import { trpc } from "./utils/trpc";
 import "./index.css";
-import { ThemeProvider } from "@/components/ui/theme-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 import { routeTree } from "./routeTree.gen";
 
 const router = createRouter({ routeTree });
