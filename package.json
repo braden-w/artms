@@ -28,6 +28,7 @@
 		"node": ">=18"
 	},
 	"dependencies": {
+		"@libsql/client": "^0.14.0",
 		"@t3-oss/env-core": "^0.11.1",
 		"dotenv": "^16.4.5",
 		"drizzle-orm": "^0.34.1",
