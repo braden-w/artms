@@ -1,8 +1,6 @@
 import {
-	blob,
 	integer,
 	numeric,
-	primaryKey,
 	real,
 	sqliteTable,
 	text,
@@ -177,53 +175,6 @@ export const assets = sqliteTable("assets", {
 	createdAt: text("created_at").notNull(),
 	mimeType: text("mime_type"),
 	totalDurationMs: integer("total_duration_ms").notNull(),
-});
-
-export const pagesFts = sqliteTable("pages_fts", {
-	id: numeric(),
-	title: numeric(),
-	content: numeric(),
-	pagesFts: numeric("pages_fts"),
-	rank: numeric(),
-});
-
-export const pagesFtsData = sqliteTable("pages_fts_data", {
-	id: integer().primaryKey(),
-	block: blob(),
-});
-
-export const pagesFtsIdx = sqliteTable(
-	"pages_fts_idx",
-	{
-		segid: numeric().notNull(),
-		term: numeric().notNull(),
-		pgno: numeric(),
-	},
-	(table) => {
-		return {
-			pk0: primaryKey({
-				columns: [table.segid, table.term],
-				name: "pages_fts_idx_segid_term_pk",
-			}),
-		};
-	},
-);
-
-export const pagesFtsContent = sqliteTable("pages_fts_content", {
-	id: integer().primaryKey(),
-	c0: numeric(),
-	c1: numeric(),
-	c2: numeric(),
-});
-
-export const pagesFtsDocsize = sqliteTable("pages_fts_docsize", {
-	id: integer().primaryKey(),
-	sz: blob(),
-});
-
-export const pagesFtsConfig = sqliteTable("pages_fts_config", {
-	k: numeric().primaryKey().notNull(),
-	v: numeric(),
 });
 
 export const channels = sqliteTable("channels", {
