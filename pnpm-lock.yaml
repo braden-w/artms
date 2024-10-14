@@ -136,12 +136,18 @@ importers:
       '@hono/trpc-server':
         specifier: ^0.3.2
         version: 0.3.2(@trpc/server@11.0.0-rc.571)(hono@4.6.4)
+      '@libsql/client':
+        specifier: ^0.14.0
+        version: 0.14.0
       '@t3-oss/env-core':
         specifier: ^0.11.1
         version: 0.11.1(typescript@5.6.3)(zod@3.23.8)
       '@trpc/server':
         specifier: 11.0.0-rc.571
         version: 11.0.0-rc.571
+      drizzle-orm:
+        specifier: ^0.34.1
+        version: 0.34.1(@cloudflare/workers-types@4.20241011.0)(@libsql/client@0.14.0)(@types/react@18.3.11)(react@18.3.1)
       hono:
         specifier: ^4.6.4
         version: 4.6.4
