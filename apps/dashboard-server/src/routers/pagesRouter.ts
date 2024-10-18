@@ -1,14 +1,9 @@
-import { z } from "zod";
-import { protectedProcedure, publicProcedure, router } from "./trpc";
-import { searchSchema } from "./searchSchema";
-import { buildWhereClause } from "./conditions";
+import { protectedProcedure, router } from "../trpc";
+import { searchSchema } from "../searchSchema";
+import { buildWhereClause } from "../conditions";
 import { sql } from "drizzle-orm";
 
-export const appRouter = router({
-	greet: publicProcedure.input(z.string().nullish()).query(({ input }) => {
-		return `Hello ${input ?? "World"}!`;
-	}),
-
+export const pagesRouter = router({
 	getPagesByWhereClauseWithColumns: protectedProcedure
 		.input(searchSchema)
 		.query(async ({ input, ctx }) => {
