@@ -58,6 +58,8 @@ export const columnsTable = sqliteTable("columns", {
 	// autofill: messageSchema.array().optional(),
 });
 
+type Column = typeof columnsTable.$inferSelect;
+
 export const embeddings = sqliteTable("embeddings", {
 	id: text().primaryKey().notNull(),
 	pageId: text("page_id").notNull(),
