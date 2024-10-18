@@ -15,7 +15,7 @@ import {
 	sql,
 } from "drizzle-orm";
 import { z } from "zod";
-import { pages, type Page } from "./db/schema/schema";
+import { pagesTable, type Page } from "./db/schema/schema";
 
 const isString = (value: unknown): value is string =>
 	z.string().safeParse(value).success;
@@ -199,10 +199,10 @@ export function buildWhereClause(filter: Filter): SQL | undefined {
 
 function buildCondition(condition: Condition): SQL | undefined {
 	const { columnName, operator, value } = condition;
-	if (!pages.hasOwnProperty(columnName)) {
+	if (!pagesTable.hasOwnProperty(columnName)) {
 		throw new Error(`Column ${columnName} does not exist in the pages table`);
 	}
-	const currentValue = pages[columnName as keyof Page];
+	const currentValue = pagesTable[columnName as keyof Page];
 	switch (operator) {
 		case "==":
 			return eq(currentValue, value);

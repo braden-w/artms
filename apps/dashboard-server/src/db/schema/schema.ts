@@ -66,7 +66,7 @@ export const embeddings = sqliteTable("embeddings", {
 	embedding: numeric().notNull(),
 });
 
-export const pages = sqliteTable("pages", {
+export const pagesTable = sqliteTable("pages", {
 	title: text(),
 	content: text(),
 	resonance: text(),
@@ -108,7 +108,7 @@ export const pages = sqliteTable("pages", {
 	references: text(),
 });
 
-export type Page = typeof pages.$inferSelect;
+export type Page = typeof pagesTable.$inferSelect;
 
 export const slugs = sqliteTable(
 	"slugs",
