@@ -18,6 +18,8 @@
 		"wrangler": "^3.79.0"
 	},
 	"exports": {
-		".": "./src/index.ts"
+		".": "./src/index.ts",
+		"./conditions": "./src/conditions.ts",
+		"./searchSchema": "./src/searchSchema.ts"
 	}
 }

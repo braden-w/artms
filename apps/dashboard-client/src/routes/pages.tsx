@@ -1,20 +1,6 @@
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";
-import { z } from "zod";
-
-const searchSchema = z.object({
-	filter: z
-		.object({
-			type: z.literal("condition"),
-			columnName: z.string(),
-			operator: z.string(),
-			value: z.string(),
-		})
-		.optional(),
-	orderBy: z.string().optional(),
-	limit: z.number().optional(),
-	offset: z.number().optional(),
-});
+import { searchSchema } from "@repo/dashboard-server/searchSchema";
 
 export const Route = createFileRoute("/pages")({
 	component: Pages,
