@@ -3,7 +3,9 @@ import type { Context } from "hono";
 import { env } from "hono/adapter";
 import { z } from "zod";
 
-export const getEnv = (c: Context) =>
+export const getEnv = (c: Context) => validateEnv(env(c));
+
+export const validateEnv = <E extends Record<string, string>>(env: E) =>
 	createEnv({
 		server: {
 			TURSO_LOCAL_DATABASE_URL: z.string().optional(),
@@ -21,6 +23,6 @@ export const getEnv = (c: Context) =>
 		},
 		clientPrefix: "PUBLIC_",
 		client: {},
-		runtimeEnv: env(c),
+		runtimeEnv: env,
 		emptyStringAsUndefined: true,
 	});
