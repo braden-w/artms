@@ -1,8 +1,12 @@
-import { initTRPC, TRPCError } from "@trpc/server";
-import { getDb } from "./db/db";
-import type { Context } from "hono";
+import { createClient } from "@libsql/client";
+import { TRPCError, initTRPC } from "@trpc/server";
+import { drizzle } from "drizzle-orm/libsql";
+import { validateEnv } from "./env";
+import * as schema from "./db/schema";
 
-const t = initTRPC.context<Context>().create();
+const t = initTRPC
+	.context<{ env: Record<string, string | boolean | number | undefined> }>()
+	.create();
 
 export const router = t.router;
 export const publicProcedure = t.procedure;
@@ -18,13 +22,15 @@ const enforceUserIsAuthed = t.middleware(async ({ ctx, next }) => {
 		});
 	}
 
-	const db = await getDb(ctx);
-	return next({
-		ctx: {
-			...ctx,
-			db,
-		},
+	const env = validateEnv(ctx.env);
+
+	const client = createClient({
+		url: env.TURSO_REMOTE_DATABASE_URL,
+		authToken: env.TURSO_AUTH_TOKEN,
 	});
+	const db = drizzle(client, { schema });
+
+	return next({ ctx: { ...ctx, db } });
 });
 
 export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
