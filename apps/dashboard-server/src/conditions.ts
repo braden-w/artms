@@ -17,10 +17,10 @@ import {
 import { z } from "zod";
 import { pagesTable, type Page } from "./db/schema/schema";
 
-const isString = (value: unknown): value is string =>
+export const isString = (value: unknown): value is string =>
 	z.string().safeParse(value).success;
 
-const isStringArray = (value: unknown): value is string[] =>
+export const isStringArray = (value: unknown): value is string[] =>
 	z.array(z.string()).safeParse(value).success;
 
 // Constants for comparison, non-comparison, and logical operators
