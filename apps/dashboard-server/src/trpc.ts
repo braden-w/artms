@@ -1,7 +1,7 @@
 import * as schema from "@/db/schema";
 import { validateEnv } from "@/env";
 import { createCtxServices } from "@/services";
-import { createClient } from "@libsql/client";
+import { createClient as createLibsqlClient } from "@libsql/client";
 import { TRPCError, initTRPC } from "@trpc/server";
 import { drizzle } from "drizzle-orm/libsql";
 
@@ -16,11 +16,11 @@ const createDbFromEnv = (
 	unvalidatedEnv: Record<string, string | boolean | number | undefined>,
 ) => {
 	const env = validateEnv(unvalidatedEnv);
-	const client = createClient({
+	const libsqlClient = createLibsqlClient({
 		url: env.TURSO_REMOTE_DATABASE_URL,
 		authToken: env.TURSO_AUTH_TOKEN,
 	});
-	const db = drizzle(client, { schema });
+	const db = drizzle(libsqlClient, { schema });
 	return db;
 };
 
