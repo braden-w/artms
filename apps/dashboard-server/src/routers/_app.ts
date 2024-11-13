@@ -10,3 +10,5 @@ export const appRouter = router({
 	pages: pagesRouter,
 	columns: columnsRouter,
 });
+
+export type AppRouter = typeof appRouter;

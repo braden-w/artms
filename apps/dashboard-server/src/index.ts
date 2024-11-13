@@ -18,8 +18,6 @@ app.use(
 	}),
 );
 
-export type AppRouter = typeof appRouter;
-
 app.get("/", (c) => {
 	return c.text("Hello Hono!");
 });

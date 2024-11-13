@@ -21,7 +21,7 @@
 		"wrangler": "^3.79.0"
 	},
 	"exports": {
-		".": "./src/index.ts",
+		"./_app": "./src/routers/_app.ts",
 		"./conditions": "./src/conditions.ts",
 		"./searchSchema": "./src/searchSchema.ts",
 		"./schema": "./src/db/schema/index.ts"
