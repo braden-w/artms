@@ -10,16 +10,16 @@ const COLUMNS_EXCEPT_ID = COLUMNS_IN_DATABASE.filter(
 	(column) => column.name !== "id",
 );
 
-const TEXT_COLUMNS = COLUMNS_EXCEPT_ID.filter(
+const SINGLE_VALUE_PROPERTIES = COLUMNS_EXCEPT_ID.filter(
 	(column) => column.isArray === false,
 );
 
-const TEXT_ARRAY_COLUMNS = COLUMNS_EXCEPT_ID.filter(
+const MULTI_VALUE_PROPERTIES = COLUMNS_EXCEPT_ID.filter(
 	(column) => column.isArray === true,
 );
 
-type TextColumn = (typeof TEXT_COLUMNS)[number];
-type TextArrayColumn = (typeof TEXT_ARRAY_COLUMNS)[number];
+type SingleValueProperty = (typeof SINGLE_VALUE_PROPERTIES)[number];
+type MultiValueProperty = (typeof MULTI_VALUE_PROPERTIES)[number];
 
 export const pagesTable = sqliteTable("pages", ({ text, customType }) => {
 	/**
@@ -50,20 +50,23 @@ export const pagesTable = sqliteTable("pages", ({ text, customType }) => {
 			.$defaultFn(() => nanoid()),
 
 		...(Object.fromEntries(
-			TEXT_COLUMNS.map(({ name: colName }) => [colName, text(colName)]),
+			SINGLE_VALUE_PROPERTIES.map(({ name: colName }) => [
+				colName,
+				text(colName),
+			]),
 		) as {
-			[K in TextColumn["name"]]: ReturnType<
+			[K in SingleValueProperty["name"]]: ReturnType<
 				typeof text<K, string, readonly [string, ...string[]], "json" | "text">
 			>;
 		}),
 
 		...(Object.fromEntries(
-			TEXT_ARRAY_COLUMNS.map(({ name: colName }) => [
+			MULTI_VALUE_PROPERTIES.map(({ name: colName }) => [
 				colName,
 				textArray(colName),
 			]),
 		) as {
-			[K in TextArrayColumn["name"]]: ReturnType<typeof textArray>;
+			[K in MultiValueProperty["name"]]: ReturnType<typeof textArray>;
 		}),
 	};
 });
@@ -71,14 +74,17 @@ export const pagesTable = sqliteTable("pages", ({ text, customType }) => {
 export const Page = z.object({
 	id: z.string(),
 	...(Object.fromEntries(
-		TEXT_COLUMNS.map(({ name: colName }) => [colName, z.string().nullable()]),
-	) as Record<TextColumn["name"], z.ZodNullable<z.ZodString>>),
+		SINGLE_VALUE_PROPERTIES.map(({ name: colName }) => [
+			colName,
+			z.string().nullable(),
+		]),
+	) as Record<SingleValueProperty["name"], z.ZodNullable<z.ZodString>>),
 	...(Object.fromEntries(
-		TEXT_ARRAY_COLUMNS.map(({ name: colName }) => [
+		MULTI_VALUE_PROPERTIES.map(({ name: colName }) => [
 			colName,
 			z.array(z.string()),
 		]),
-	) as Record<TextArrayColumn["name"], z.ZodArray<z.ZodString>>),
+	) as Record<MultiValueProperty["name"], z.ZodArray<z.ZodString>>),
 });
 
 export type Page = z.infer<typeof Page>;
@@ -93,21 +99,23 @@ export type PagePropertyValue = z.infer<typeof PagePropertyValue>;
 export const MarkdownPage = z.object({
 	id: z.string(),
 	...(Object.fromEntries(
-		TEXT_COLUMNS.map(({ name: colName }) => [
+		SINGLE_VALUE_PROPERTIES.map(({ name: colName }) => [
 			colName,
 			z.string().nullable().optional(),
 		]),
 	) as Record<
-		TextColumn["name"],
+		SingleValueProperty["name"],
 		z.ZodOptional<z.ZodNullable<z.ZodString>>
 	>),
 	...(Object.fromEntries(
-		TEXT_ARRAY_COLUMNS.map(({ name: colName }) => [
+		MULTI_VALUE_PROPERTIES.map(({ name: colName }) => [
 			colName,
 			z.array(z.string()).optional(),
 		]),
-	) as Record<TextArrayColumn["name"], z.ZodOptional<z.ZodArray<z.ZodString>>>,
-	),
+	) as Record<
+		MultiValueProperty["name"],
+		z.ZodOptional<z.ZodArray<z.ZodString>>
+	>),
 });
 
 export const pagesFts = sqliteTable("pages_fts", {
@@ -118,7 +126,6 @@ export const pagesFts = sqliteTable("pages_fts", {
 });
 
 export type PageFts = typeof pagesFts.$inferSelect;
-
 
 export const pagesRelations = relations(pagesTable, ({ one, many }) => ({
 	embeddings: one(embeddings, {
