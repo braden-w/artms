@@ -6,15 +6,11 @@ import { z } from "zod";
 import { embeddings } from "./embeddings";
 import { releasesTable } from "./postsReleases";
 
-const COLUMNS_EXCEPT_ID = COLUMNS_IN_DATABASE.filter(
-	(column) => column.name !== "id",
-);
-
-const SINGLE_VALUE_PROPERTIES = COLUMNS_EXCEPT_ID.filter(
+const SINGLE_VALUE_PROPERTIES = COLUMNS_IN_DATABASE.filter(
 	(column) => column.isArray === false,
 ).map(({ name }) => name);
 
-const MULTI_VALUE_PROPERTIES = COLUMNS_EXCEPT_ID.filter(
+const MULTI_VALUE_PROPERTIES = COLUMNS_IN_DATABASE.filter(
 	(column) => column.isArray === true,
 ).map(({ name }) => name);
 
@@ -44,20 +40,28 @@ export const pagesTable = sqliteTable("pages", ({ text, customType }) => {
 		},
 	});
 
-	return {
+	const singleValueColumns = Object.fromEntries(
+		SINGLE_VALUE_PROPERTIES.map((colName) => [colName, text(colName)]),
+	) as {
+		[K in SingleValueProperty]: ReturnType<
+			typeof text<K, string, readonly [string, ...string[]], "json" | "text">
+		>;
+	};
+
+	const multiValueColumns = Object.fromEntries(
+		MULTI_VALUE_PROPERTIES.map((colName) => [colName, textArray(colName)]),
+	) as { [K in MultiValueProperty]: ReturnType<typeof textArray> };
+
+	const overrideColumns = {
 		id: text("id")
 			.primaryKey()
 			.$defaultFn(() => nanoid()),
-		...(Object.fromEntries(
-			SINGLE_VALUE_PROPERTIES.map((colName) => [colName, text(colName)]),
-		) as {
-			[K in SingleValueProperty]: ReturnType<
-				typeof text<K, string, readonly [string, ...string[]], "json" | "text">
-			>;
-		}),
-		...(Object.fromEntries(
-			MULTI_VALUE_PROPERTIES.map((colName) => [colName, textArray(colName)]),
-		) as { [K in MultiValueProperty]: ReturnType<typeof textArray> }),
+	} as const;
+
+	return {
+		...singleValueColumns,
+		...multiValueColumns,
+		...overrideColumns,
 	};
 });
 
