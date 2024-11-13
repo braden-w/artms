@@ -1,21 +1,23 @@
 import { asc, eq, sql } from "drizzle-orm";
-import type { Column } from "../db/schema";
+import type { Column, Page } from "../db/schema";
 import { DEFAULT_DATE_DISPLAY_FORMAT } from "../constants";
 import { columnsTable, pagesTable } from "../db/schema";
 import type { Database } from "../trpc";
 import { getTableConfig } from "drizzle-orm/sqlite-core";
+import { COLUMNS_IN_DATABASE } from "../COLUMNS_IN_DATABASE";
 
-export function createContextUtils(db: Database) {
-	const columnUtils = createColumnUtils(db);
-	const syncUtils = createSyncUtils({ db, columnUtils });
+export function createContextServices(db: Database) {
+	const columnServices = createColumnServices(db);
+	const pageServices = createPageService(db);
+	const syncServices = createSyncServices({ db, columnServices });
 	return {
-		columns: columnUtils,
-		pages: {},
-		sync: syncUtils,
+		columns: columnServices,
+		pages: pageServices,
+		sync: syncServices,
 	};
 }
 
-function createColumnUtils(db: Database) {
+function createColumnServices(db: Database) {
 	return {
 		getAllColumns: () =>
 			db.query.columnsTable.findMany({
@@ -29,10 +31,80 @@ function createColumnUtils(db: Database) {
 	};
 }
 
-function createSyncUtils({
+function createPageService(db: Database) {
+	const OFFSET_SIZE = 1000;
+
+	const chunkArray = <T>(array: T[], chunkSize: number) => {
+		const chunkedResults: T[][] = [];
+		for (let i = 0; i < array.length; i += chunkSize) {
+			const chunk = array.slice(i, i + chunkSize);
+			chunkedResults.push(chunk);
+		}
+		return chunkedResults;
+	};
+
+	return {
+		getAllPages: async () => {
+			let page = 0;
+			const rows: Page[] = [];
+			let rs: Page[];
+			do {
+				rs = await db
+					.select()
+					.from(pagesTable)
+					.limit(OFFSET_SIZE)
+					.offset(page * OFFSET_SIZE);
+				rows.push(...rs);
+				page++;
+			} while (rs.length === OFFSET_SIZE);
+			return rows;
+		},
+		getPageById: (id: string) =>
+			db.query.pagesTable.findFirst({ where: eq(pagesTable.id, id) }),
+		upsertPages: async (rows: Page[]) => {
+			const rowsChunks = chunkArray(rows, 500);
+			for (const rowChunk of rowsChunks) {
+				await db
+					.insert(pagesTable)
+					.values(rowChunk)
+					.onConflictDoUpdate({
+						target: pagesTable.id,
+						set: Object.fromEntries(
+							COLUMNS_IN_DATABASE.filter((column) => column.name !== "id").map(
+								({ name: columnName }) => [
+									columnName,
+									sql.raw(`excluded.\`${pagesTable[columnName].name}\``),
+								],
+							),
+						),
+					});
+			}
+		},
+		setPage: (page: Page) =>
+			db.update(pagesTable).set(page).where(eq(pagesTable.id, page.id)),
+		setPageProperty: ({
+			pageId,
+			property,
+			value,
+		}: {
+			pageId: string;
+			property: string;
+			value: Value;
+		}) =>
+			db
+				.update(pagesTable)
+				.set({ [property]: value })
+				.where(eq(pagesTable.id, pageId)),
+		deletePage: (id: string) =>
+			db.delete(pagesTable).where(eq(pagesTable.id, id)),
+		deleteAllPages: () => db.delete(pagesTable),
+	};
+}
+
+function createSyncServices({
 	db,
-	columnUtils,
-}: { db: Database; columnUtils: ReturnType<typeof createColumnUtils> }) {
+	columnServices,
+}: { db: Database; columnServices: ReturnType<typeof createColumnServices> }) {
 	const getAllPageProperties = () =>
 		db
 			.select({ name: sql<string>`name` })
@@ -40,7 +112,7 @@ function createSyncUtils({
 			.then((columns) => columns.map((column) => column.name));
 	return {
 		syncColumnsToPageProperties: async () => {
-			const columnsInDb = await columnUtils.getAllColumns();
+			const columnsInDb = await columnServices.getAllColumns();
 			const lastColPos = Math.max(0, ...columnsInDb.map((c) => c.position));
 			const existingColumnNames = new Set(columnsInDb.map((c) => c.name));
 			const allUniquePageProperties = await getAllPageProperties();
