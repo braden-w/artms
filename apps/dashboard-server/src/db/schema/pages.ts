@@ -48,7 +48,6 @@ export const pagesTable = sqliteTable("pages", ({ text, customType }) => {
 		id: text("id")
 			.primaryKey()
 			.$defaultFn(() => nanoid()),
-
 		...(Object.fromEntries(
 			SINGLE_VALUE_PROPERTIES.map((colName) => [colName, text(colName)]),
 		) as {
@@ -56,12 +55,9 @@ export const pagesTable = sqliteTable("pages", ({ text, customType }) => {
 				typeof text<K, string, readonly [string, ...string[]], "json" | "text">
 			>;
 		}),
-
 		...(Object.fromEntries(
 			MULTI_VALUE_PROPERTIES.map((colName) => [colName, textArray(colName)]),
-		) as {
-			[K in MultiValueProperty]: ReturnType<typeof textArray>;
-		}),
+		) as { [K in MultiValueProperty]: ReturnType<typeof textArray> }),
 	};
 });
 
