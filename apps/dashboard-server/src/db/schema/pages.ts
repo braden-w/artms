@@ -111,9 +111,6 @@ export const pagesFts = sqliteTable("pages_fts", {
 export type PageFts = typeof pagesFts.$inferSelect;
 
 export const pagesRelations = relations(pagesTable, ({ one, many }) => ({
-	embeddings: one(embeddings, {
-		fields: [pagesTable.id],
-		references: [embeddings.page_id],
-	}),
+	embeddings: many(embeddings),
 	releases: many(releasesTable),
 }));
