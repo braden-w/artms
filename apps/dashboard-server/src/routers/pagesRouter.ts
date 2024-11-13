@@ -4,7 +4,7 @@ import { searchSchema } from "../searchSchema";
 import { protectedProcedure, router } from "../trpc";
 
 export const pagesRouter = router({
-	getPagesByWhereClauseWithColumns: protectedProcedure
+	getPagesByWhereClause: protectedProcedure
 		.input(searchSchema)
 		.query(async ({ input, ctx }) => {
 			const { filter, orderBy, limit, offset } = input;
