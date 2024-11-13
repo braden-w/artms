@@ -66,13 +66,13 @@ export const pagesTable = sqliteTable("pages", ({ text, customType }) => {
 });
 
 export const Page = z.object({
-	id: z.string(),
 	...(Object.fromEntries(
 		SINGLE_VALUE_PROPERTIES.map((colName) => [colName, z.string().nullable()]),
 	) as Record<SingleValueProperty, z.ZodNullable<z.ZodString>>),
 	...(Object.fromEntries(
 		MULTI_VALUE_PROPERTIES.map((colName) => [colName, z.array(z.string())]),
 	) as Record<MultiValueProperty, z.ZodArray<z.ZodString>>),
+	id: z.string(),
 });
 
 export type Page = z.infer<typeof Page>;
