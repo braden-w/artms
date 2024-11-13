@@ -61,6 +61,28 @@ function createPageService(db: Database) {
 		},
 		getPageById: (id: string) =>
 			db.query.pagesTable.findFirst({ where: eq(pagesTable.id, id) }),
+		insertPage: (page: Page) => db.insert(pagesTable).values(page),
+		insertPages: async (pages: Page[]) => {
+			const rowsChunks = chunkArray(pages, 500);
+			for (const rowChunk of rowsChunks) {
+				await db.insert(pagesTable).values(rowChunk);
+			}
+		},
+		upsertPage: (page: Page) =>
+			db
+				.insert(pagesTable)
+				.values(page)
+				.onConflictDoUpdate({
+					target: pagesTable.id,
+					set: Object.fromEntries(
+						COLUMNS_IN_DATABASE.filter((column) => column.name !== "id").map(
+							({ name: columnName }) => [
+								columnName,
+								sql.raw(`excluded.\`${pagesTable[columnName].name}\``),
+							],
+						),
+					),
+				}),
 		upsertPages: async (rows: Page[]) => {
 			const rowsChunks = chunkArray(rows, 500);
 			for (const rowChunk of rowsChunks) {

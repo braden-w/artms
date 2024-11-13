@@ -8,6 +8,10 @@ export const pagesRouter = router({
 		ctx.services.pages.getAllPages(),
 	),
 
+	setPage: protectedProcedure
+		.input(pageSchema)
+		.mutation(({ ctx, input }) => ctx.services.pages.setPage(input)),
+
 	getPagesByWhereClause: protectedProcedure
 		.input(searchSchema)
 		.query(async ({ input, ctx }) => {
