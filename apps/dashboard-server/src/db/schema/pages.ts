@@ -54,27 +54,20 @@ export const pagesTable = sqliteTable("pages", ({ text, customType }) => {
 	return {
 		...(Object.fromEntries(
 			TEXT_COLUMNS.map(({ name: colName }) => [colName, text(colName)]),
-		) as Record<
-			TextColumn["name"],
-			ReturnType<
-				typeof text<
-					TextColumn["name"],
-					string,
-					readonly [string, ...string[]],
-					"json" | "text"
-				>
-			>
-		>),
+		) as {
+			[K in TextColumn["name"]]: ReturnType<
+				typeof text<K, string, readonly [string, ...string[]], "json" | "text">
+			>;
+		}),
 
 		...(Object.fromEntries(
 			TEXT_ARRAY_COLUMNS.map(({ name: colName }) => [
 				colName,
 				textArray(colName),
 			]),
-		) as Record<
-			TextArrayColumn["name"],
-			ReturnType<typeof textArray<TextArrayColumn["name"]>>
-		>),
+		) as {
+			[K in TextArrayColumn["name"]]: ReturnType<typeof textArray<K>>;
+		}),
 
 		id: text("id")
 			.primaryKey()
