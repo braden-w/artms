@@ -11,6 +11,20 @@ const t = initTRPC
 export const router = t.router;
 export const publicProcedure = t.procedure;
 
+const createDbFromEnv = (
+	unvalidatedEnv: Record<string, string | boolean | number | undefined>,
+) => {
+	const env = validateEnv(unvalidatedEnv);
+	const client = createClient({
+		url: env.TURSO_REMOTE_DATABASE_URL,
+		authToken: env.TURSO_AUTH_TOKEN,
+	});
+	const db = drizzle(client, { schema });
+	return db;
+};
+
+export type Database = ReturnType<typeof createDbFromEnv>;
+
 // TODO: Implement this
 const isAuthed = () => true;
 
@@ -22,13 +36,7 @@ const enforceUserIsAuthed = t.middleware(async ({ ctx, next }) => {
 		});
 	}
 
-	const env = validateEnv(ctx.env);
-
-	const client = createClient({
-		url: env.TURSO_REMOTE_DATABASE_URL,
-		authToken: env.TURSO_AUTH_TOKEN,
-	});
-	const db = drizzle(client, { schema });
+	const db = createDbFromEnv(ctx.env);
 
 	return next({ ctx: { ...ctx, db } });
 });

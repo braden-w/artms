@@ -1,22 +1,22 @@
-import { protectedProcedure, router } from "../trpc";
-import { searchSchema } from "../searchSchema";
-import { buildWhereClause } from "../conditions";
 import { sql } from "drizzle-orm";
+import { buildWhereClause } from "../conditions";
+import { searchSchema } from "../searchSchema";
+import { protectedProcedure, router } from "../trpc";
 
 export const pagesRouter = router({
 	getPagesByWhereClauseWithColumns: protectedProcedure
 		.input(searchSchema)
 		.query(async ({ input, ctx }) => {
 			const { filter, orderBy, limit, offset } = input;
-			const where = buildWhereClause(filter);
-			const pageOfPages = await ctx.db.query.pagesTable.findMany({
-				where,
-				orderBy: orderBy ? sql.raw(orderBy) : undefined,
-				limit: limit,
-				offset: offset,
-			});
-			const columnsInDb = await getAllColumnsInDb();
-			await syncOptions({ columnsInDb, pages: pageOfPages });
+			const [pageOfPages, columnsInDb] = await ctx.db.batch([
+				ctx.db.query.pagesTable.findMany({
+					where: buildWhereClause(filter),
+					orderBy: orderBy ? sql.raw(orderBy) : undefined,
+					limit: limit,
+					offset: offset,
+				}),
+				ctx.getAllColumnsInDb(),
+			]);
 			return { pageOfPages, columnsInDb };
 		}),
 });
