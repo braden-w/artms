@@ -1,6 +1,6 @@
 import * as schema from "@/db/schema";
 import { validateEnv } from "@/env";
-import { createContextServices } from "@/utils";
+import { createContextServices } from "@/services";
 import { createClient } from "@libsql/client";
 import { TRPCError, initTRPC } from "@trpc/server";
 import { drizzle } from "drizzle-orm/libsql";
@@ -41,7 +41,7 @@ const enforceUserIsAuthed = t.middleware(async ({ ctx, next }) => {
 
 	const services = createContextServices(db);
 
-	return next({ ctx: { ...ctx, db, services} });
+	return next({ ctx: { ...ctx, db, services } });
 });
 
 export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
