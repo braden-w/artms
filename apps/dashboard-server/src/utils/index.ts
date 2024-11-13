@@ -5,17 +5,17 @@ import { columnsTable, pagesTable } from "../db/schema";
 import type { Database } from "../trpc";
 import { getTableConfig } from "drizzle-orm/sqlite-core";
 
-export function createCommands(db: Database) {
-	const columnCommands = createColumnCommands(db);
-	const syncCommands = createSyncCommands({ db, columnCommands });
+export function createContextUtils(db: Database) {
+	const columnUtils = createColumnUtils(db);
+	const syncUtils = createSyncUtils({ db, columnUtils });
 	return {
-		columns: columnCommands,
+		columns: columnUtils,
 		pages: {},
-		sync: syncCommands,
+		sync: syncUtils,
 	};
 }
 
-function createColumnCommands(db: Database) {
+function createColumnUtils(db: Database) {
 	return {
 		getAllColumns: () =>
 			db.query.columnsTable.findMany({
@@ -29,10 +29,10 @@ function createColumnCommands(db: Database) {
 	};
 }
 
-function createSyncCommands({
+function createSyncUtils({
 	db,
-	columnCommands,
-}: { db: Database; columnCommands: ReturnType<typeof createColumnCommands> }) {
+	columnUtils,
+}: { db: Database; columnUtils: ReturnType<typeof createColumnUtils> }) {
 	const getAllPageProperties = () =>
 		db
 			.select({ name: sql<string>`name` })
@@ -40,7 +40,7 @@ function createSyncCommands({
 			.then((columns) => columns.map((column) => column.name));
 	return {
 		syncColumnsToPageProperties: async () => {
-			const columnsInDb = await columnCommands.getAllColumns();
+			const columnsInDb = await columnUtils.getAllColumns();
 			const lastColPos = Math.max(0, ...columnsInDb.map((c) => c.position));
 			const existingColumnNames = new Set(columnsInDb.map((c) => c.name));
 			const allUniquePageProperties = await getAllPageProperties();

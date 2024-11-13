@@ -15,7 +15,7 @@ export const pagesRouter = router({
 					limit: limit,
 					offset: offset,
 				}),
-				ctx.commands.columns.getAllColumns(),
+				ctx.utils.columns.getAllColumns(),
 			]);
 			return { pageOfPages, allColumns };
 		}),
