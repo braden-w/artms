@@ -12,11 +12,11 @@ const COLUMNS_EXCEPT_ID = COLUMNS_IN_DATABASE.filter(
 
 const SINGLE_VALUE_PROPERTIES = COLUMNS_EXCEPT_ID.filter(
 	(column) => column.isArray === false,
-);
+).map(({ name }) => name);
 
 const MULTI_VALUE_PROPERTIES = COLUMNS_EXCEPT_ID.filter(
 	(column) => column.isArray === true,
-);
+).map(({ name }) => name);
 
 type SingleValueProperty = (typeof SINGLE_VALUE_PROPERTIES)[number];
 type MultiValueProperty = (typeof MULTI_VALUE_PROPERTIES)[number];
@@ -50,23 +50,17 @@ export const pagesTable = sqliteTable("pages", ({ text, customType }) => {
 			.$defaultFn(() => nanoid()),
 
 		...(Object.fromEntries(
-			SINGLE_VALUE_PROPERTIES.map(({ name: colName }) => [
-				colName,
-				text(colName),
-			]),
+			SINGLE_VALUE_PROPERTIES.map((colName) => [colName, text(colName)]),
 		) as {
-			[K in SingleValueProperty["name"]]: ReturnType<
+			[K in SingleValueProperty]: ReturnType<
 				typeof text<K, string, readonly [string, ...string[]], "json" | "text">
 			>;
 		}),
 
 		...(Object.fromEntries(
-			MULTI_VALUE_PROPERTIES.map(({ name: colName }) => [
-				colName,
-				textArray(colName),
-			]),
+			MULTI_VALUE_PROPERTIES.map((colName) => [colName, textArray(colName)]),
 		) as {
-			[K in MultiValueProperty["name"]]: ReturnType<typeof textArray>;
+			[K in MultiValueProperty]: ReturnType<typeof textArray>;
 		}),
 	};
 });
@@ -74,17 +68,11 @@ export const pagesTable = sqliteTable("pages", ({ text, customType }) => {
 export const Page = z.object({
 	id: z.string(),
 	...(Object.fromEntries(
-		SINGLE_VALUE_PROPERTIES.map(({ name: colName }) => [
-			colName,
-			z.string().nullable(),
-		]),
-	) as Record<SingleValueProperty["name"], z.ZodNullable<z.ZodString>>),
+		SINGLE_VALUE_PROPERTIES.map((colName) => [colName, z.string().nullable()]),
+	) as Record<SingleValueProperty, z.ZodNullable<z.ZodString>>),
 	...(Object.fromEntries(
-		MULTI_VALUE_PROPERTIES.map(({ name: colName }) => [
-			colName,
-			z.array(z.string()),
-		]),
-	) as Record<MultiValueProperty["name"], z.ZodArray<z.ZodString>>),
+		MULTI_VALUE_PROPERTIES.map((colName) => [colName, z.array(z.string())]),
+	) as Record<MultiValueProperty, z.ZodArray<z.ZodString>>),
 });
 
 export type Page = z.infer<typeof Page>;
