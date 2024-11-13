@@ -28,65 +28,65 @@ const TEXT_ARRAY_COLUMNS = COLUMNS_EXCEPT_ID.filter(
 type TextColumn = (typeof TEXT_COLUMNS)[number];
 type TextArrayColumn = (typeof TEXT_ARRAY_COLUMNS)[number];
 
-export const pagesTable = sqliteTable("pages", ({ text, customType }) => {
-	/**
-	 * Column that parses text as an array of strings. Gracefully handles strings that are not valid JSON string arrays.
-	 * */
-	const textArray = customType<{
-		data: string[];
-		driverData: string;
-	}>({
-		dataType() {
-			return "TEXT";
-		},
-		fromDriver(v) {
-			try {
-				return z.string().array().parse(JSON.parse(v));
-			} catch {
-				return [v];
-			}
-		},
-		toDriver(v) {
-			return JSON.stringify(v);
-		},
-	});
-
-	return {
-		...(Object.fromEntries(
-			TEXT_COLUMNS.map(({ name: colName }) => [colName, text(colName)]),
-		) as {
-			[K in TextColumn["name"]]: ReturnType<
-				typeof text<K, string, readonly [string, ...string[]], "json" | "text">
-			>;
-		}),
-
-		...(Object.fromEntries(
-			TEXT_ARRAY_COLUMNS.map(({ name: colName }) => [
-				colName,
-				textArray(colName),
-			]),
-		) as {
-			[K in TextArrayColumn["name"]]: ReturnType<typeof textArray<K>>;
-		}),
-
-		id: text("id")
-			.primaryKey()
-			.$defaultFn(() => nanoid()),
-	};
+/**
+ * Column that parses text as an array of strings. Gracefully handles strings that are not valid JSON string arrays.
+ * */
+const textArray = customType<{
+	data: string[];
+	driverData: string;
+}>({
+	dataType() {
+		return "TEXT";
+	},
+	fromDriver(v) {
+		try {
+			return z.string().array().parse(JSON.parse(v));
+		} catch {
+			return [v];
+		}
+	},
+	toDriver(v) {
+		return JSON.stringify(v);
+	},
 });
 
-export const Page = createSelectSchema(pagesTable);
-//   {
-// 	...(Object.fromEntries(
-// 		TEXT_COLUMNS.map(({ name: colName }) => [colName, z.string().nullable()]),
-// 	) as Record<TextColumn["name"], z.ZodNullable<z.ZodString>>),
-// 	...(Object.fromEntries(
-// 		TEXT_ARRAY_COLUMNS.map(({ name: colName }) => [
-// 			colName,
-// 			z.array(z.string()),
-// 		]),
-// 	) as Record<TextArrayColumn["name"], z.ZodArray<z.ZodString>>),
-// });
+export const pagesTable = sqliteTable("pages", {
+	id: text("id")
+		.primaryKey()
+		.$defaultFn(() => nanoid()),
+
+	...(Object.fromEntries(
+		TEXT_COLUMNS.map(({ name: colName }) => [colName, text(colName)]),
+	) as {
+		[K in TextColumn["name"]]: ReturnType<
+			typeof text<K, string, readonly [string, ...string[]], "json" | "text">
+		>;
+	}),
+
+	...(Object.fromEntries(
+		TEXT_ARRAY_COLUMNS.map(({ name: colName }) => [
+			colName,
+			textArray(colName),
+		]),
+	) as {
+		[K in TextArrayColumn["name"]]: ReturnType<typeof textArray>;
+	}),
+});
+
+export const Page = z.object({
+	id: z.string(),
+	...(Object.fromEntries(
+		TEXT_COLUMNS.map(({ name: colName }) => [colName, z.string().nullable()]),
+	) as Record<TextColumn["name"], z.ZodNullable<z.ZodString>>),
+	...(Object.fromEntries(
+		TEXT_ARRAY_COLUMNS.map(({ name: colName }) => [
+			colName,
+			z.array(z.string()),
+		]),
+	) as Record<TextArrayColumn["name"], z.ZodArray<z.ZodString>>),
+});
+
+export type Page = z.infer<typeof Page>;
 
 export const pagesRelations = relations(pagesTable, ({ one, many }) => ({
 	embeddings: one(embeddings, {
@@ -97,8 +97,6 @@ export const pagesRelations = relations(pagesTable, ({ one, many }) => ({
 }));
 
 export const MarkdownPage = makeNullableSchemasOptionalWithDefaultNull(Page);
-
-export type Page = z.infer<typeof Page>;
 
 export const pagesFts = sqliteTable("pages_fts", {
 	rowid: integer("rowid").notNull(),
