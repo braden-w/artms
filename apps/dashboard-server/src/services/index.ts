@@ -6,7 +6,7 @@ import type { Database } from "../trpc";
 import { getTableConfig } from "drizzle-orm/sqlite-core";
 import { COLUMNS_IN_DATABASE } from "../db/COLUMNS_IN_DATABASE";
 
-export function createContextServices(db: Database) {
+export function createCtxServices(db: Database) {
 	const columnServices = createColumnServices(db);
 	const pageServices = createPageService(db);
 	const syncServices = createSyncServices({ db, columnServices });
