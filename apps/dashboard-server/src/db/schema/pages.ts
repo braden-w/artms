@@ -1,16 +1,9 @@
 import { COLUMNS_IN_DATABASE } from "@/db/COLUMNS_IN_DATABASE";
 import { nanoid } from "@/utils";
 import { relations } from "drizzle-orm";
-import {
-	customType,
-	integer,
-	sqliteTable,
-	text,
-} from "drizzle-orm/sqlite-core";
-import { createSelectSchema } from "drizzle-zod";
-import { Schema, z } from "zod";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { z } from "zod";
 import { embeddings } from "./embeddings";
-import { makeNullableSchemasOptionalWithDefaultNull } from "./makeNullableSchemasOptionalWithDefaultNull";
 import { releasesTable } from "./postsReleases";
 
 const COLUMNS_EXCEPT_ID = COLUMNS_IN_DATABASE.filter(
@@ -97,15 +90,25 @@ export const PagePropertyValue = z.union([
 ]);
 export type PagePropertyValue = z.infer<typeof PagePropertyValue>;
 
-export const pagesRelations = relations(pagesTable, ({ one, many }) => ({
-	embeddings: one(embeddings, {
-		fields: [pagesTable.id],
-		references: [embeddings.page_id],
-	}),
-	releases: many(releasesTable),
-}));
-
-export const MarkdownPage = makeNullableSchemasOptionalWithDefaultNull(Page);
+export const MarkdownPage = z.object({
+	id: z.string(),
+	...(Object.fromEntries(
+		TEXT_COLUMNS.map(({ name: colName }) => [
+			colName,
+			z.string().nullable().optional(),
+		]),
+	) as Record<
+		TextColumn["name"],
+		z.ZodOptional<z.ZodNullable<z.ZodString>>
+	>),
+	...(Object.fromEntries(
+		TEXT_ARRAY_COLUMNS.map(({ name: colName }) => [
+			colName,
+			z.array(z.string()).optional(),
+		]),
+	) as Record<TextArrayColumn["name"], z.ZodOptional<z.ZodArray<z.ZodString>>>,
+	),
+});
 
 export const pagesFts = sqliteTable("pages_fts", {
 	rowid: integer("rowid").notNull(),
@@ -115,3 +118,12 @@ export const pagesFts = sqliteTable("pages_fts", {
 });
 
 export type PageFts = typeof pagesFts.$inferSelect;
+
+
+export const pagesRelations = relations(pagesTable, ({ one, many }) => ({
+	embeddings: one(embeddings, {
+		fields: [pagesTable.id],
+		references: [embeddings.page_id],
+	}),
+	releases: many(releasesTable),
+}));
