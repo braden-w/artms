@@ -10,7 +10,9 @@
 		"@t3-oss/env-core": "^0.11.1",
 		"@trpc/server": "11.0.0-rc.571",
 		"drizzle-orm": "^0.34.1",
+		"drizzle-zod": "^0.5.1",
 		"hono": "^4.6.4",
+		"nanoid": "^5.0.8",
 		"zod": "^3.23.8"
 	},
 	"devDependencies": {
@@ -21,6 +23,7 @@
 	"exports": {
 		".": "./src/index.ts",
 		"./conditions": "./src/conditions.ts",
-		"./searchSchema": "./src/searchSchema.ts"
+		"./searchSchema": "./src/searchSchema.ts",
+		"./schema": "./src/db/schema/index.ts"
 	}
 }
