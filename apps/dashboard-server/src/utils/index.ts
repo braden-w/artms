@@ -4,7 +4,7 @@ import { DEFAULT_DATE_DISPLAY_FORMAT } from "../constants";
 import { columnsTable, pagesTable } from "../db/schema";
 import type { Database } from "../trpc";
 import { getTableConfig } from "drizzle-orm/sqlite-core";
-import { COLUMNS_IN_DATABASE } from "../COLUMNS_IN_DATABASE";
+import { COLUMNS_IN_DATABASE } from "../db/COLUMNS_IN_DATABASE";
 
 export function createContextServices(db: Database) {
 	const columnServices = createColumnServices(db);
