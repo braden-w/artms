@@ -1,6 +1,6 @@
 import type { Column } from "./db/schema/schema";
 
-export const columnsInDatabase = [
+export const COLUMNS_IN_DATABASE = [
 	{
 		name: "id",
 		type: "Text",
@@ -5068,4 +5068,4 @@ export const columnsInDatabase = [
 	},
 ] as const satisfies Column[];
 
-export type ColumnInDatabase = (typeof columnsInDatabase)[number];
+export type ColumnInDatabase = (typeof COLUMNS_IN_DATABASE)[number];
