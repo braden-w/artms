@@ -4,6 +4,10 @@ import { searchSchema } from "../searchSchema";
 import { protectedProcedure, router } from "../trpc";
 
 export const pagesRouter = router({
+	getAllPages: protectedProcedure.query(async ({ ctx }) => {
+		return ctx.services.pages.getAllPages();
+	}),
+
 	getPagesByWhereClause: protectedProcedure
 		.input(searchSchema)
 		.query(async ({ input, ctx }) => {
@@ -15,7 +19,7 @@ export const pagesRouter = router({
 					limit: limit,
 					offset: offset,
 				}),
-				ctx.utils.columns.getAllColumns(),
+				ctx.services.columns.getAllColumns(),
 			]);
 			return { pageOfPages, allColumns };
 		}),
