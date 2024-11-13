@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { buildWhereClause } from "../conditions";
 import { searchSchema } from "../searchSchema";
 import { protectedProcedure, router } from "../trpc";
+import { z } from "zod";
 
 export const pagesRouter = router({
 	getAllPages: protectedProcedure.query(({ ctx }) =>
@@ -11,6 +12,14 @@ export const pagesRouter = router({
 	setPage: protectedProcedure
 		.input(pageSchema)
 		.mutation(({ ctx, input }) => ctx.services.pages.setPage(input)),
+
+	insertPage: protectedProcedure
+		.input(pageSchema)
+		.mutation(({ ctx, input }) => ctx.services.pages.insertPage(input)),
+
+	deletePageById: protectedProcedure
+		.input(z.object({ id: z.string() }))
+		.mutation(({ ctx, input }) => ctx.services.pages.deletePageById(input.id)),
 
 	getPagesByWhereClause: protectedProcedure
 		.input(searchSchema)
