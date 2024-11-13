@@ -90,6 +90,13 @@ export const Page = z.object({
 
 export type Page = z.infer<typeof Page>;
 
+export const PagePropertyValue = z.union([
+	z.string(),
+	z.string().array(),
+	z.null(),
+]);
+export type PagePropertyValue = z.infer<typeof PagePropertyValue>;
+
 export const pagesRelations = relations(pagesTable, ({ one, many }) => ({
 	embeddings: one(embeddings, {
 		fields: [pagesTable.id],
@@ -108,32 +115,3 @@ export const pagesFts = sqliteTable("pages_fts", {
 });
 
 export type PageFts = typeof pagesFts.$inferSelect;
-
-const OptionalStringDefaultNull = Schema.optionalWith(
-	Schema.NullOr(Schema.String),
-	{ default: () => null },
-);
-
-const OptionalStringArrayDefaultNull = Schema.optionalWith(
-	Schema.NullOr(Schema.String.pipe(Schema.Array, Schema.mutable)),
-	{ default: () => null },
-);
-
-export const PageSchema = Schema.Struct({
-	...(Object.fromEntries(
-		TEXT_COLUMNS.map(({ name: colName }) => [
-			colName,
-			OptionalStringDefaultNull,
-		]),
-	) as Record<TextColumn["name"], typeof OptionalStringDefaultNull>),
-	...(Object.fromEntries(
-		TEXT_ARRAY_COLUMNS.map(({ name: colName }) => [
-			colName,
-			OptionalStringArrayDefaultNull,
-		]),
-	) as Record<TextArrayColumn["name"], typeof OptionalStringArrayDefaultNull>),
-	id: Schema.String,
-});
-
-export const Value = z.union([z.string(), z.string().array(), z.null()]);
-export type Value = z.infer<typeof Value>;
