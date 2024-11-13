@@ -117,7 +117,7 @@ function createPageService(db: Database) {
 				.update(pagesTable)
 				.set({ [property]: value })
 				.where(eq(pagesTable.id, pageId)),
-		deletePage: (id: string) =>
+		deletePageById: (id: string) =>
 			db.delete(pagesTable).where(eq(pagesTable.id, id)),
 		deleteAllPages: () => db.delete(pagesTable),
 	};
