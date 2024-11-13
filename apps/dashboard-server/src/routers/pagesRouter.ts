@@ -1,7 +1,7 @@
+import { buildWhereClause } from "@/conditions";
+import { searchSchema } from "@/searchSchema";
+import { router } from "@/trpc";
 import { sql } from "drizzle-orm";
-import { buildWhereClause } from "../conditions";
-import { searchSchema } from "../searchSchema";
-import { protectedProcedure, router } from "../trpc";
 import { z } from "zod";
 
 export const pagesRouter = router({
