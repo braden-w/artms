@@ -28,49 +28,51 @@ const TEXT_ARRAY_COLUMNS = COLUMNS_EXCEPT_ID.filter(
 type TextColumn = (typeof TEXT_COLUMNS)[number];
 type TextArrayColumn = (typeof TEXT_ARRAY_COLUMNS)[number];
 
-/**
- * Column that parses text as an array of strings. Gracefully handles strings that are not valid JSON string arrays.
- * */
-const textArray = customType<{
-	data: string[];
-	driverData: string;
-}>({
-	dataType() {
-		return "TEXT";
-	},
-	fromDriver(v) {
-		try {
-			return z.string().array().parse(JSON.parse(v));
-		} catch {
-			return [v];
-		}
-	},
-	toDriver(v) {
-		return JSON.stringify(v);
-	},
-});
+export const pagesTable = sqliteTable("pages", ({ text, customType }) => {
+	/**
+	 * Column that parses text as an array of strings. Gracefully handles strings that are not valid JSON string arrays.
+	 * */
+	const textArray = customType<{
+		data: string[];
+		driverData: string;
+	}>({
+		dataType() {
+			return "TEXT";
+		},
+		fromDriver(v) {
+			try {
+				return z.string().array().parse(JSON.parse(v));
+			} catch {
+				return [v];
+			}
+		},
+		toDriver(v) {
+			return JSON.stringify(v);
+		},
+	});
 
-export const pagesTable = sqliteTable("pages", {
-	id: text("id")
-		.primaryKey()
-		.$defaultFn(() => nanoid()),
+	return {
+		id: text("id")
+			.primaryKey()
+			.$defaultFn(() => nanoid()),
 
-	...(Object.fromEntries(
-		TEXT_COLUMNS.map(({ name: colName }) => [colName, text(colName)]),
-	) as {
-		[K in TextColumn["name"]]: ReturnType<
-			typeof text<K, string, readonly [string, ...string[]], "json" | "text">
-		>;
-	}),
+		...(Object.fromEntries(
+			TEXT_COLUMNS.map(({ name: colName }) => [colName, text(colName)]),
+		) as {
+			[K in TextColumn["name"]]: ReturnType<
+				typeof text<K, string, readonly [string, ...string[]], "json" | "text">
+			>;
+		}),
 
-	...(Object.fromEntries(
-		TEXT_ARRAY_COLUMNS.map(({ name: colName }) => [
-			colName,
-			textArray(colName),
-		]),
-	) as {
-		[K in TextArrayColumn["name"]]: ReturnType<typeof textArray>;
-	}),
+		...(Object.fromEntries(
+			TEXT_ARRAY_COLUMNS.map(({ name: colName }) => [
+				colName,
+				textArray(colName),
+			]),
+		) as {
+			[K in TextArrayColumn["name"]]: ReturnType<typeof textArray>;
+		}),
+	};
 });
 
 export const Page = z.object({
