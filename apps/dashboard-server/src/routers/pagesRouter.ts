@@ -8,15 +8,15 @@ export const pagesRouter = router({
 		.input(searchSchema)
 		.query(async ({ input, ctx }) => {
 			const { filter, orderBy, limit, offset } = input;
-			const [pageOfPages, columnsInDb] = await ctx.db.batch([
+			const [pageOfPages, allColumns] = await ctx.db.batch([
 				ctx.db.query.pagesTable.findMany({
 					where: buildWhereClause(filter),
 					orderBy: orderBy ? sql.raw(orderBy) : undefined,
 					limit: limit,
 					offset: offset,
 				}),
-				ctx.getAllColumnsInDb(),
+				ctx.getAllColumns(),
 			]);
-			return { pageOfPages, columnsInDb };
+			return { pageOfPages, allColumns };
 		}),
 });
