@@ -77,34 +77,29 @@ export const Page = z.object({
 
 export type Page = z.infer<typeof Page>;
 
+export const MarkdownPage = z.object({
+	...(Object.fromEntries(
+		SINGLE_VALUE_PROPERTIES.map((colName) => [
+			colName,
+			z.string().nullable().optional(),
+		]),
+	) as Record<SingleValueProperty, z.ZodOptional<z.ZodNullable<z.ZodString>>>),
+	...(Object.fromEntries(
+		MULTI_VALUE_PROPERTIES.map((colName) => [
+			colName,
+			z.array(z.string()).optional(),
+		]),
+	) as Record<MultiValueProperty, z.ZodOptional<z.ZodArray<z.ZodString>>>),
+	id: z.string(),
+});
+
 export const PagePropertyValue = z.union([
 	z.string(),
 	z.string().array(),
 	z.null(),
 ]);
-export type PagePropertyValue = z.infer<typeof PagePropertyValue>;
 
-export const MarkdownPage = z.object({
-	id: z.string(),
-	...(Object.fromEntries(
-		SINGLE_VALUE_PROPERTIES.map(({ name: colName }) => [
-			colName,
-			z.string().nullable().optional(),
-		]),
-	) as Record<
-		SingleValueProperty["name"],
-		z.ZodOptional<z.ZodNullable<z.ZodString>>
-	>),
-	...(Object.fromEntries(
-		MULTI_VALUE_PROPERTIES.map(({ name: colName }) => [
-			colName,
-			z.array(z.string()).optional(),
-		]),
-	) as Record<
-		MultiValueProperty["name"],
-		z.ZodOptional<z.ZodArray<z.ZodString>>
-	>),
-});
+export type PagePropertyValue = z.infer<typeof PagePropertyValue>;
 
 export const pagesFts = sqliteTable("pages_fts", {
 	rowid: integer("rowid").notNull(),
