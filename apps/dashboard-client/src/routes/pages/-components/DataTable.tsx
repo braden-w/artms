@@ -311,7 +311,7 @@ export function DataTable() {
 	);
 
 	const table = useReactTable({
-		data: pages,
+		data: pageOfPages,
 		columns: columnDefs,
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
