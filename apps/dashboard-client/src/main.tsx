@@ -1,12 +1,12 @@
+import { ThemeProvider } from "@/components/theme-provider";
+import { routeTree } from "@/routeTree.gen";
+import { trpc } from "@/utils/trpc";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { httpBatchLink } from "@trpc/client";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
-import { trpc } from "./utils/trpc";
 import "./index.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import { routeTree } from "./routeTree.gen";
 
 const router = createRouter({ routeTree });
 

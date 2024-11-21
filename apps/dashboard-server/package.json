@@ -8,16 +8,22 @@
 		"@hono/trpc-server": "^0.3.2",
 		"@libsql/client": "^0.14.0",
 		"@t3-oss/env-core": "^0.11.1",
-		"@trpc/server": "11.0.0-rc.571",
+		"@trpc/server": "11.0.0-rc.632",
 		"drizzle-orm": "^0.34.1",
+		"drizzle-zod": "^0.5.1",
 		"hono": "^4.6.4",
+		"nanoid": "^5.0.8",
 		"zod": "^3.23.8"
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20240925.0",
+		"drizzle-kit": "^0.25.0",
 		"wrangler": "^3.79.0"
 	},
 	"exports": {
-		".": "./src/index.ts"
+		"./_app": "./src/routers/_app.ts",
+		"./conditions": "./src/conditions.ts",
+		"./searchSchema": "./src/searchSchema.ts",
+		"./schema": "./src/db/schema/index.ts"
 	}
 }

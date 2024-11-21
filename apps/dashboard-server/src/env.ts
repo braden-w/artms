@@ -1,9 +1,9 @@
 import { createEnv } from "@t3-oss/env-core";
-import type { Context } from "hono";
-import { env } from "hono/adapter";
 import { z } from "zod";
 
-export const getEnv = (c: Context) =>
+export const validateEnv = (
+	env: Record<string, string | boolean | number | undefined>,
+) =>
 	createEnv({
 		server: {
 			TURSO_LOCAL_DATABASE_URL: z.string().optional(),
@@ -21,6 +21,6 @@ export const getEnv = (c: Context) =>
 		},
 		clientPrefix: "PUBLIC_",
 		client: {},
-		runtimeEnv: env(c),
+		runtimeEnv: env,
 		emptyStringAsUndefined: true,
 	});

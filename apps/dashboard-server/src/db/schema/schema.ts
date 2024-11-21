@@ -35,16 +35,30 @@ export const users = sqliteTable(
 	},
 );
 
-export const columns = sqliteTable("columns", {
-	name: text().primaryKey().notNull(),
-	type: text().notNull(),
-	position: real().notNull(),
-	isArray: integer("is_array").notNull(),
-	options: text().notNull(),
-	filter: text(),
+const columnTypeOptions = [
+	"ID",
+	"Text",
+	"Textarea",
+	"Number",
+	"Select",
+	"Multi-select",
+	"Date",
+	"Checkbox",
+] as const;
+
+export const columnsTable = sqliteTable("columns", {
+	name: text("name").primaryKey(),
+	type: text("type", { enum: columnTypeOptions }).notNull(),
+	position: real("position").notNull(),
+	isArray: integer("is_array", { mode: "boolean" }).notNull(),
+	options: text("options", { mode: "json" }).$type<Option[]>().notNull(),
+	filter: text("filter", { mode: "json" }).$type<Filter>(),
 	dateDisplayFormat: text("date_display_format").notNull(),
-	shortcut: text(),
+	shortcut: text("shortcut"),
+	// autofill: messageSchema.array().optional(),
 });
+
+export type Column = typeof columnsTable.$inferSelect;
 
 export const embeddings = sqliteTable("embeddings", {
 	id: text().primaryKey().notNull(),
@@ -54,7 +68,7 @@ export const embeddings = sqliteTable("embeddings", {
 	embedding: numeric().notNull(),
 });
 
-export const pages = sqliteTable("pages", {
+export const pagesTable = sqliteTable("pages", {
 	title: text(),
 	content: text(),
 	resonance: text(),
@@ -95,6 +109,8 @@ export const pages = sqliteTable("pages", {
 	id: text().primaryKey().notNull(),
 	references: text(),
 });
+
+export type Page = typeof pagesTable.$inferSelect;
 
 export const slugs = sqliteTable(
 	"slugs",
