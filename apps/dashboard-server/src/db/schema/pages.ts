@@ -65,7 +65,7 @@ export const pagesTable = sqliteTable("pages", ({ text, customType }) => {
 	};
 });
 
-export const Page = z.object({
+export const selectPageSchema = z.object({
 	...(Object.fromEntries(
 		SINGLE_VALUE_PROPERTIES.map((colName) => [colName, z.string().nullable()]),
 	) as Record<SingleValueProperty, z.ZodNullable<z.ZodString>>),
@@ -75,7 +75,7 @@ export const Page = z.object({
 	id: z.string(),
 });
 
-export type Page = z.infer<typeof Page>;
+export type SelectPage = z.infer<typeof selectPageSchema>;
 
 export const MarkdownPage = z.object({
 	...(Object.fromEntries(
