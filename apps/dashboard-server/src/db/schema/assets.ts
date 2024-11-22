@@ -32,16 +32,16 @@ export const googlePhotos = sqliteTable("google_photos", {
 		.references(() => assetsTable.id),
 	id: text("id").primaryKey(),
 	description: text("description", { length: 1000 }),
-	productUrl: text("productUrl").notNull(),
-	baseUrl: text("baseUrl").notNull(),
-	mimeType: text("mimeType").notNull(),
-	mediaMetadata: text("mediaMetadata", { mode: "json" })
+	productUrl: text("product_url").notNull(),
+	baseUrl: text("base_url").notNull(),
+	mimeType: text("mime_type").notNull(),
+	mediaMetadata: text("media_metadata", { mode: "json" })
 		.$type<MediaMetadata>()
 		.notNull(),
-	contributorInfo: text("contributorInfo", {
+	contributorInfo: text("contributor_info", {
 		mode: "json",
 	}).$type<ContributorInfo>(),
-	filename: text("filename").notNull(),
+	filename: text().notNull(),
 });
 
 export const googlePhotosRelations = relations(googlePhotos, ({ one }) => ({
