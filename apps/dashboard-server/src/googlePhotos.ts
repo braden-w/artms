@@ -8,9 +8,9 @@ const timestampStringSchema = z
 const photoMetadataSchema = z.object({
 	cameraMake: z.string().nullish().default(null),
 	cameraModel: z.string().nullish().default(null),
-	focalLength: z.number().nullish().default(null),
-	apertureFNumber: z.number().nullish().default(null),
-	isoEquivalent: z.number().nullish().default(null),
+	focalLength: z.coerce.number().nullish().default(null),
+	apertureFNumber: z.coerce.number().nullish().default(null),
+	isoEquivalent: z.coerce.number().nullish().default(null),
 	exposureTime: z
 		.string()
 		.regex(/^\d+(\.\d+)?s$/)
@@ -34,8 +34,8 @@ const videoMetadataSchema = z.object({
 
 const mediaMetadataSchema = z.object({
 	creationTime: timestampStringSchema,
-	width: z.coerce.number().nullish().default(null),
-	height: z.coerce.number().nullish().default(null),
+	width: z.coerce.number(),
+	height: z.coerce.number(),
 	photo: photoMetadataSchema.nullish().default(null),
 	video: videoMetadataSchema.nullish().default(null),
 });
