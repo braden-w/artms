@@ -5,36 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1728846410714,
-      "tag": "0000_round_serpent_society",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1728846990980,
-      "tag": "0001_strong_human_cannonball",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1732243292475,
-      "tag": "0002_cooing_kingpin",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1732243680848,
-      "tag": "0003_mysterious_jasper_sitwell",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1732243768223,
-      "tag": "0004_last_quasimodo",
+      "when": 1732243853167,
+      "tag": "0000_silly_warlock",
       "breakpoints": true
     }
   ]
