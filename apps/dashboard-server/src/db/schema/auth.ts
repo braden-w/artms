@@ -47,7 +47,7 @@ export const providerTokens = sqliteTable(
 export const sessions = sqliteTable("sessions", {
 	id: text().primaryKey(),
 	userId: text("user_id").notNull(),
-	expiresAt: text("expires_at").notNull(),
+	expiresAt: integer("expires_at").notNull(),
 	createdAt: text("created_at")
 		.notNull()
 		.$defaultFn(() => new Date().toISOString()),
