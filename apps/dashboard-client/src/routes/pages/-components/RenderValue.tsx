@@ -8,14 +8,16 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+import { DEFAULT_TAG_COLOR } from "@/constants";
+import { cn, isStringArray } from "@/lib/utils";
 import type { ColumnInDatabase } from "@repo/dashboard-server/COLUMNS_IN_DATABASE";
 import type {
-	SelectPage,
 	PagePropertyValue,
+	SelectPage,
 } from "@repo/dashboard-server/schema";
-import { isStringArray } from "@/lib/utils";
 import { parseDate } from "chrono-node";
+import { parseISO } from "date-fns";
+import { format, formatInTimeZone } from "date-fns-tz";
 import { CalendarIcon } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
@@ -23,9 +25,6 @@ import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 import { FancyBox } from "./FancyBox";
 import { TiptapEditor } from "./tip-tap/TiptapEditor";
-import { DEFAULT_TAG_COLOR } from "@/constants";
-import { format, utcToZonedTime } from "date-fns-tz";
-import { parseISO } from "date-fns";
 
 export type SaveStatus = "Saved" | "Unsaved";
 
@@ -330,15 +329,12 @@ export function NaturalLanguageInput({
 	};
 
 	const readableWithRespectToUserTimezone = format(
-		utcToZonedTime(
-			parseISO(value),
-			Intl.DateTimeFormat().resolvedOptions().timeZone,
-		),
+		parseISO(value),
 		dateDisplayFormat,
 	);
 
 	const readableWithRespectToPageTimezone = page.timezone
-		? format(utcToZonedTime(parseISO(value), page.timezone), dateDisplayFormat)
+		? formatInTimeZone(parseISO(value), page.timezone, dateDisplayFormat)
 		: "No timezone set";
 
 	return (
