@@ -59,3 +59,5 @@ export const mediaItemSchema = z.object({
 	contributorInfo: contributorInfoSchema.nullish().default(null),
 	filename: z.string(),
 });
+
+export type MediaItem = z.infer<typeof mediaItemSchema>;
