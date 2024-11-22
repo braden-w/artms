@@ -17,3 +17,11 @@ export const isNumber = (input: unknown): input is number =>
 
 export const isBoolean = (input: unknown): input is boolean =>
 	z.boolean().safeParse(input).success;
+
+export function getFileStemAndExtension(fileName: string) {
+	const lastDotIndex = fileName.lastIndexOf(".");
+	const fileStem =
+		lastDotIndex === -1 ? fileName : fileName.slice(0, lastDotIndex);
+	const fileExtension = lastDotIndex === -1 ? "" : fileName.slice(lastDotIndex);
+	return { fileStem, fileExtension };
+}

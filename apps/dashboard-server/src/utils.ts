@@ -11,11 +11,3 @@ const STANDARD_LINK_PATTERN =
 const AUTOMATIC_LINK_PATTERN = `<(${PAGE_ID_PATTERN})>` as const;
 export const PAGE_LINK_PATTERN =
 	`(?:${STANDARD_LINK_PATTERN}|${AUTOMATIC_LINK_PATTERN})` as const;
-
-export function getFileStemAndExtension(fileName: string) {
-	const lastDotIndex = fileName.lastIndexOf(".");
-	const fileStem =
-		lastDotIndex === -1 ? fileName : fileName.slice(0, lastDotIndex);
-	const fileExtension = lastDotIndex === -1 ? "" : fileName.slice(lastDotIndex);
-	return { fileStem, fileExtension };
-}
