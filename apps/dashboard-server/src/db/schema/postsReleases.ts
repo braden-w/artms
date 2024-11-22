@@ -7,10 +7,10 @@ import { createSelectSchema } from "drizzle-zod";
 import { users } from "./auth";
 
 export const audiencesTable = sqliteTable("audiences", {
-	id: text("id")
+	id: text()
 		.primaryKey()
 		.$defaultFn(() => nanoid()),
-	name: text("name").notNull(),
+	name: text().notNull(),
 });
 
 export const audiencesRelations = relations(audiencesTable, ({ many }) => ({
@@ -20,8 +20,8 @@ export const audiencesRelations = relations(audiencesTable, ({ many }) => ({
 }));
 
 export const usersToAudiencesTable = sqliteTable("users_audiences", {
-	user_id: text("user_id").notNull(),
-	audience_id: text("audience_id").notNull(),
+	user_id: text().notNull(),
+	audience_id: text().notNull(),
 });
 
 export const usersAudiencesRelations = relations(
@@ -39,7 +39,7 @@ export const usersAudiencesRelations = relations(
 );
 
 export const releasesTable = sqliteTable("releases", {
-	id: text("id")
+	id: text()
 		.primaryKey()
 		.$defaultFn(() => nanoid()),
 	createdAt: text("created_at").notNull(),
@@ -70,7 +70,7 @@ export const recordingsTable = sqliteTable("recordings", {
 	createdAt: text("created_at").notNull(),
 
 	recordingDurationMs: integer("recording_duration_ms").notNull(),
-	transcript: text("transcript").notNull(),
+	transcript: text().notNull(),
 });
 
 export const recordingsRelations = relations(recordingsTable, ({ one }) => ({
@@ -81,10 +81,10 @@ export const recordingsRelations = relations(recordingsTable, ({ one }) => ({
 }));
 
 export const postsTable = sqliteTable("posts", {
-	id: text("id")
+	id: text()
 		.primaryKey()
 		.$defaultFn(() => nanoid()),
-	created_at: text("created_at").notNull(),
+	created_at: text().notNull(),
 
 	releaseId: text("release_id").notNull(),
 	channelId: text("channel_id").notNull(),
@@ -102,10 +102,10 @@ export const postsRelations = relations(postsTable, ({ one }) => ({
 }));
 
 export const channelsTable = sqliteTable("channels", {
-	id: text("id")
+	id: text()
 		.primaryKey()
 		.$defaultFn(() => nanoid()),
-	name: text("name").notNull(),
+	name: text().notNull(),
 	platform: text("platform", {
 		enum: ["medium", "substack", "twitter", "youtube", "instagram", "tiktok"],
 	}),
@@ -116,7 +116,7 @@ export const channelsRelations = relations(channelsTable, ({ many }) => ({
 }));
 
 export const releasesAssets = sqliteTable("releases_assets", {
-	created_at: text("created_at").notNull(),
+	created_at: text().notNull(),
 
 	releaseId: text("release_id").notNull(),
 	assetId: text("asset_id").notNull(),

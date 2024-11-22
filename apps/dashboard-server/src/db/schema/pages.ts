@@ -51,7 +51,7 @@ export const pagesTable = sqliteTable("pages", ({ text, customType }) => {
 	) as { [K in MultiValueProperty]: ReturnType<typeof textArray> };
 
 	const overrideColumns = {
-		id: text("id")
+		id: text()
 			.primaryKey()
 			.$defaultFn(() => nanoid()),
 	} as const;
@@ -92,9 +92,9 @@ export type PagePropertyValue = z.infer<typeof PagePropertyValue>;
 
 export const pagesFts = sqliteTable("pages_fts", {
 	rowid: integer("rowid").notNull(),
-	id: text("id").notNull(),
-	title: text("title").notNull(),
-	content: text("content").notNull(),
+	id: text().notNull(),
+	title: text().notNull(),
+	content: text().notNull(),
 });
 
 export type PageFts = typeof pagesFts.$inferSelect;

@@ -6,12 +6,12 @@ import { pagesTable } from "./pages";
 export const slugsTable = sqliteTable(
 	"slugs",
 	{
-		id: text("id")
+		id: text()
 			.primaryKey()
 			.$defaultFn(() => nanoid()),
-		slug_text: text("slug_text").notNull(),
-		page_id: text("page_id").notNull(),
-		timestamp: text("timestamp").default(sql`(CURRENT_TIMESTAMP)`),
+		slug_text: text().notNull(),
+		page_id: text().notNull(),
+		timestamp: text().default(sql`(CURRENT_TIMESTAMP)`),
 	},
 	(t) => ({
 		unq: unique("slugs_slug_text_page_id").on(t.slug_text, t.page_id),

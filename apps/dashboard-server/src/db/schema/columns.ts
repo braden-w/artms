@@ -24,14 +24,14 @@ export const optionsSchema = z.object({
 export type Option = z.infer<typeof optionsSchema>;
 
 export const columnsTable = sqliteTable("columns", {
-	name: text("name").primaryKey(),
+	name: text().primaryKey(),
 	type: text("type", { enum: columnTypeOptions }).notNull(),
 	position: real("position").notNull(),
 	isArray: integer("is_array", { mode: "boolean" }).notNull(),
 	options: text("options", { mode: "json" }).$type<Option[]>().notNull(),
 	filter: text("filter", { mode: "json" }).$type<Filter>(),
 	dateDisplayFormat: text("date_display_format").notNull(),
-	shortcut: text("shortcut"),
+	shortcut: text(),
 });
 
 export const PROPERTIES = COLUMNS_IN_DATABASE.map((column) => column.name);

@@ -5,9 +5,9 @@ import { pagesTable } from "./pages";
 import { releasesTable } from "./postsReleases";
 
 export const assetsTable = sqliteTable("assets", {
-	id: text("id").primaryKey(),
-	extension: text("extension").notNull(),
-	name: text("name").notNull(),
+	id: text().primaryKey(),
+	extension: text().notNull(),
+	name: text().notNull(),
 	pageId: text("page_id").notNull(),
 	createdAt: text("created_at")
 		.notNull()
