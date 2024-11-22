@@ -3,7 +3,7 @@ import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { COLUMNS_IN_DATABASE } from "../COLUMNS_IN_DATABASE";
 import type { ColumnInDatabase } from "../COLUMNS_IN_DATABASE";
-import type { Filter } from "@/conditions";
+import type { Filter } from "../../conditions";
 
 const columnTypeOptions = [
 	"ID",

@@ -1,4 +1,4 @@
-import type { ContributorInfo, MediaMetadata } from "@/googlePhotos";
+import type { ContributorInfo, MediaMetadata } from "../../googlePhotos";
 import { relations } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { pagesTable } from "./pages";
