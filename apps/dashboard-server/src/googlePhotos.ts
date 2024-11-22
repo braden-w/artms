@@ -18,18 +18,16 @@ const photoMetadataSchema = z.object({
 		.default(null),
 });
 
-const VideoProcessingStatus = z.union([
-	z.literal("UNSPECIFIED"),
-	z.literal("PROCESSING"),
-	z.literal("READY"),
-	z.literal("FAILED"),
-]);
-
 const videoMetadataSchema = z.object({
 	cameraMake: z.string().nullish().default(null),
 	cameraModel: z.string().nullish().default(null),
 	fps: z.number().nullish().default(null),
-	status: VideoProcessingStatus,
+	status: z.union([
+		z.literal("UNSPECIFIED"),
+		z.literal("PROCESSING"),
+		z.literal("READY"),
+		z.literal("FAILED"),
+	]),
 });
 
 const mediaMetadataSchema = z.object({
