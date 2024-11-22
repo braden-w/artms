@@ -79,21 +79,8 @@ export const insertPageSchema = selectPageSchema.partial();
 
 export type InsertPage = z.infer<typeof insertPageSchema>;
 
-export const MarkdownPage = z.object({
-	...(Object.fromEntries(
-		SINGLE_VALUE_PROPERTIES.map((colName) => [
-			colName,
-			z.string().nullable().optional(),
-		]),
-	) as Record<SingleValueProperty, z.ZodOptional<z.ZodNullable<z.ZodString>>>),
-	...(Object.fromEntries(
-		MULTI_VALUE_PROPERTIES.map((colName) => [
-			colName,
-			z.array(z.string()).optional(),
-		]),
-	) as Record<MultiValueProperty, z.ZodOptional<z.ZodArray<z.ZodString>>>),
-	id: z.string(),
-});
+export const markdownPageSchema = insertPageSchema.extend({ id: z.string() });
+export type MarkdownPage = z.infer<typeof markdownPageSchema>;
 
 export const PagePropertyValue = z.union([
 	z.string(),
