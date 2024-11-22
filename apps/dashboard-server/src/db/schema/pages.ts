@@ -25,19 +25,17 @@ export const pagesTable = sqliteTable("pages", ({ text, customType }) => {
 		data: string[];
 		driverData: string;
 	}>({
-		dataType() {
-			return "TEXT";
-		},
-		fromDriver(v) {
+		dataType: () => "TEXT",
+		fromDriver: (v) => {
 			try {
-				return z.string().array().parse(JSON.parse(v));
+				const maybeStringArray = JSON.parse(v);
+				const stringArray = z.string().array().parse(maybeStringArray);
+				return stringArray;
 			} catch {
 				return [v];
 			}
 		},
-		toDriver(v) {
-			return JSON.stringify(v);
-		},
+		toDriver: (v) => JSON.stringify(v),
 	});
 
 	const singleValueColumns = Object.fromEntries(
