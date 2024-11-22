@@ -22,6 +22,20 @@
       "when": 1732243292475,
       "tag": "0002_cooing_kingpin",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1732243680848,
+      "tag": "0003_mysterious_jasper_sitwell",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1732243768223,
+      "tag": "0004_last_quasimodo",
+      "breakpoints": true
     }
   ]
 }
