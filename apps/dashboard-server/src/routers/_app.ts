@@ -1,6 +1,6 @@
-import { columnsRouter } from "@/routers/columnsRouter";
-import { pagesRouter } from "@/routers/pagesRouter";
-import { publicProcedure, router } from "@/trpc";
+import { columnsRouter } from "./columnsRouter";
+import { pagesRouter } from "./pagesRouter";
+import { publicProcedure, router } from "../trpc";
 import { z } from "zod";
 
 export const appRouter = router({

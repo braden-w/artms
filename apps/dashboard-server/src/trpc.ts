@@ -1,6 +1,6 @@
-import * as schema from "@/db/schema";
-import { validateEnv } from "@/env";
-import { createCtxServices } from "@/services";
+import * as schema from "./db/schema";
+import { validateEnv } from "./env";
+import { createCtxServices } from "./services";
 import { createClient as createLibsqlClient } from "@libsql/client";
 import { TRPCError, initTRPC } from "@trpc/server";
 import { drizzle } from "drizzle-orm/libsql";

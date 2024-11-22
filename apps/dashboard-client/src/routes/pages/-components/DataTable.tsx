@@ -26,17 +26,13 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import type { Column } from "@repo/db/schema";
-import { columnNames } from "@repo/db/schema";
+import { trpc } from "@/utils/trpc";
+import type { Column, Page } from "@repo/dashboard-server/schema";
 import {
 	comparisonOperators,
 	evaluateFilter,
-	type Filter,
-} from "@repo/db/schema";
-import type { Page } from "@repo/db/schema";
-import { QUERY_KEYS } from "@/lib/query/keys";
-import { usePage } from "@/lib/query/usePage";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+} from "@repo/dashboard-server/conditions";
+import { useNavigate } from "@tanstack/react-router";
 import type {
 	ColumnDef,
 	ColumnFiltersState,
@@ -50,13 +46,10 @@ import {
 	getSortedRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
-import { actions } from "astro:actions";
 import { PlusIcon, TrashIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Route } from "..";
-import { trpc } from "@/utils/trpc";
-import { useNavigate } from "@tanstack/react-router";
 
 const DEBOUNCE_DELAY_MS = 300;
 

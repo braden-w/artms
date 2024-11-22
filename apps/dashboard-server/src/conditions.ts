@@ -15,7 +15,7 @@ import {
 	sql,
 } from "drizzle-orm";
 import { z } from "zod";
-import { pagesTable, type Page } from "@/db/schema/schema";
+import { pagesTable, type SelectPage } from "./db/schema/pages";
 
 export const isString = (value: unknown): value is string =>
 	z.string().safeParse(value).success;
@@ -101,12 +101,12 @@ export const filterSchema: z.ZodType<
 ]);
 
 // Function to evaluate the filter (simplified for illustration)
-function evaluateCondition(row: Page, condition: Condition): boolean {
+function evaluateCondition(row: SelectPage, condition: Condition): boolean {
 	const { operator, value, columnName } = condition;
 	if (!row.hasOwnProperty(columnName)) {
 		throw new Error(`Column ${columnName} does not exist in the row`);
 	}
-	const currentValue = row[columnName as keyof Page];
+	const currentValue = row[columnName as keyof SelectPage];
 	switch (operator) {
 		case "==":
 			return currentValue === value;
@@ -158,7 +158,7 @@ function evaluateCondition(row: Page, condition: Condition): boolean {
 	}
 }
 
-export function evaluateFilter(row: Page, filter: Filter): boolean {
+export function evaluateFilter(row: SelectPage, filter: Filter): boolean {
 	switch (filter.type) {
 		case "condition":
 			return evaluateCondition(row, filter);
@@ -202,7 +202,7 @@ function buildCondition(condition: Condition): SQL | undefined {
 	if (!pagesTable.hasOwnProperty(columnName)) {
 		throw new Error(`Column ${columnName} does not exist in the pages table`);
 	}
-	const currentValue = pagesTable[columnName as keyof Page];
+	const currentValue = pagesTable[columnName as keyof SelectPage];
 	switch (operator) {
 		case "==":
 			return eq(currentValue, value);

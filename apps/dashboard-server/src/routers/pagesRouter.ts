@@ -1,6 +1,7 @@
-import { buildWhereClause } from "@/conditions";
-import { searchSchema } from "@/searchSchema";
-import { router } from "@/trpc";
+import { buildWhereClause } from "../conditions";
+import { selectPageSchema } from "../db/schema/pages";
+import { searchSchema } from "../searchSchema";
+import { protectedProcedure, router } from "../trpc";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 
@@ -10,11 +11,11 @@ export const pagesRouter = router({
 	),
 
 	setPage: protectedProcedure
-		.input(pageSchema)
+		.input(selectPageSchema)
 		.mutation(({ ctx, input }) => ctx.services.pages.setPage(input)),
 
 	insertPage: protectedProcedure
-		.input(pageSchema)
+		.input(selectPageSchema)
 		.mutation(({ ctx, input }) => ctx.services.pages.insertPage(input)),
 
 	deletePageById: protectedProcedure
