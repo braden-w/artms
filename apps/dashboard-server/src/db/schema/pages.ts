@@ -77,6 +77,10 @@ export const selectPageSchema = z.object({
 
 export type SelectPage = z.infer<typeof selectPageSchema>;
 
+export const insertPageSchema = selectPageSchema.partial();
+
+export type InsertPage = z.infer<typeof insertPageSchema>;
+
 export const MarkdownPage = z.object({
 	...(Object.fromEntries(
 		SINGLE_VALUE_PROPERTIES.map((colName) => [
