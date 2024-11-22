@@ -1,7 +1,7 @@
-import { buildWhereClause } from "@/conditions";
-import { selectPageSchema } from "@/db/schema/pages";
-import { searchSchema } from "@/searchSchema";
-import { protectedProcedure, router } from "@/trpc";
+import { buildWhereClause } from "../conditions";
+import { selectPageSchema } from "../db/schema/pages";
+import { searchSchema } from "../searchSchema";
+import { protectedProcedure, router } from "../trpc";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 

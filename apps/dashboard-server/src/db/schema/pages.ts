@@ -1,5 +1,5 @@
-import { COLUMNS_IN_DATABASE } from "@/db/COLUMNS_IN_DATABASE";
-import { nanoid } from "@/utils";
+import { COLUMNS_IN_DATABASE } from "../../db/COLUMNS_IN_DATABASE";
+import { nanoid } from "../../utils";
 import { relations } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { z } from "zod";
@@ -25,19 +25,17 @@ export const pagesTable = sqliteTable("pages", ({ text, customType }) => {
 		data: string[];
 		driverData: string;
 	}>({
-		dataType() {
-			return "TEXT";
-		},
-		fromDriver(v) {
+		dataType: () => "TEXT",
+		fromDriver: (v) => {
 			try {
-				return z.string().array().parse(JSON.parse(v));
+				const maybeStringArray = JSON.parse(v);
+				const stringArray = z.string().array().parse(maybeStringArray);
+				return stringArray;
 			} catch {
 				return [v];
 			}
 		},
-		toDriver(v) {
-			return JSON.stringify(v);
-		},
+		toDriver: (v) => JSON.stringify(v),
 	});
 
 	const singleValueColumns = Object.fromEntries(
@@ -53,7 +51,7 @@ export const pagesTable = sqliteTable("pages", ({ text, customType }) => {
 	) as { [K in MultiValueProperty]: ReturnType<typeof textArray> };
 
 	const overrideColumns = {
-		id: text("id")
+		id: text()
 			.primaryKey()
 			.$defaultFn(() => nanoid()),
 	} as const;
@@ -77,21 +75,12 @@ export const selectPageSchema = z.object({
 
 export type SelectPage = z.infer<typeof selectPageSchema>;
 
-export const MarkdownPage = z.object({
-	...(Object.fromEntries(
-		SINGLE_VALUE_PROPERTIES.map((colName) => [
-			colName,
-			z.string().nullable().optional(),
-		]),
-	) as Record<SingleValueProperty, z.ZodOptional<z.ZodNullable<z.ZodString>>>),
-	...(Object.fromEntries(
-		MULTI_VALUE_PROPERTIES.map((colName) => [
-			colName,
-			z.array(z.string()).optional(),
-		]),
-	) as Record<MultiValueProperty, z.ZodOptional<z.ZodArray<z.ZodString>>>),
-	id: z.string(),
-});
+export const insertPageSchema = selectPageSchema.partial();
+
+export type InsertPage = z.infer<typeof insertPageSchema>;
+
+export const markdownPageSchema = insertPageSchema.extend({ id: z.string() });
+export type MarkdownPage = z.infer<typeof markdownPageSchema>;
 
 export const PagePropertyValue = z.union([
 	z.string(),
@@ -103,9 +92,9 @@ export type PagePropertyValue = z.infer<typeof PagePropertyValue>;
 
 export const pagesFts = sqliteTable("pages_fts", {
 	rowid: integer("rowid").notNull(),
-	id: text("id").notNull(),
-	title: text("title").notNull(),
-	content: text("content").notNull(),
+	id: text().notNull(),
+	title: text().notNull(),
+	content: text().notNull(),
 });
 
 export type PageFts = typeof pagesFts.$inferSelect;

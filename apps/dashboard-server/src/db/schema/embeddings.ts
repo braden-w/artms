@@ -1,4 +1,4 @@
-import { nanoid } from "@/utils";
+import { nanoid } from "../../utils";
 import { relations } from "drizzle-orm";
 import { customType, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { pagesTable } from "./pages";
@@ -23,12 +23,12 @@ const embedding = customType<{
 });
 
 export const embeddings = sqliteTable("embeddings", {
-	id: text("id")
+	id: text()
 		.primaryKey()
 		.$defaultFn(() => nanoid()),
-	page_id: text("page_id").notNull(),
-	created_at: text("created_at").notNull(),
-	updated_at: text("updated_at").notNull(),
+	page_id: text().notNull(),
+	created_at: text().notNull(),
+	updated_at: text().notNull(),
 	embedding: embedding("embedding", { size: 1536 }).notNull(),
 });
 
