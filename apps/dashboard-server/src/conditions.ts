@@ -15,7 +15,7 @@ import {
 	sql,
 } from "drizzle-orm";
 import { z } from "zod";
-import { pagesTable, type SelectPage } from "./db/schema/pages";
+import { type SelectPage, pagesTable } from "./db/schema/pages";
 
 export const isString = (value: unknown): value is string =>
 	z.string().safeParse(value).success;
