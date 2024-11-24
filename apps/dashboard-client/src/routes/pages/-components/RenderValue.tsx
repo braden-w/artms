@@ -24,7 +24,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 import { FancyBox } from "./FancyBox";
-import { TiptapEditor } from "./tip-tap/TiptapEditor";
+import { TiptapEditor } from "@/components/tip-tap/TiptapEditor";
 
 export type SaveStatus = "Saved" | "Unsaved";
 
@@ -53,13 +53,15 @@ export function RenderValue({
 	const id = `${page.id}-${column.name}`;
 
 	const [internalValue, setInternalValue] = useState(value);
+	const [previousValue, setPreviousValue] = useState(value);
+	if (value !== previousValue) {
+		setPreviousValue(value);
+		setInternalValue(value);
+	}
+
 	const displayValue = isStringArray(internalValue)
 		? JSON.stringify(internalValue)
 		: (internalValue ?? "");
-
-	useEffect(() => {
-		setInternalValue(value);
-	}, [value]);
 
 	const onChange = (newValue: PagePropertyValue) => {
 		/* Make update synchronous, to avoid caret jumping when the value doesn't change asynchronously */
