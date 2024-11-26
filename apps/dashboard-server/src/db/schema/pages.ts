@@ -89,13 +89,13 @@ export type InsertPage = z.infer<typeof insertPageSchema>;
 export const markdownPageSchema = insertPageSchema.extend({ id: z.string() });
 export type MarkdownPage = z.infer<typeof markdownPageSchema>;
 
-export const PagePropertyValue = z.union([
+export const pagePropertyValueSchema = z.union([
 	z.string(),
 	z.string().array(),
 	z.null(),
 ]);
 
-export type PagePropertyValue = z.infer<typeof PagePropertyValue>;
+export type PagePropertyValue = z.infer<typeof pagePropertyValueSchema>;
 
 export const pagesFts = sqliteTable("pages_fts", {
 	rowid: integer("rowid").notNull(),
