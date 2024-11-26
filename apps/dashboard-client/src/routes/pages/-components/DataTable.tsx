@@ -206,101 +206,90 @@ export function DataTable() {
 			},
 		});
 
-	const {
-		data: columnsInDb = [],
-		isPending: isColumnsPending,
-		isError: isColumnsError,
-		error: columnsError,
-	} = trpc.columns.getAllColumns.useQuery();
-
-	const columnDefs: ColumnDef<Page>[] = [
-		{
-			id: "__actions",
+	const columnDefs = [
+		// {
+		// 	id: "__actions",
+		// 	accessorKey: "id",
+		// 	header: "actions",
+		// 	cell: ({ getValue, row }) => {
+		// 		const pageId = getValue<string>();
+		// 		const {
+		// 			page,
+		// 			saveStatus,
+		// 			setPageSaveDbDebounce,
+		// 			setPageSaveDbImmediate,
+		// 		} = usePage(pageId, { enabled: false });
+		// 		return (
+		// 			<div className="flex items-center justify-center gap-1">
+		// 				<PageEditorDialog
+		// 					page={page}
+		// 					setPageSaveDbDebounce={setPageSaveDbDebounce}
+		// 					setPageSaveDbImmediate={setPageSaveDbImmediate}
+		// 					columns={allColumns}
+		// 					saveStatus={saveStatus}
+		// 					onBlur={() => setPageInPagesWithRerender(page)}
+		// 				/>
+		// 				<a
+		// 					href={`/pages/${pageId}`}
+		// 					className={buttonVariants({
+		// 						variant: "ghost",
+		// 						size: "icon",
+		// 					})}
+		// 				>
+		// 					<PlusIcon />
+		// 				</a>
+		// 				<Button
+		// 					variant="ghost"
+		// 					size="icon"
+		// 					onClick={async () => {
+		// 						deletePage(page.id);
+		// 						toast.success("Success", { description: "Row deleted!" });
+		// 					}}
+		// 				>
+		// 					<TrashIcon />
+		// 				</Button>
+		// 			</div>
+		// 		);
+		// 	},
+		// },
+		...allColumns.map((column) => ({
+			id: column.name,
 			accessorKey: "id",
-			header: "actions",
-			cell: ({ getValue, row }) => {
+			header: column.name,
+			meta: { column },
+			cell: ({ getValue }) => {
 				const pageId = getValue<string>();
-				const {
-					page,
-					saveStatus,
-					setPageSaveDbDebounce,
-					setPageSaveDbImmediate,
-				} = usePage(pageId, { enabled: false });
+				const { page, saveStatus, setPageSaveDbDebounce } = usePage(pageId, {
+					enabled: false,
+				});
 				return (
-					<div className="flex items-center justify-center gap-1">
-						<PageEditorDialog
-							page={page}
-							setPageSaveDbDebounce={setPageSaveDbDebounce}
-							setPageSaveDbImmediate={setPageSaveDbImmediate}
-							columns={columnsInDb}
-							saveStatus={saveStatus}
-							onBlur={() => setPageInPagesWithRerender(page)}
-						/>
-						<a
-							href={`/pages/${pageId}`}
-							className={buttonVariants({
-								variant: "ghost",
-								size: "icon",
-							})}
-						>
-							<PlusIcon />
-						</a>
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={async () => {
-								deletePage(page.id);
-								toast.success("Success", { description: "Row deleted!" });
-							}}
-						>
-							<TrashIcon />
-						</Button>
-					</div>
+					<RenderValue
+						key={`${pageId}-${column.name}`}
+						value={page[column.name as keyof Page] ?? ""}
+						column={column}
+						isDisabled={
+							!(!column.filter || evaluateFilter(page, column.filter))
+						}
+						saveStatus={saveStatus}
+						onChange={(newValue) => {
+							setPageSaveDbDebounce((page) => ({
+								...page,
+								[column.name]: newValue,
+							}));
+						}}
+						onBlur={() => setPageInPagesWithRerender(page)}
+						page={page}
+					/>
 				);
 			},
-		},
-		...columnsInDb.map(
-			(column) =>
-				({
-					id: column.name,
-					accessorKey: "id",
-					header: column.name,
-					meta: { column },
-					cell: ({ getValue }) => {
-						const pageId = getValue<string>();
-						const { page, saveStatus, setPageSaveDbDebounce } = usePage(
-							pageId,
-							{ enabled: false },
-						);
-						return (
-							<RenderValue
-								key={`${pageId}-${column.name}`}
-								value={page[column.name as keyof Page] ?? ""}
-								column={column}
-								isDisabled={
-									!(!column.filter || evaluateFilter(page, column.filter))
-								}
-								saveStatus={saveStatus}
-								onChange={(newValue) => {
-									setPageSaveDbDebounce((page) => ({
-										...page,
-										[column.name]: newValue,
-									}));
-								}}
-								onBlur={() => setPageInPagesWithRerender(page)}
-								page={page}
-							/>
-						);
-					},
-				}) satisfies ColumnDef<Page>,
-		),
-	];
+		})),
+	] satisfies ColumnDef<SelectPage>[];
 
 	const [autoResetPageIndex, skipAutoResetPageIndex] = useSkipper();
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-		calculateColumnVisibility({ columns: columnsInDb, pages }),
+		calculateColumnVisibility({ columns: allColumns, pages: pageOfPages }),
 	);
 
 	const table = useReactTable({
@@ -334,7 +323,7 @@ export function DataTable() {
 		skipAutoResetPageIndex();
 		updatePage(updatedPage);
 		setColumnVisibility(
-			calculateColumnVisibility({ columns: columnsInDb, pages }),
+			calculateColumnVisibility({ columns: allColumns, pages: pageOfPages }),
 		);
 	};
 
@@ -516,7 +505,7 @@ export function DataTable() {
 								) : (
 									<TableRow>
 										<TableCell
-											colSpan={columnsInDb.length}
+											colSpan={allColumns.length}
 											className="h-24 text-center"
 										>
 											No results.
