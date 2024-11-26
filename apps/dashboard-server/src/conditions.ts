@@ -95,65 +95,74 @@ export const filterSchema: z.ZodType<
 
 // Function to evaluate the filter (simplified for illustration)
 function evaluateCondition(row: SelectPage, condition: Condition): boolean {
-	const { operator, value, columnName } = condition;
+	const { operator, value: targetValue, columnName } = condition;
 	if (!(columnName in row)) {
 		throw new Error(`Column ${columnName} does not exist in the row`);
 	}
 	const currentValue = row[columnName as keyof SelectPage];
+	// currentValue [operator] targetValue
 	switch (operator) {
 		case "==":
-			return currentValue === value;
+			return currentValue === targetValue;
 		case "!=":
-			return currentValue !== value;
+			return currentValue !== targetValue;
 		case ">":
-			if (currentValue === null || value === null) return false;
-			return currentValue > value;
+			if (currentValue === null || targetValue === null) return false;
+			return currentValue > targetValue;
 		case "<":
-			if (currentValue === null || value === null) return false;
-			return currentValue < value;
+			if (currentValue === null || targetValue === null) return false;
+			return currentValue < targetValue;
 		case ">=":
-			if (currentValue === null || value === null) return false;
-			return currentValue >= value;
+			if (currentValue === null || targetValue === null) return false;
+			return currentValue >= targetValue;
 		case "<=":
-			if (currentValue === null || value === null) return false;
-			return currentValue <= value;
+			if (currentValue === null || targetValue === null) return false;
+			return currentValue <= targetValue;
 		case "contains":
-			if (currentValue === null || value === null) return false;
-			return isStringArray(currentValue) && currentValue.includes(value);
-		case "does not contain":
-			if (currentValue === null || value === null) return false;
-			return isStringArray(currentValue) && !currentValue.includes(value);
-		case "starts with":
-			if (currentValue === null || value === null) return false;
-			return currentValue.startsWith(value);
-		case "ends with":
-			if (currentValue === null || value === null) return false;
-			return currentValue.endsWith(value);
-		case "like":
-			if (isString(currentValue) && isString(value)) {
-				const regexPattern = value
-					.replace(/%/g, ".*") // Replace '%' with '.*'
-					.replace(/_/g, "."); // Replace '_' with '.'
-				const regex = new RegExp(`^${regexPattern}$`, "i");
-				return regex.test(currentValue);
+			if (currentValue === null || targetValue === null) return false;
+			if (!isStringArray(currentValue) || !isStringArray(targetValue)) {
+				return false;
 			}
-			return false;
+			return targetValue.every((value) => currentValue.includes(value));
+		case "does not contain":
+			if (currentValue === null || targetValue === null) return false;
+			if (!isStringArray(currentValue) || !isStringArray(targetValue)) {
+				return false;
+			}
+			return targetValue.every((value) => !currentValue.includes(value));
+		case "starts with":
+			if (currentValue === null || targetValue === null) return false;
+			if (!isString(currentValue) || !isString(targetValue)) return false;
+			return currentValue.startsWith(targetValue);
+		case "ends with":
+			if (currentValue === null || targetValue === null) return false;
+			if (!isString(currentValue) || !isString(targetValue)) return false;
+			return currentValue.endsWith(targetValue);
+		case "like": {
+			if (!isString(currentValue) || !isString(targetValue)) return false;
+			const regexPattern = targetValue
+				.replace(/%/g, ".*") // Replace '%' with '.*'
+				.replace(/_/g, "."); // Replace '_' with '.'
+			const regex = new RegExp(`^${regexPattern}$`, "i");
+			return regex.test(currentValue);
+		}
 		case "is null":
 			return currentValue === null;
 		case "is not null":
 			return currentValue !== null;
-		case "is empty":
-			return (
-				currentValue === null ||
-				currentValue === "" ||
-				(Array.isArray(currentValue) && currentValue.length === 0)
-			);
-		case "is not empty":
-			return (
-				currentValue === null ||
-				currentValue !== "" ||
-				(Array.isArray(currentValue) && currentValue.length === 0)
-			);
+		case "is empty": {
+			if (currentValue === null) return true;
+			if (isString(currentValue) && currentValue === "") return true;
+			if (isStringArray(currentValue) && currentValue.length === 0) return true;
+			return false;
+		}
+		case "is not empty": {
+			if (currentValue === null) return false;
+			if (isString(currentValue) && currentValue === "") return false;
+			if (isStringArray(currentValue) && currentValue.length === 0)
+				return false;
+			return true;
+		}
 		default:
 			return false;
 	}
