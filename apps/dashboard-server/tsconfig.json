@@ -1,10 +1,22 @@
 {
 	"compilerOptions": {
+		/* Base Options: */
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"allowJs": true,
+		"resolveJsonModule": true,
+		"moduleDetection": "force",
+		"isolatedModules": true,
+		"verbatimModuleSyntax": true,
+
+		/* Strictness */
+		"strict": true,
+		"noUncheckedIndexedAccess": true,
+		"noImplicitOverride": true,
+
 		"target": "ESNext",
 		"module": "ESNext",
 		"moduleResolution": "Bundler",
-		"strict": true,
-		"skipLibCheck": true,
 		"lib": ["ESNext"],
 		"types": ["@cloudflare/workers-types/2023-07-01"],
 		"jsx": "react-jsx",
