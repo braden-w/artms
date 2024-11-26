@@ -154,9 +154,7 @@ export function DataTable() {
 				});
 			},
 			onSuccess: () => {
-				toast.success("Saved", {
-					description: "Your changes have been saved.",
-				});
+				toast.success("Success", { description: "Row added!" });
 			},
 		});
 
