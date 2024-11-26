@@ -1,6 +1,4 @@
-import { generateDefaultPage } from "@/actions/generateDefaultPage";
-import { PageEditorDialog } from "@/components/PageEditor";
-import { RenderValue } from "@/components/RenderValue";
+import { RenderValue } from "./RenderValue";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -27,7 +25,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { trpc } from "@/utils/trpc";
-import type { Column, Page } from "@repo/dashboard-server/schema";
+import type { Column, SelectPage } from "@repo/dashboard-server/schema";
 import {
 	comparisonOperators,
 	evaluateFilter,
@@ -51,24 +49,21 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Route } from "..";
 
-const DEBOUNCE_DELAY_MS = 300;
-
 export function DataTable() {
 	const { filter, orderBy, limit, offset } = Route.useSearch();
 	const navigate = useNavigate();
+	const utils = trpc.useUtils();
 
 	const {
 		data: { pageOfPages, allColumns } = { pageOfPages: [], allColumns: [] },
 		isPending: isPagesPending,
 		error: pagesError,
-	} = trpc.pages.getPagesByWhereClause.useQuery({
+	} = trpc.pages.getAllPages.useQuery({
 		filter,
 		orderBy,
 		limit,
 		offset,
 	});
-
-	const utils = trpc.useUtils();
 
 	const { mutate: updatePage, isPending: isUpdatePending } =
 		trpc.pages.setPage.useMutation({
@@ -315,7 +310,7 @@ export function DataTable() {
 	}
 
 	if (isPagesPending) return <p>Loading...</p>;
-	if (isPagesError) return <p>Error: {JSON.stringify(pagesError)}</p>;
+	if (pagesError) return <p>Error: {JSON.stringify(pagesError)}</p>;
 
 	const setPageInPagesWithRerender = (updatedPage: Page) => {
 		skipAutoResetPageIndex();
@@ -327,7 +322,7 @@ export function DataTable() {
 
 	return (
 		<div className="p-4 flex flex-col justify-center gap-2">
-			<form
+			{/* <form
 				onSubmit={(e) => {
 					e.preventDefault();
 					return refetchPages();
@@ -426,7 +421,7 @@ export function DataTable() {
 				<Button type="submit" className="h-10">
 					Submit
 				</Button>
-			</form>
+			</form> */}
 			<div className="flex h-full w-full flex-col gap-2">
 				<div className="flex h-full w-full flex-col gap-2">
 					<div className="flex gap-2">
