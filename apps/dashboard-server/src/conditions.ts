@@ -1,3 +1,4 @@
+import { isString, isStringArray } from "@repo/utils";
 import type { SQL } from "drizzle-orm";
 import {
 	and,
@@ -15,13 +16,11 @@ import {
 	sql,
 } from "drizzle-orm";
 import { z } from "zod";
-import { type SelectPage, pagesTable } from "./db/schema/pages";
-
-export const isString = (value: unknown): value is string =>
-	z.string().safeParse(value).success;
-
-export const isStringArray = (value: unknown): value is string[] =>
-	z.array(z.string()).safeParse(value).success;
+import {
+	type SelectPage,
+	pagePropertyValueSchema,
+	pagesTable,
+} from "./db/schema/pages";
 
 // Constants for comparison, non-comparison, and logical operators
 export const comparisonOperators = [
@@ -42,24 +41,18 @@ export const comparisonOperators = [
 	"is not empty",
 ] as const;
 
-const logicalOperators = ["AND", "OR", "NOT"] as const;
+const LOGICAL_OPERATORS = ["AND", "OR", "NOT"] as const;
 
 // Types derived from constants
-const logicalOperatorSchema = z.enum(logicalOperators);
+const logicalOperatorSchema = z.enum(LOGICAL_OPERATORS);
 type LogicalOperator = z.infer<typeof logicalOperatorSchema>;
-
-export const primitiveValueSchema = z.union([
-	z.string(),
-	z.number(),
-	z.boolean(),
-]);
 
 // Union type for Condition
 const conditionSchema = z.object({
 	type: z.literal("condition"),
 	columnName: z.string(),
 	operator: z.enum(comparisonOperators),
-	value: primitiveValueSchema,
+	value: pagePropertyValueSchema,
 });
 type Condition = z.infer<typeof conditionSchema>;
 
@@ -95,7 +88,7 @@ export const filterSchema: z.ZodType<
 	conditionSchema,
 	z.object({
 		type: z.literal("logical"),
-		operator: z.enum(logicalOperators),
+		operator: z.enum(LOGICAL_OPERATORS),
 		conditions: z.array(z.lazy(() => filterSchema)),
 	}),
 ]);
