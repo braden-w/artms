@@ -467,21 +467,13 @@ export function DataTable() {
 									))}
 							</DropdownMenuContent>
 						</DropdownMenu>
-						<Button
-							onClick={async () => {
-								const newPage = generateDefaultPage();
-								insertPage(newPage);
-								toast.success("Success", { description: "Row added!" });
-							}}
-						>
+						<Button onClick={() => createPage()}>
 							<PlusIcon className="mr-2 h-4 w-4" />
 							Add
 						</Button>
 						<Button
-							onClick={async () => {
-								const newPage = generateDefaultPage();
-								await actions.pages.insertPage.orThrow(newPage);
-								toast.success("Success", { description: "Row added!" });
+							onClick={() => {
+								createPage();
 								navigate(`/pages/${newPage.id}`);
 							}}
 						>
