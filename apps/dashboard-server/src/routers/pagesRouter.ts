@@ -1,9 +1,11 @@
 import { buildWhereClause } from "../conditions";
-import { selectPageSchema } from "../db/schema/pages";
+import { insertPageSchema, selectPageSchema } from "../db/schema/pages";
 import { searchSchema } from "../searchSchema";
 import { protectedProcedure, router } from "../trpc";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
+import { generateDefaultPage } from "../utils";
+import { TRPCError } from "@trpc/server";
 
 export const pagesRouter = router({
 	getAllPages: protectedProcedure.query(({ ctx }) =>
@@ -15,8 +17,18 @@ export const pagesRouter = router({
 		.mutation(({ ctx, input }) => ctx.services.pages.setPage(input)),
 
 	insertPage: protectedProcedure
-		.input(selectPageSchema)
-		.mutation(({ ctx, input }) => ctx.services.pages.insertPage(input)),
+		.input(insertPageSchema)
+		.mutation(async ({ ctx, input }) => {
+			const newPage = generateDefaultPage(input);
+			const [insertedPage] = await ctx.services.pages.insertPage(newPage);
+			if (!insertedPage) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: `Failed to insert page with id ${newPage.id}`,
+				});
+			}
+			return insertedPage;
+		}),
 
 	deletePageById: protectedProcedure
 		.input(z.object({ id: z.string() }))
