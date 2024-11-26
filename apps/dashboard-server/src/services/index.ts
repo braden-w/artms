@@ -1,5 +1,5 @@
 import { asc, eq, sql } from "drizzle-orm";
-import type { Column, Page } from "../db/schema";
+import type { Column, InsertPage, SelectPage } from "../db/schema";
 import { DEFAULT_DATE_DISPLAY_FORMAT } from "../constants";
 import { columnsTable, pagesTable } from "../db/schema";
 import type { Database } from "../trpc";
@@ -46,8 +46,8 @@ function createPageService(db: Database) {
 	return {
 		getAllPages: async () => {
 			let page = 0;
-			const rows: Page[] = [];
-			let rs: Page[];
+			const rows: SelectPage[] = [];
+			let rs: SelectPage[];
 			do {
 				rs = await db
 					.select()
@@ -61,14 +61,14 @@ function createPageService(db: Database) {
 		},
 		getPageById: (id: string) =>
 			db.query.pagesTable.findFirst({ where: eq(pagesTable.id, id) }),
-		insertPage: (page: Page) => db.insert(pagesTable).values(page),
-		insertPages: async (pages: Page[]) => {
+		insertPage: (page: InsertPage) => db.insert(pagesTable).values(page),
+		insertPages: async (pages: InsertPage[]) => {
 			const rowsChunks = chunkArray(pages, 500);
 			for (const rowChunk of rowsChunks) {
 				await db.insert(pagesTable).values(rowChunk);
 			}
 		},
-		upsertPage: (page: Page) =>
+		upsertPage: (page: InsertPage) =>
 			db
 				.insert(pagesTable)
 				.values(page)
@@ -83,7 +83,7 @@ function createPageService(db: Database) {
 						),
 					),
 				}),
-		upsertPages: async (rows: Page[]) => {
+		upsertPages: async (rows: InsertPage[]) => {
 			const rowsChunks = chunkArray(rows, 500);
 			for (const rowChunk of rowsChunks) {
 				await db
@@ -102,7 +102,7 @@ function createPageService(db: Database) {
 					});
 			}
 		},
-		setPage: (page: Page) =>
+		setPage: (page: InsertPage) =>
 			db.update(pagesTable).set(page).where(eq(pagesTable.id, page.id)),
 		setPageProperty: ({
 			pageId,
@@ -111,7 +111,7 @@ function createPageService(db: Database) {
 		}: {
 			pageId: string;
 			property: string;
-			value: Value;
+			value: PagePropertyValue;
 		}) =>
 			db
 				.update(pagesTable)
