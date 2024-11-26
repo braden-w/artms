@@ -106,21 +106,29 @@ function evaluateCondition(row: SelectPage, condition: Condition): boolean {
 		case "!=":
 			return currentValue !== value;
 		case ">":
-			return currentValue !== null && currentValue > value;
+			if (currentValue === null || value === null) return false;
+			return currentValue > value;
 		case "<":
-			return currentValue !== null && currentValue < value;
+			if (currentValue === null || value === null) return false;
+			return currentValue < value;
 		case ">=":
-			return currentValue !== null && currentValue >= value;
+			if (currentValue === null || value === null) return false;
+			return currentValue >= value;
 		case "<=":
-			return currentValue !== null && currentValue <= value;
+			if (currentValue === null || value === null) return false;
+			return currentValue <= value;
 		case "contains":
+			if (currentValue === null || value === null) return false;
 			return isStringArray(currentValue) && currentValue.includes(value);
 		case "does not contain":
+			if (currentValue === null || value === null) return false;
 			return isStringArray(currentValue) && !currentValue.includes(value);
 		case "starts with":
-			return typeof currentValue === "string" && currentValue.startsWith(value);
+			if (currentValue === null || value === null) return false;
+			return currentValue.startsWith(value);
 		case "ends with":
-			return typeof currentValue === "string" && currentValue.endsWith(value);
+			if (currentValue === null || value === null) return false;
+			return currentValue.endsWith(value);
 		case "like":
 			if (isString(currentValue) && isString(value)) {
 				const regexPattern = value
