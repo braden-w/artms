@@ -18,17 +18,7 @@ export const pagesRouter = router({
 
 	insertPage: protectedProcedure
 		.input(insertPageSchema)
-		.mutation(async ({ ctx, input }) => {
-			const newPage = generateDefaultPage(input);
-			const [insertedPage] = await ctx.services.pages.insertPage(newPage);
-			if (!insertedPage) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: `Failed to insert page with id ${newPage.id}`,
-				});
-			}
-			return insertedPage;
-		}),
+		.mutation(({ ctx, input }) => ctx.services.pages.insertPage(input)),
 
 	deletePageById: protectedProcedure
 		.input(z.object({ id: z.string() }))

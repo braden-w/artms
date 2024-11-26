@@ -5,6 +5,8 @@ import { columnsTable, pagesTable } from "../db/schema";
 import type { Database } from "../trpc";
 import { getTableConfig } from "drizzle-orm/sqlite-core";
 import { COLUMNS_IN_DATABASE } from "../db/COLUMNS_IN_DATABASE";
+import { generateDefaultPage } from "../utils";
+import { TRPCError } from "@trpc/server";
 
 export function createCtxServices(db: Database) {
 	const columnServices = createColumnServices(db);
@@ -61,8 +63,20 @@ function createPageService(db: Database) {
 		},
 		getPageById: (id: string) =>
 			db.query.pagesTable.findFirst({ where: eq(pagesTable.id, id) }),
-		insertPage: (page: InsertPage) =>
-			db.insert(pagesTable).values(page).returning(),
+		insertPage: async (partialPage: InsertPage) => {
+			const newPage = generateDefaultPage(partialPage);
+			const [insertedPage] = await db
+				.insert(pagesTable)
+				.values(newPage)
+				.returning();
+			if (!insertedPage) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: `Failed to insert page with id ${newPage.id}`,
+				});
+			}
+			return insertedPage;
+		},
 		insertPages: async (pages: InsertPage[]) => {
 			const rowsChunks = chunkArray(pages, 500);
 			for (const rowChunk of rowsChunks) {
