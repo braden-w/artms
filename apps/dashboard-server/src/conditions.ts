@@ -103,7 +103,7 @@ export const filterSchema: z.ZodType<
 // Function to evaluate the filter (simplified for illustration)
 function evaluateCondition(row: SelectPage, condition: Condition): boolean {
 	const { operator, value, columnName } = condition;
-	if (!row.hasOwnProperty(columnName)) {
+	if (!(columnName in row)) {
 		throw new Error(`Column ${columnName} does not exist in the row`);
 	}
 	const currentValue = row[columnName as keyof SelectPage];
@@ -199,7 +199,7 @@ export function buildWhereClause(filter: Filter): SQL | undefined {
 
 function buildCondition(condition: Condition): SQL | undefined {
 	const { columnName, operator, value } = condition;
-	if (!pagesTable.hasOwnProperty(columnName)) {
+	if (!(columnName in pagesTable)) {
 		throw new Error(`Column ${columnName} does not exist in the pages table`);
 	}
 	const currentValue = pagesTable[columnName as keyof SelectPage];
