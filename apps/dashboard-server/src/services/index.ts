@@ -63,7 +63,7 @@ function createPageService(db: Database) {
 		},
 		getPageById: (id: string) =>
 			db.query.pagesTable.findFirst({ where: eq(pagesTable.id, id) }),
-		insertPage: async (partialPage: InsertPage) => {
+		createPage: async (partialPage: InsertPage) => {
 			const newPage = generateDefaultPage(partialPage);
 			const [insertedPage] = await db
 				.insert(pagesTable)

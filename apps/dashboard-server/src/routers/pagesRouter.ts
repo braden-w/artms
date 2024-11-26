@@ -16,9 +16,9 @@ export const pagesRouter = router({
 		.input(selectPageSchema)
 		.mutation(({ ctx, input }) => ctx.services.pages.setPage(input)),
 
-	insertPage: protectedProcedure
+	createPage: protectedProcedure
 		.input(insertPageSchema)
-		.mutation(({ ctx, input }) => ctx.services.pages.insertPage(input)),
+		.mutation(({ ctx, input }) => ctx.services.pages.createPage(input)),
 
 	deletePageById: protectedProcedure
 		.input(z.object({ id: z.string() }))

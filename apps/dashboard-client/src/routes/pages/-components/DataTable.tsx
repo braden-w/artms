@@ -116,8 +116,8 @@ export function DataTable() {
 			},
 		});
 
-	const { mutate: insertPage, isPending: isInsertPending } =
-		trpc.pages.insertPage.useMutation({
+	const { mutate: createPage, isPending: isInsertPending } =
+		trpc.pages.createPage.useMutation({
 			onMutate: async (newPage) => {
 				await utils.pages.getPagesByWhereClause.cancel();
 				const prevPages = utils.pages.getPagesByWhereClause.getData({
