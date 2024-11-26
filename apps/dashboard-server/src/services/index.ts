@@ -61,7 +61,8 @@ function createPageService(db: Database) {
 		},
 		getPageById: (id: string) =>
 			db.query.pagesTable.findFirst({ where: eq(pagesTable.id, id) }),
-		insertPage: (page: InsertPage) => db.insert(pagesTable).values(page),
+		insertPage: (page: InsertPage) =>
+			db.insert(pagesTable).values(page).returning(),
 		insertPages: async (pages: InsertPage[]) => {
 			const rowsChunks = chunkArray(pages, 500);
 			for (const rowChunk of rowsChunks) {
