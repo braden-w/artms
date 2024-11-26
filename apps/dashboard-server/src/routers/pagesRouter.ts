@@ -1,11 +1,9 @@
+import { sql } from "drizzle-orm";
+import { z } from "zod";
 import { buildWhereClause } from "../conditions";
 import { insertPageSchema, selectPageSchema } from "../db/schema/pages";
 import { searchSchema } from "../searchSchema";
 import { protectedProcedure, router } from "../trpc";
-import { sql } from "drizzle-orm";
-import { z } from "zod";
-import { generateDefaultPage } from "../utils";
-import { TRPCError } from "@trpc/server";
 
 export const pagesRouter = router({
 	getAllPages: protectedProcedure.query(({ ctx }) =>
