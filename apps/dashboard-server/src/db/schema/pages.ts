@@ -22,11 +22,12 @@ export const pagesTable = sqliteTable("pages", ({ text, customType }) => {
 	 * Column that parses text as an array of strings. Gracefully handles strings that are not valid JSON string arrays.
 	 * */
 	const textArray = customType<{
-		data: string[];
-		driverData: string;
+		data: string[] | null;
+		driverData: string | null;
 	}>({
 		dataType: () => "TEXT",
 		fromDriver: (v) => {
+			if (v === null) return null;
 			try {
 				const maybeStringArray = JSON.parse(v);
 				const stringArray = z.string().array().parse(maybeStringArray);
@@ -35,7 +36,10 @@ export const pagesTable = sqliteTable("pages", ({ text, customType }) => {
 				return [v];
 			}
 		},
-		toDriver: (v) => JSON.stringify(v),
+		toDriver: (v) => {
+			if (v === null) return null;
+			return JSON.stringify(v);
+		},
 	});
 
 	const singleValueColumns = Object.fromEntries(
@@ -68,8 +72,11 @@ export const selectPageSchema = z.object({
 		SINGLE_VALUE_PROPERTIES.map((colName) => [colName, z.string().nullable()]),
 	) as Record<SingleValueProperty, z.ZodNullable<z.ZodString>>),
 	...(Object.fromEntries(
-		MULTI_VALUE_PROPERTIES.map((colName) => [colName, z.array(z.string())]),
-	) as Record<MultiValueProperty, z.ZodArray<z.ZodString>>),
+		MULTI_VALUE_PROPERTIES.map((colName) => [
+			colName,
+			z.string().array().nullable(),
+		]),
+	) as Record<MultiValueProperty, z.ZodNullable<z.ZodArray<z.ZodString>>>),
 	id: z.string(),
 });
 
