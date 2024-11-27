@@ -13,9 +13,9 @@ export const router = t.router;
 export const publicProcedure = t.procedure;
 
 const createDbFromEnv = (
-	unvalidatedEnv: Record<string, string | boolean | number | undefined>,
+	rawEnv: Record<string, string | boolean | number | undefined>,
 ) => {
-	const env = validateEnv(unvalidatedEnv);
+	const env = validateEnv(rawEnv);
 	const libsqlClient = createLibsqlClient({
 		url: env.TURSO_REMOTE_DATABASE_URL,
 		authToken: env.TURSO_AUTH_TOKEN,
