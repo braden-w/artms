@@ -1,9 +1,8 @@
 import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
-import { COLUMNS_IN_DATABASE } from "../COLUMNS_IN_DATABASE";
-import type { ColumnInDatabase } from "../COLUMNS_IN_DATABASE";
 import type { Filter } from "../../conditions";
+import type { ColumnInDatabase } from "../COLUMNS_IN_DATABASE";
+import { COLUMNS_IN_DATABASE } from "../COLUMNS_IN_DATABASE";
 
 const columnTypeOptions = [
 	"ID",

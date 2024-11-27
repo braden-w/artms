@@ -1,6 +1,7 @@
 import logoImage from "@/assets/logo.jpeg?w=64&h=64";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Outlet, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 
@@ -35,6 +36,7 @@ export const Route = createRootRoute({
 					<Outlet />
 				</main>
 			</div>
+			{/* <ReactQueryDevtools /> */}
 			<TanStackRouterDevtools />
 		</>
 	),
