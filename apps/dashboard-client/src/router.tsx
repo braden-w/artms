@@ -1,9 +1,10 @@
 import { routeTree } from "@/routeTree.gen";
-import type { AppRouter } from "@repo/dashboard-server/_app";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRouter as createTanstackRouter } from "@tanstack/react-router";
 import { httpBatchLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
+import superjson from "superjson";
+import type { AppRouter } from "../../dashboard-server/src/routers/_app";
 import { ThemeProvider } from "./components/theme-provider";
 
 const queryClient = new QueryClient();
@@ -14,6 +15,7 @@ const trpcClient = trpc.createClient({
 	links: [
 		httpBatchLink({
 			url: "http://localhost:8787/trpc",
+			transformer: superjson,
 		}),
 	],
 });

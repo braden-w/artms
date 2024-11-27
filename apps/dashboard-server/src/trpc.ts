@@ -1,13 +1,17 @@
+import { env } from "hono/adapter";
 import * as schema from "./db/schema";
 import { validateEnv } from "./env";
 import { createCtxServices } from "./services";
 import { createClient as createLibsqlClient } from "@libsql/client";
 import { TRPCError, initTRPC } from "@trpc/server";
 import { drizzle } from "drizzle-orm/libsql";
+import superjson from "superjson";
 
 const t = initTRPC
 	.context<{ env: Record<string, string | boolean | number | undefined> }>()
-	.create();
+	.create({
+		transformer: superjson,
+	});
 
 export const router = t.router;
 export const publicProcedure = t.procedure;
@@ -37,7 +41,7 @@ const enforceUserIsAuthed = t.middleware(async ({ ctx, next }) => {
 		});
 	}
 
-	const db = createDbFromEnv(ctx.env);
+	const db = createDbFromEnv(env(ctx));
 
 	const services = createCtxServices(db);
 

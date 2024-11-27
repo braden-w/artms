@@ -38,6 +38,7 @@
 		"react-dom": "^18.3.1",
 		"react-hotkeys-hook": "^4.6.1",
 		"sonner": "^1.7.0",
+		"superjson": "^2.2.1",
 		"tailwind-merge": "^2.5.3",
 		"tailwindcss-animate": "^1.0.7",
 		"zod": "^3.23.8"
