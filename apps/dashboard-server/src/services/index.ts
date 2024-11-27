@@ -1,5 +1,10 @@
 import { asc, eq, sql } from "drizzle-orm";
-import type { Column, InsertPage, SelectPage } from "../db/schema";
+import type {
+	Column,
+	InsertPage,
+	PagePropertyValue,
+	SelectPage,
+} from "../db/schema";
 import { DEFAULT_DATE_DISPLAY_FORMAT } from "../constants";
 import { columnsTable, pagesTable } from "../db/schema";
 import type { Database } from "../trpc";
@@ -117,7 +122,7 @@ function createPageService(db: Database) {
 					});
 			}
 		},
-		setPage: (page: InsertPage) =>
+		setPage: (page: SelectPage) =>
 			db.update(pagesTable).set(page).where(eq(pagesTable.id, page.id)),
 		setPageProperty: ({
 			pageId,
