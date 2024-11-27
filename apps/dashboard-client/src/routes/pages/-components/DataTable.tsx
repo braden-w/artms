@@ -58,7 +58,7 @@ export function DataTable() {
 		data: { pageOfPages, allColumns } = { pageOfPages: [], allColumns: [] },
 		isPending: isPagesPending,
 		error: pagesError,
-	} = trpc.pages.getAllPages.useQuery({
+	} = trpc.pages.getPagesByWhereClause.useQuery({
 		filter,
 		orderBy,
 		limit,
