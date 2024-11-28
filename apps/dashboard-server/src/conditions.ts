@@ -69,11 +69,11 @@ type Group = {
 };
 
 // Top level filter type
-export type Filter = Group;
-export const filterSchema = groupSchema;
+export type Filter = RuleOrGroup;
+export const filterSchema = z.union([ruleSchema, groupSchema]);
 
 export function evaluateFilter(row: SelectPage, filter: Filter): boolean {
-	return evaluateGroup(row, filter);
+	return evaluateRuleOrGroup(row, filter);
 }
 
 function evaluateRuleOrGroup(
@@ -174,15 +174,7 @@ function evaluateRule(row: SelectPage, rule: Rule): boolean {
 }
 
 export function filterToWhereClause(filter: Filter): SQL | undefined {
-	const isMoreThanOneRuleOrGroup = filter.rulesOrGroups.length > 1;
-	if (isMoreThanOneRuleOrGroup) return groupToWhereClause(filter);
-
-	const [firstRuleOrGroup] = filter.rulesOrGroups;
-	const isFirstRule = firstRuleOrGroup?.type === "condition";
-	if (isFirstRule) {
-		const firstRule = firstRuleOrGroup;
-		return ruleToWhereClause(firstRule);
-	}
+	return ruleOrGroupToWhereClause(filter);
 }
 
 function ruleOrGroupToWhereClause(ruleOrGroup: RuleOrGroup): SQL {
