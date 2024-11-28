@@ -3,10 +3,16 @@ import { z } from "zod";
 
 export const searchSchema = z.object({
 	filter: filterSchema.optional().default({
-		type: "rule",
-		propertyName: "title",
-		operator: "like",
-		value: "",
+		type: "group",
+		combinator: "AND",
+		rulesOrGroups: [
+			{
+				type: "rule",
+				propertyName: "title",
+				operator: "like",
+				value: "",
+			},
+		],
 	}),
 	orderBy: z.string().optional().default(""),
 	limit: z.coerce.number().int().positive().optional().default(10),
