@@ -125,11 +125,6 @@ export function DataTable() {
 			},
 		});
 
-	const createDefaultPage = () => {
-		const newPage = generateDefaultPage();
-		addPage(newPage);
-	};
-
 	const { mutate: deletePageById, isPending: isDeletePageByIdPending } =
 		trpc.pages.deletePageById.useMutation({
 			onMutate: async ({ id }) => {
@@ -417,17 +412,6 @@ export function DataTable() {
 							</DropdownMenuContent>
 						</DropdownMenu>
 						<Button
-							onClick={() => createDefaultPage()}
-							disabled={isAddPagePending}
-						>
-							{isAddPagePending ? (
-								<Loader2 className="h-4 w-4 animate-spin" />
-							) : (
-								<PlusIcon className="mr-2 h-4 w-4" />
-							)}
-							{isAddPagePending ? "Adding..." : "Add"}
-						</Button>
-						<Button
 							onClick={() => {
 								const newPage = generateDefaultPage();
 								addPage(newPage, {
@@ -443,7 +427,7 @@ export function DataTable() {
 							) : (
 								<PlusIcon className="mr-2 h-4 w-4" />
 							)}
-							{isAddPagePending ? "Adding..." : "Add And Open"}
+							{isAddPagePending ? "Adding..." : "Add"}
 						</Button>
 					</div>
 					<div className="relative overflow-auto rounded-md border">
