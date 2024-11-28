@@ -31,7 +31,7 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import { PlusIcon, TrashIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Route } from "..";
 import { RenderValue } from "./RenderValue";
@@ -250,11 +250,11 @@ export function DataTable() {
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
 		calculateColumnVisibility({ columns: allColumns, pages: pageOfPages }),
 	);
-	useUpdateColumnVisibilityWhenPagesOrColumnsChange({
-		allColumns,
-		pageOfPages,
-		setColumnVisibility,
-	});
+	// useUpdateColumnVisibilityWhenPagesOrColumnsChange({
+	// 	allColumns,
+	// 	pageOfPages,
+	// 	setColumnVisibility,
+	// });
 
 	const table = useReactTable({
 		data: pageOfPages,
@@ -484,7 +484,7 @@ function useUpdateColumnVisibilityWhenPagesOrColumnsChange({
 }: {
 	allColumns: Column[];
 	pageOfPages: SelectPage[];
-	setColumnVisibility: (visibility: VisibilityState) => void;
+	setColumnVisibility: Dispatch<SetStateAction<VisibilityState>>;
 }) {
 	useEffect(() => {
 		setColumnVisibility(
