@@ -206,7 +206,7 @@ function groupToWhereClause(group: FilterGroup): SQL {
 	}
 }
 
-function ruleToWhereClause(condition: FilterRule) {
+function ruleToWhereClause(condition: FilterRule): SQL {
 	const { columnName, operator, value } = condition;
 	if (!(columnName in pagesTable)) {
 		throw new Error(`Column ${columnName} does not exist in the pages table`);
