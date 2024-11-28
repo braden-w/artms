@@ -45,6 +45,8 @@ const COMBINE_OPERATORS = ["AND", "OR"] as const;
 const combineOperatorSchema = z.enum(COMBINE_OPERATORS);
 type CombineOperator = z.infer<typeof combineOperatorSchema>;
 
+type RuleOrGroup = FilterRule | FilterGroup;
+
 const filterRuleSchema = z.object({
 	type: z.literal("condition"),
 	columnName: z.string(),
@@ -65,7 +67,7 @@ const filterGroupSchema: z.ZodType<FilterGroup> = z.lazy(() =>
 type FilterGroup = {
 	type: "group";
 	combinator: CombineOperator;
-	rulesOrGroups: [FilterRule | FilterGroup, ...(FilterRule | FilterGroup)[]];
+	rulesOrGroups: [RuleOrGroup, ...RuleOrGroup[]];
 };
 
 // Top level filter type
@@ -78,7 +80,7 @@ export function evaluateFilter(row: SelectPage, filter: Filter): boolean {
 
 function evaluateRuleOrGroup(
 	row: SelectPage,
-	ruleOrGroup: FilterRule | FilterGroup,
+	ruleOrGroup: RuleOrGroup,
 ): boolean {
 	if (ruleOrGroup.type === "condition") {
 		return evaluateRule(row, ruleOrGroup);
@@ -185,7 +187,7 @@ export function filterToWhereClause(filter: Filter): SQL | undefined {
 	}
 }
 
-function ruleOrGroupToWhereClause(ruleOrGroup: FilterRule | FilterGroup): SQL {
+function ruleOrGroupToWhereClause(ruleOrGroup: RuleOrGroup): SQL {
 	if (ruleOrGroup.type === "condition") return ruleToWhereClause(ruleOrGroup);
 	return groupToWhereClause(ruleOrGroup);
 }
