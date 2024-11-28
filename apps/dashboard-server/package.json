@@ -24,9 +24,7 @@
 		"wrangler": "^3.91.0"
 	},
 	"imports": {
-		"#*": "./src/*.ts",
-		"#db/schema": "./src/db/schema/index.ts",
-		"#services": "./src/services/index.ts"
+		"#*": ["./src/*.ts", "./src/*/index.ts"]
 	},
 	"exports": {
 		"./_app": "./src/routers/_app.ts",
