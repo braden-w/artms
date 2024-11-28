@@ -205,7 +205,7 @@ export function DataTable() {
 			cell: ({ getValue, row }) => {
 				const pageId = getValue<string>();
 				const correspondingPageInCache = utils.pages.getPagesByWhereClause
-					.getData()
+					.getData({ filter, orderBy, limit, offset })
 					?.pageOfPages.find((p) => p.id === pageId);
 				if (!correspondingPageInCache) return null;
 				return (
@@ -248,7 +248,12 @@ export function DataTable() {
 						const utils = trpc.useUtils();
 						const pageId = getValue<string>();
 						const correspondingPageInCache = utils.pages.getPagesByWhereClause
-							.getData()
+							.getData({
+								filter,
+								orderBy,
+								limit,
+								offset,
+							})
 							?.pageOfPages.find((p) => p.id === pageId);
 						if (!correspondingPageInCache) return null;
 						return (
@@ -480,7 +485,7 @@ export function DataTable() {
 									table.getRowModel().rows.map((row) => (
 										<TableRow key={row.id} className="divide-x">
 											{row.getVisibleCells().map((cell) => (
-												<TableCell key={cell.id} className="p-0 max-w-xs">
+												<TableCell key={cell.id} className="max-w-xs">
 													{flexRender(
 														cell.column.columnDef.cell,
 														cell.getContext(),
