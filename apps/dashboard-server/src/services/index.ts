@@ -8,6 +8,7 @@ import type {
 	InsertPage,
 	PagePropertyValue,
 	SelectPage,
+	UpdatePage,
 } from "#db/schema/index";
 import { columnsTable, pagesTable } from "#db/schema/index";
 import type { Database } from "#trpc";
@@ -15,8 +16,8 @@ import { generateDefaultPage } from "#utils";
 import { TRPCError } from "@trpc/server";
 import { asc, eq, sql } from "drizzle-orm";
 import { getTableConfig } from "drizzle-orm/sqlite-core";
-import { writeFile } from "node:fs/promises";
 import { execa } from "execa";
+import { writeFile } from "node:fs/promises";
 
 export function createCtxServices(db: Database) {
 	const columnServices = createColumnServices(db);
@@ -127,8 +128,10 @@ function createPageService(db: Database) {
 					});
 			}
 		},
-		setPage: (page: SelectPage) =>
-			db.update(pagesTable).set(page).where(eq(pagesTable.id, page.id)),
+		updatePage: (page: UpdatePage) => {
+			const { id, ...updateData } = page;
+			return db.update(pagesTable).set(updateData).where(eq(pagesTable.id, id));
+		},
 		setPageProperty: ({
 			pageId,
 			property,
