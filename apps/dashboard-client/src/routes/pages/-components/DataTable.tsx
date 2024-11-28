@@ -35,6 +35,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Route } from "..";
 import { RenderValue } from "./RenderValue";
+import { generateDefaultPage } from "@repo/dashboard-server/utils";
 
 export function DataTable() {
 	const { filter, orderBy, limit, offset } = Route.useSearch();
@@ -145,6 +146,11 @@ export function DataTable() {
 				toast.success("Success", { description: "Row added!" });
 			},
 		});
+
+	const createDefaultPage = () => {
+		const newPage = generateDefaultPage();
+		addPage(newPage);
+	};
 
 	const { mutate: deletePageById, isPending: isDeletePageByIdPending } =
 		trpc.pages.deletePageById.useMutation({
