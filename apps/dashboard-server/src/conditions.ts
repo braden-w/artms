@@ -1,3 +1,8 @@
+import {
+	type SelectPage,
+	pagePropertyValueSchema,
+	pagesTable,
+} from "#db/schema/pages";
 import { isString, isStringArray } from "#utils";
 import type { SQL } from "drizzle-orm";
 import {
@@ -11,16 +16,10 @@ import {
 	lt,
 	lte,
 	ne,
-	not,
 	or,
 	sql,
 } from "drizzle-orm";
 import { z } from "zod";
-import {
-	type SelectPage,
-	pagePropertyValueSchema,
-	pagesTable,
-} from "#db/schema/pages";
 
 // Constants for comparison, non-comparison, and logical operators
 export const comparisonOperators = [
