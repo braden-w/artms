@@ -1,21 +1,10 @@
-import { RenderValue } from "./RenderValue";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuCheckboxItem,
 	DropdownMenuContent,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import {
 	Table,
 	TableBody,
@@ -24,12 +13,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { trpc } from "@/utils/trpc";
+import { trpc } from "@/router";
+import { evaluateFilter } from "@repo/dashboard-server/conditions";
 import type { Column, SelectPage } from "@repo/dashboard-server/schema";
-import {
-	comparisonOperators,
-	evaluateFilter,
-} from "@repo/dashboard-server/conditions";
 import { useNavigate } from "@tanstack/react-router";
 import type {
 	ColumnDef,
@@ -44,10 +30,11 @@ import {
 	getSortedRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
-import { PlusIcon, TrashIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Route } from "..";
+import { RenderValue } from "./RenderValue";
 
 export function DataTable() {
 	const { filter, orderBy, limit, offset } = Route.useSearch();
@@ -65,8 +52,8 @@ export function DataTable() {
 		offset,
 	});
 
-	const { mutate: updatePage, isPending: isUpdatePending } =
-		trpc.pages.setPage.useMutation({
+	const { mutate: replacePage, isPending: isReplacePagePending } =
+		trpc.pages.replacePage.useMutation({
 			onMutate: async (newPage) => {
 				await utils.pages.getPagesByWhereClause.cancel();
 				const prevPages = utils.pages.getPagesByWhereClause.getData({
@@ -80,9 +67,11 @@ export function DataTable() {
 					(oldPageOfPages) => {
 						if (!oldPageOfPages) return;
 						return {
-							pageOfPages: oldPageOfPages.pageOfPages.map((p) =>
-								p.id === newPage.id ? newPage : p,
-							),
+							pageOfPages: oldPageOfPages.pageOfPages.map((currentPage) => {
+								const shouldReplacePage = currentPage.id === newPage.id;
+								if (shouldReplacePage) return newPage;
+								return currentPage;
+							}),
 							allColumns: oldPageOfPages.allColumns,
 						};
 					},
@@ -199,7 +188,7 @@ export function DataTable() {
 			},
 		});
 
-	const columnDefs = [
+	const columnDefs: ColumnDef<SelectPage>[] = [
 		// {
 		// 	id: "__actions",
 		// 	accessorKey: "id",
@@ -245,38 +234,51 @@ export function DataTable() {
 		// 		);
 		// 	},
 		// },
-		...allColumns.map((column) => ({
-			id: column.name,
-			accessorKey: "id",
-			header: column.name,
-			meta: { column },
-			cell: ({ getValue }) => {
-				const pageId = getValue<string>();
-				const { page, saveStatus, setPageSaveDbDebounce } = usePage(pageId, {
-					enabled: false,
-				});
-				return (
-					<RenderValue
-						key={`${pageId}-${column.name}`}
-						value={page[column.name as keyof Page] ?? ""}
-						column={column}
-						isDisabled={
-							!(!column.filter || evaluateFilter(page, column.filter))
-						}
-						saveStatus={saveStatus}
-						onChange={(newValue) => {
-							setPageSaveDbDebounce((page) => ({
-								...page,
-								[column.name]: newValue,
-							}));
-						}}
-						onBlur={() => setPageInPagesWithRerender(page)}
-						page={page}
-					/>
-				);
-			},
-		})),
-	] satisfies ColumnDef<SelectPage>[];
+		...allColumns.map(
+			(column) =>
+				({
+					id: column.name,
+					accessorKey: "id",
+					header: column.name,
+					meta: { column },
+					cell: ({ getValue }) => {
+						const utils = trpc.useUtils();
+						const pageId = getValue<string>();
+						const correspondingPageInCache = utils.pages.getPagesByWhereClause
+							.getData()
+							?.pageOfPages.find((p) => p.id === pageId);
+						if (!correspondingPageInCache) return null;
+						return (
+							<RenderValue
+								key={`${pageId}-${column.name}`}
+								value={
+									correspondingPageInCache[column.name as keyof SelectPage] ??
+									""
+								}
+								column={column}
+								isDisabled={
+									!(
+										!column.filter ||
+										evaluateFilter(correspondingPageInCache, column.filter)
+									)
+								}
+								saveStatus={saveStatus}
+								onChange={(newValue) => {
+									setPageSaveDbDebounce((page) => ({
+										...page,
+										[column.name]: newValue,
+									}));
+								}}
+								onBlur={() =>
+									setPageInPagesWithRerender(correspondingPageInCache)
+								}
+								page={correspondingPageInCache}
+							/>
+						);
+					},
+				}) satisfies ColumnDef<SelectPage>,
+		),
+	];
 
 	const [autoResetPageIndex, skipAutoResetPageIndex] = useSkipper();
 	const [sorting, setSorting] = useState<SortingState>([]);
@@ -314,7 +316,7 @@ export function DataTable() {
 
 	const setPageInPagesWithRerender = (updatedPage: Page) => {
 		skipAutoResetPageIndex();
-		updatePage(updatedPage);
+		replacePage(updatedPage);
 		setColumnVisibility(
 			calculateColumnVisibility({ columns: allColumns, pages: pageOfPages }),
 		);

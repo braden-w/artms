@@ -8,7 +8,6 @@ import type {
 	InsertPage,
 	PagePropertyValue,
 	SelectPage,
-	UpdatePage,
 } from "#db/schema/index";
 import { columnsTable, pagesTable } from "#db/schema/index";
 import type { Database } from "#trpc";
@@ -128,7 +127,7 @@ function createPageService(db: Database) {
 					});
 			}
 		},
-		updatePage: (page: UpdatePage) => {
+		replacePage: (page: SelectPage) => {
 			const { id, ...updateData } = page;
 			return db.update(pagesTable).set(updateData).where(eq(pagesTable.id, id));
 		},

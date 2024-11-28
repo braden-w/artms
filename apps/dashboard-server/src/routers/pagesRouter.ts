@@ -1,5 +1,5 @@
 import { buildWhereClause } from "#conditions";
-import { insertPageSchema, updatePageSchema } from "#db/schema/pages";
+import { insertPageSchema, selectPageSchema } from "#db/schema/pages";
 import { searchSchema } from "#searchSchema";
 import { protectedProcedure, router } from "#trpc";
 import { sql } from "drizzle-orm";
@@ -14,9 +14,9 @@ export const pagesRouter = router({
 		.input(z.object({ id: z.string() }))
 		.query(({ ctx, input: { id } }) => ctx.services.pages.getPageById(id)),
 
-	updatePage: protectedProcedure
-		.input(updatePageSchema)
-		.mutation(({ ctx, input }) => ctx.services.pages.updatePage(input)),
+	replacePage: protectedProcedure
+		.input(selectPageSchema)
+		.mutation(({ ctx, input }) => ctx.services.pages.replacePage(input)),
 
 	createPage: protectedProcedure
 		.input(insertPageSchema.optional())
