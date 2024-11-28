@@ -44,8 +44,8 @@ export const comparisonOperators = [
 const LOGICAL_OPERATORS = ["AND", "OR"] as const;
 
 // Types derived from constants
-const logicalOperatorSchema = z.enum(LOGICAL_OPERATORS);
-type LogicalOperator = z.infer<typeof logicalOperatorSchema>;
+const combineOperatorSchema = z.enum(LOGICAL_OPERATORS);
+type CombineOperator = z.infer<typeof combineOperatorSchema>;
 
 // Union type for Condition
 const conditionSchema = z.object({
@@ -63,7 +63,7 @@ type ConditionUntypedColumnName = Omit<Condition, "columnName"> & {
 // Recursive definition for Filter
 type LogicalGroup = {
 	type: "logical";
-	operator: LogicalOperator;
+	operator: CombineOperator;
 	conditions: Filter[];
 };
 
@@ -72,7 +72,7 @@ export type Filter = Condition | LogicalGroup;
 
 type LogicalGroupUntypedColumnName = {
 	type: "logical";
-	operator: LogicalOperator;
+	operator: CombineOperator;
 	conditions: FilterUntypedColumnName[];
 };
 
