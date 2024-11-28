@@ -453,7 +453,7 @@ export function DataTable() {
 									table.getRowModel().rows.map((row) => (
 										<TableRow key={row.id} className="divide-x">
 											{row.getVisibleCells().map((cell) => (
-												<TableCell key={cell.id} className="max-w-xs">
+												<TableCell key={cell.id} className="p-0 max-w-xs">
 													{flexRender(
 														cell.column.columnDef.cell,
 														cell.getContext(),
