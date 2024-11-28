@@ -66,13 +66,14 @@ export function DataTable() {
 					{ filter, orderBy, limit, offset },
 					(oldPageOfPages) => {
 						if (!oldPageOfPages) return;
+						const { pageOfPages, allColumns } = oldPageOfPages;
 						return {
-							pageOfPages: oldPageOfPages.pageOfPages.map((currentPage) => {
+							pageOfPages: pageOfPages.map((currentPage) => {
 								const shouldReplacePage = currentPage.id === newPage.id;
 								if (shouldReplacePage) return newPage;
 								return currentPage;
 							}),
-							allColumns: oldPageOfPages.allColumns,
+							allColumns,
 						};
 					},
 				);
@@ -156,11 +157,10 @@ export function DataTable() {
 					{ filter, orderBy, limit, offset },
 					(oldPageOfPages) => {
 						if (!oldPageOfPages) return;
+						const { pageOfPages, allColumns } = oldPageOfPages;
 						return {
-							pageOfPages: oldPageOfPages.pageOfPages.filter(
-								(p) => p.id !== id,
-							),
-							allColumns: oldPageOfPages.allColumns,
+							pageOfPages: pageOfPages.filter((p) => p.id !== id),
+							allColumns,
 						};
 					},
 				);
