@@ -57,13 +57,15 @@ const filterGroupSchema: z.ZodType<FilterGroup> = z.lazy(() =>
 	z.object({
 		type: z.literal("group"),
 		combinator: combineOperatorSchema,
-		rulesOrGroups: z.array(z.union([filterRuleSchema, filterGroupSchema])),
+		rulesOrGroups: z
+			.array(z.union([filterRuleSchema, filterGroupSchema]))
+			.nonempty(),
 	}),
 );
 type FilterGroup = {
 	type: "group";
 	combinator: CombineOperator;
-	rulesOrGroups: (FilterRule | FilterGroup)[];
+	rulesOrGroups: [FilterRule | FilterGroup, ...(FilterRule | FilterGroup)[]];
 };
 
 // Top level filter type
@@ -183,24 +185,25 @@ export function filterToWhereClause(filter: Filter): SQL | undefined {
 	}
 }
 
-function ruleOrGroupToWhereClause(
-	ruleOrGroup: FilterRule | FilterGroup,
-): SQL | undefined {
+function ruleOrGroupToWhereClause(ruleOrGroup: FilterRule | FilterGroup): SQL {
 	if (ruleOrGroup.type === "condition") return ruleToWhereClause(ruleOrGroup);
 	return groupToWhereClause(ruleOrGroup);
 }
 
-function groupToWhereClause(group: FilterGroup): SQL | undefined {
+function groupToWhereClause(group: FilterGroup): SQL {
 	const subClauses = group.rulesOrGroups.map(ruleOrGroupToWhereClause);
+
 	switch (group.combinator) {
 		case "AND":
 			return and(...subClauses);
 		case "OR":
 			return or(...subClauses);
+		default:
+			return and(...subClauses);
 	}
 }
 
-function ruleToWhereClause(condition: FilterRule): SQL | undefined {
+function ruleToWhereClause(condition: FilterRule) {
 	const { columnName, operator, value } = condition;
 	if (!(columnName in pagesTable)) {
 		throw new Error(`Column ${columnName} does not exist in the pages table`);
