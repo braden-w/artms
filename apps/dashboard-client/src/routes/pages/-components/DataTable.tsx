@@ -31,7 +31,7 @@ import {
 	getSortedRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
-import { PlusIcon, TrashIcon } from "lucide-react";
+import { Loader2, PlusIcon, TrashIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Route } from "..";
@@ -416,18 +416,34 @@ export function DataTable() {
 									))}
 							</DropdownMenuContent>
 						</DropdownMenu>
-						<Button onClick={() => createDefaultPage()}>
-							<PlusIcon className="mr-2 h-4 w-4" />
-							Add
+						<Button
+							onClick={() => createDefaultPage()}
+							disabled={isAddPagePending}
+						>
+							{isAddPagePending ? (
+								<Loader2 className="h-4 w-4 animate-spin" />
+							) : (
+								<PlusIcon className="mr-2 h-4 w-4" />
+							)}
+							{isAddPagePending ? "Adding..." : "Add"}
 						</Button>
 						<Button
 							onClick={() => {
-								createDefaultPage();
-								navigate(`/pages/${newPage.id}`);
+								const newPage = generateDefaultPage();
+								addPage(newPage, {
+									onSuccess: () => {
+										navigate({ to: `/pages/${newPage.id}` });
+									},
+								});
 							}}
+							disabled={isAddPagePending}
 						>
-							<PlusIcon className="mr-2 h-4 w-4" />
-							Add And Open
+							{isAddPagePending ? (
+								<Loader2 className="h-4 w-4 animate-spin" />
+							) : (
+								<PlusIcon className="mr-2 h-4 w-4" />
+							)}
+							{isAddPagePending ? "Adding..." : "Add And Open"}
 						</Button>
 					</div>
 					<div className="relative overflow-auto rounded-md border">
