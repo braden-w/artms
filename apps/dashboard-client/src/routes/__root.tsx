@@ -36,7 +36,7 @@ export const Route = createRootRoute({
 					<Outlet />
 				</main>
 			</div>
-			{/* <ReactQueryDevtools /> */}
+			<ReactQueryDevtools />
 			<TanStackRouterDevtools />
 		</>
 	),
