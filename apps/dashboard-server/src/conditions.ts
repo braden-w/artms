@@ -53,21 +53,52 @@ const filterRuleSchema = z.object({
 });
 type FilterRule = z.infer<typeof filterRuleSchema>;
 
-export const filterGroupSchema: z.ZodType<FilterGroup> = z.lazy(() =>
+const filterGroupSchema: z.ZodType<FilterGroup> = z.lazy(() =>
 	z.object({
 		type: z.literal("group"),
 		combinator: combineOperatorSchema,
-		conditions: z.array(z.union([filterRuleSchema, filterGroupSchema])),
+		rulesOrGroups: z.array(z.union([filterRuleSchema, filterGroupSchema])),
 	}),
 );
 type FilterGroup = {
 	type: "group";
 	combinator: CombineOperator;
-	conditions: (FilterRule | FilterGroup)[];
+	rulesOrGroups: (FilterRule | FilterGroup)[];
 };
 
-function evaluateCondition(row: SelectPage, condition: FilterRule): boolean {
-	const { operator, value: targetValue, columnName } = condition;
+// Top level filter type
+export type Filter = FilterGroup;
+export const filterSchema = filterGroupSchema;
+
+export function evaluateFilter(row: SelectPage, filter: Filter): boolean {
+	return evaluateGroup(row, filter);
+}
+
+function evaluateRuleOrGroup(
+	row: SelectPage,
+	ruleOrGroup: FilterRule | FilterGroup,
+): boolean {
+	if (ruleOrGroup.type === "condition") {
+		return evaluateRule(row, ruleOrGroup);
+	}
+	return evaluateGroup(row, ruleOrGroup);
+}
+
+function evaluateGroup(row: SelectPage, group: FilterGroup): boolean {
+	const results = group.rulesOrGroups.map((ruleOrGroup) =>
+		evaluateRuleOrGroup(row, ruleOrGroup),
+	);
+
+	switch (group.combinator) {
+		case "AND":
+			return results.every((result) => result);
+		case "OR":
+			return results.some((result) => result);
+	}
+}
+
+function evaluateRule(row: SelectPage, rule: FilterRule): boolean {
+	const { operator, value: targetValue, columnName } = rule;
 	if (!(columnName in row)) {
 		throw new Error(`Column ${columnName} does not exist in the row`);
 	}
@@ -140,30 +171,10 @@ function evaluateCondition(row: SelectPage, condition: FilterRule): boolean {
 	}
 }
 
-export function evaluateFilter(row: SelectPage, filter: Filter): boolean {
-	switch (filter.type) {
-		case "condition":
-			return evaluateCondition(row, filter);
-		case "group": {
-			const results = filter.conditions.map((cond) =>
-				evaluateFilter(row, cond),
-			);
-			switch (filter.operator) {
-				case "AND":
-					return results.every((result) => result);
-				case "OR":
-					return results.some((result) => result);
-				default:
-					return false;
-			}
-		}
-	}
-}
-
 export function buildWhereClause(filter: Filter): SQL | undefined {
 	if (filter.type === "condition") return buildCondition(filter);
 	if (filter.type === "group") {
-		const subClauses = filter.conditions.map(buildWhereClause);
+		const subClauses = filter.rulesOrGroups.map(buildWhereClause);
 		switch (filter.operator) {
 			case "AND":
 				return and(...subClauses);
