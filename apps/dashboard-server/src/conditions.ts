@@ -69,27 +69,22 @@ type Group = {
 };
 
 // Top level filter type
-export type Filter = RuleOrGroup;
-export const filterSchema = z.union([ruleSchema, groupSchema]);
+export type Filter = Group;
+export const filterSchema = groupSchema;
 
 export function evaluateFilter(row: SelectPage, filter: Filter): boolean {
-	return evaluateRuleOrGroup(row, filter);
-}
-
-function evaluateRuleOrGroup(
-	row: SelectPage,
-	ruleOrGroup: RuleOrGroup,
-): boolean {
-	if (ruleOrGroup.type === "rule") {
-		return evaluateRule(row, ruleOrGroup);
-	}
-	return evaluateGroup(row, ruleOrGroup);
+	return evaluateGroup(row, filter);
 }
 
 function evaluateGroup(row: SelectPage, group: Group): boolean {
-	const results = group.rulesOrGroups.map((ruleOrGroup) =>
-		evaluateRuleOrGroup(row, ruleOrGroup),
-	);
+	const results = group.rulesOrGroups.map((ruleOrGroup) => {
+		switch (ruleOrGroup.type) {
+			case "rule":
+				return evaluateRule(row, ruleOrGroup);
+			case "group":
+				return evaluateGroup(row, ruleOrGroup);
+		}
+	});
 
 	switch (group.combinator) {
 		case "AND":
