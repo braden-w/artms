@@ -45,31 +45,28 @@ const COMBINE_OPERATORS = ["AND", "OR"] as const;
 const combineOperatorSchema = z.enum(COMBINE_OPERATORS);
 type CombineOperator = z.infer<typeof combineOperatorSchema>;
 
-const filterConditionSchema = z.object({
+const filterRuleSchema = z.object({
 	type: z.literal("condition"),
 	columnName: z.string(),
 	operator: comparisonOperatorSchema,
 	value: pagePropertyValueSchema,
 });
-type FilterCondition = z.infer<typeof filterConditionSchema>;
+type FilterRule = z.infer<typeof filterRuleSchema>;
 
 export const filterGroupSchema: z.ZodType<FilterGroup> = z.lazy(() =>
 	z.object({
 		type: z.literal("group"),
 		combinator: combineOperatorSchema,
-		conditions: z.array(z.union([filterConditionSchema, filterGroupSchema])),
+		conditions: z.array(z.union([filterRuleSchema, filterGroupSchema])),
 	}),
 );
 type FilterGroup = {
 	type: "group";
 	combinator: CombineOperator;
-	conditions: (FilterCondition | FilterGroup)[];
+	conditions: (FilterRule | FilterGroup)[];
 };
 
-function evaluateCondition(
-	row: SelectPage,
-	condition: FilterCondition,
-): boolean {
+function evaluateCondition(row: SelectPage, condition: FilterRule): boolean {
 	const { operator, value: targetValue, columnName } = condition;
 	if (!(columnName in row)) {
 		throw new Error(`Column ${columnName} does not exist in the row`);
@@ -177,7 +174,7 @@ export function buildWhereClause(filter: Filter): SQL | undefined {
 	throw new Error("Invalid filter type");
 }
 
-function buildCondition(condition: FilterCondition): SQL | undefined {
+function buildCondition(condition: FilterRule): SQL | undefined {
 	const { columnName, operator, value } = condition;
 	if (!(columnName in pagesTable)) {
 		throw new Error(`Column ${columnName} does not exist in the pages table`);
