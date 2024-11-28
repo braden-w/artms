@@ -41,7 +41,7 @@ export const comparisonOperators = [
 	"is not empty",
 ] as const;
 
-const LOGICAL_OPERATORS = ["AND", "OR", "NOT"] as const;
+const LOGICAL_OPERATORS = ["AND", "OR"] as const;
 
 // Types derived from constants
 const logicalOperatorSchema = z.enum(LOGICAL_OPERATORS);
@@ -181,9 +181,6 @@ export function evaluateFilter(row: SelectPage, filter: Filter): boolean {
 					return results.every((result) => result);
 				case "OR":
 					return results.some((result) => result);
-				case "NOT":
-					// TODO: Consider handling multiple conditions or removing NOT operator
-					return !results[0];
 				default:
 					return false;
 			}
@@ -200,8 +197,6 @@ export function buildWhereClause(filter: Filter): SQL | undefined {
 				return and(...subClauses);
 			case "OR":
 				return or(...subClauses);
-			case "NOT":
-				return not(subClauses[0]); // Assuming NOT operates on a single condition
 		}
 	}
 	throw new Error("Invalid filter type");
