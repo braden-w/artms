@@ -247,14 +247,17 @@ export function DataTable() {
 	const [autoResetPageIndex, skipAutoResetPageIndex] = useSkipper();
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-		calculateColumnVisibility({ columns: allColumns, pages: pageOfPages }),
-	);
-	// useUpdateColumnVisibilityWhenPagesOrColumnsChange({
-	// 	allColumns,
-	// 	pageOfPages,
-	// 	setColumnVisibility,
-	// });
+
+	const columnVisibilityFromFilters = calculateColumnVisibility({
+		columns: allColumns,
+		pages: pageOfPages,
+	});
+	const [userColumnVisibility, setUserColumnVisibility] =
+		useState<VisibilityState>({});
+	const columnVisibility = {
+		...columnVisibilityFromFilters,
+		...userColumnVisibility,
+	};
 
 	const table = useReactTable({
 		data: pageOfPages,
@@ -264,7 +267,7 @@ export function DataTable() {
 		getFilteredRowModel: getFilteredRowModel(),
 		onSortingChange: setSorting,
 		onColumnFiltersChange: setColumnFilters,
-		onColumnVisibilityChange: setColumnVisibility,
+		onColumnVisibilityChange: setUserColumnVisibility,
 		autoResetPageIndex,
 		state: {
 			sorting,
@@ -475,22 +478,6 @@ export function DataTable() {
 			</div>
 		</div>
 	);
-}
-
-function useUpdateColumnVisibilityWhenPagesOrColumnsChange({
-	allColumns,
-	pageOfPages,
-	setColumnVisibility,
-}: {
-	allColumns: Column[];
-	pageOfPages: SelectPage[];
-	setColumnVisibility: Dispatch<SetStateAction<VisibilityState>>;
-}) {
-	useEffect(() => {
-		setColumnVisibility(
-			calculateColumnVisibility({ columns: allColumns, pages: pageOfPages }),
-		);
-	}, [pageOfPages, allColumns, setColumnVisibility]);
 }
 
 function calculateColumnVisibility({
