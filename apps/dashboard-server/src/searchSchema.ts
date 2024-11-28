@@ -3,7 +3,7 @@ import { z } from "zod";
 
 export const searchSchema = z.object({
 	filter: filterSchema.optional().default({
-		type: "condition",
+		type: "rule",
 		columnName: "title",
 		operator: "like",
 		value: "",

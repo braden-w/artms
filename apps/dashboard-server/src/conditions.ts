@@ -48,7 +48,7 @@ type CombineOperator = z.infer<typeof combineOperatorSchema>;
 type RuleOrGroup = Rule | Group;
 
 const ruleSchema = z.object({
-	type: z.literal("condition"),
+	type: z.literal("rule"),
 	columnName: z.string(),
 	operator: comparisonOperatorSchema,
 	value: pagePropertyValueSchema,
@@ -80,7 +80,7 @@ function evaluateRuleOrGroup(
 	row: SelectPage,
 	ruleOrGroup: RuleOrGroup,
 ): boolean {
-	if (ruleOrGroup.type === "condition") {
+	if (ruleOrGroup.type === "rule") {
 		return evaluateRule(row, ruleOrGroup);
 	}
 	return evaluateGroup(row, ruleOrGroup);
@@ -178,7 +178,7 @@ export function filterToWhereClause(filter: Filter): SQL | undefined {
 }
 
 function ruleOrGroupToWhereClause(ruleOrGroup: RuleOrGroup): SQL {
-	if (ruleOrGroup.type === "condition") return ruleToWhereClause(ruleOrGroup);
+	if (ruleOrGroup.type === "rule") return ruleToWhereClause(ruleOrGroup);
 	return groupToWhereClause(ruleOrGroup);
 }
 
@@ -198,8 +198,8 @@ function groupToWhereClause(group: Group): SQL {
 	}
 }
 
-function ruleToWhereClause(condition: Rule): SQL {
-	const { columnName, operator, value } = condition;
+function ruleToWhereClause(rule: Rule): SQL {
+	const { columnName, operator, value } = rule;
 	if (!(columnName in pagesTable)) {
 		throw new Error(`Column ${columnName} does not exist in the pages table`);
 	}
