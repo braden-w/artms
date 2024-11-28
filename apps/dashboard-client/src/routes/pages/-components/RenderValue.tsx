@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 import { FancyBox } from "./FancyBox";
 import { evaluateFilter } from "@repo/dashboard-server/conditions";
+import { DEFAULT_TAG_COLOR } from "@repo/dashboard-server/constants";
 
 export type SaveStatus = "Saved" | "Unsaved";
 
@@ -128,16 +129,17 @@ export function RenderValue({
 						</button>
 					</DialogTrigger>
 					<DialogContent className="flex h-full max-h-[calc(100vh-4rem)] w-full max-w-7xl flex-col overflow-y-auto">
-						<TiptapEditor
+						{/* <TiptapEditor
 							value={displayValue}
 							setValue={onChange}
 							saveStatus={saveStatus}
 							page={page}
-						/>
+						/> */}
 					</DialogContent>
 				</Dialog>
 			);
 		case "Date":
+			return null;
 			return (
 				<NaturalLanguageInput
 					value={displayValue}
