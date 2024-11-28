@@ -30,7 +30,7 @@ import {
 	getSortedRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, TrashIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Route } from "..";
@@ -198,51 +198,45 @@ export function DataTable() {
 		});
 
 	const columnDefs: ColumnDef<SelectPage>[] = [
-		// {
-		// 	id: "__actions",
-		// 	accessorKey: "id",
-		// 	header: "actions",
-		// 	cell: ({ getValue, row }) => {
-		// 		const pageId = getValue<string>();
-		// 		const {
-		// 			page,
-		// 			saveStatus,
-		// 			setPageSaveDbDebounce,
-		// 			setPageSaveDbImmediate,
-		// 		} = usePage(pageId, { enabled: false });
-		// 		return (
-		// 			<div className="flex items-center justify-center gap-1">
-		// 				<PageEditorDialog
-		// 					page={page}
-		// 					setPageSaveDbDebounce={setPageSaveDbDebounce}
-		// 					setPageSaveDbImmediate={setPageSaveDbImmediate}
-		// 					columns={allColumns}
-		// 					saveStatus={saveStatus}
-		// 					onBlur={() => setPageInPagesWithRerender(page)}
-		// 				/>
-		// 				<a
-		// 					href={`/pages/${pageId}`}
-		// 					className={buttonVariants({
-		// 						variant: "ghost",
-		// 						size: "icon",
-		// 					})}
-		// 				>
-		// 					<PlusIcon />
-		// 				</a>
-		// 				<Button
-		// 					variant="ghost"
-		// 					size="icon"
-		// 					onClick={async () => {
-		// 						deletePageById(page.id);
-		// 						toast.success("Success", { description: "Row deleted!" });
-		// 					}}
-		// 				>
-		// 					<TrashIcon />
-		// 				</Button>
-		// 			</div>
-		// 		);
-		// 	},
-		// },
+		{
+			id: "__actions",
+			accessorKey: "id",
+			header: "actions",
+			cell: ({ getValue, row }) => {
+				const pageId = getValue<string>();
+				const correspondingPageInCache = utils.pages.getPagesByWhereClause
+					.getData()
+					?.pageOfPages.find((p) => p.id === pageId);
+				if (!correspondingPageInCache) return null;
+				return (
+					<div className="flex items-center justify-center gap-1">
+						{/* <PageEditorDialog
+							page={page}
+							setPageSaveDbDebounce={setPageSaveDbDebounce}
+							setPageSaveDbImmediate={setPageSaveDbImmediate}
+							columns={allColumns}
+							saveStatus={saveStatus}
+							onBlur={() => setPageInPagesWithRerender(page)}
+						/> */}
+						<Button variant="ghost" size="icon" asChild>
+							<a href={`/pages/${pageId}`}>
+								<PlusIcon />
+							</a>
+						</Button>
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={async () => {
+								deletePageById({ id: pageId });
+								toast.success("Success", { description: "Row deleted!" });
+							}}
+						>
+							<TrashIcon />
+						</Button>
+					</div>
+				);
+			},
+		},
 		...allColumns.map(
 			(column) =>
 				({
