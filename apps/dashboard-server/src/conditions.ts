@@ -49,7 +49,7 @@ type RuleOrGroup = Rule | Group;
 
 const ruleSchema = z.object({
 	type: z.literal("rule"),
-	columnName: z.string(),
+	propertyName: z.string(),
 	operator: comparisonOperatorSchema,
 	value: pagePropertyValueSchema,
 });
@@ -100,11 +100,11 @@ function evaluateGroup(row: SelectPage, group: Group): boolean {
 }
 
 function evaluateRule(row: SelectPage, rule: Rule): boolean {
-	const { operator, value: targetValue, columnName } = rule;
-	if (!(columnName in row)) {
-		throw new Error(`Column ${columnName} does not exist in the row`);
+	const { operator, value: targetValue, propertyName } = rule;
+	if (!(propertyName in row)) {
+		throw new Error(`Column ${propertyName} does not exist in the row`);
 	}
-	const currentValue = row[columnName as keyof SelectPage];
+	const currentValue = row[propertyName as keyof SelectPage];
 	// currentValue [operator] targetValue
 	switch (operator) {
 		case "==":
@@ -199,11 +199,11 @@ function groupToWhereClause(group: Group): SQL {
 }
 
 function ruleToWhereClause(rule: Rule): SQL {
-	const { columnName, operator, value } = rule;
-	if (!(columnName in pagesTable)) {
-		throw new Error(`Column ${columnName} does not exist in the pages table`);
+	const { propertyName, operator, value } = rule;
+	if (!(propertyName in pagesTable)) {
+		throw new Error(`Column ${propertyName} does not exist in the pages table`);
 	}
-	const currentValue = pagesTable[columnName as keyof SelectPage];
+	const currentValue = pagesTable[propertyName as keyof SelectPage];
 	switch (operator) {
 		case "==":
 			return eq(currentValue, value);
