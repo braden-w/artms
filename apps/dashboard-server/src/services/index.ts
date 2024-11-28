@@ -31,34 +31,10 @@ export function createCtxServices(db: Database) {
 
 function createColumnServices(db: Database) {
 	return {
-		getAllColumns: async () => {
-			const allColumns = await db.query.columnsTable.findMany({
+		getAllColumns: () =>
+			db.query.columnsTable.findMany({
 				orderBy: asc(columnsTable.position),
-			});
-			const isLocalColumnsUpToDate = areArraysEqual(
-				COLUMNS_IN_DATABASE,
-				allColumns,
-			);
-			if (!isLocalColumnsUpToDate) {
-				const columnsWithPositionsConvertedToSequenceOfInts = allColumns.map(
-					({ position, ...c }, i) => ({ ...c, position: i }),
-				);
-				const fileContent = `import type { Column } from '@repo/db/schema';
-
-export const columnsInDatabase = ${JSON.stringify(columnsWithPositionsConvertedToSequenceOfInts, null, 2)} as const satisfies Column[];
-
-export type ColumnInDatabase = (typeof columnsInDatabase)[number];
-`.trim();
-				await writeFile(COLUMNS_IN_DB_FILE_PATH, fileContent);
-				await execa("pnpm", [
-					"biome",
-					"check",
-					"--write",
-					COLUMNS_IN_DB_FILE_PATH,
-				]);
-			}
-			return COLUMNS_IN_DATABASE;
-		},
+			}),
 		setColumnByName: (column: Column) =>
 			db
 				.update(columnsTable)
@@ -176,6 +152,7 @@ function createSyncServices({
 	db,
 	columnServices,
 }: { db: Database; columnServices: ReturnType<typeof createColumnServices> }) {
+	const columnsServices = createColumnServices(db);
 	const getAllPageProperties = () =>
 		db
 			.select({ name: sql<string>`name` })
@@ -183,7 +160,32 @@ function createSyncServices({
 			.then((columns) => columns.map((column) => column.name));
 	return {
 		columns: {
-			down: async () => {},
+			down: async () => {
+				const allColumns = await columnsServices.getAllColumns();
+				const isLocalColumnsUpToDate = areArraysEqual(
+					COLUMNS_IN_DATABASE,
+					allColumns,
+				);
+				if (!isLocalColumnsUpToDate) {
+					const columnsWithPositionsConvertedToSequenceOfInts = allColumns.map(
+						({ position, ...c }, i) => ({ ...c, position: i }),
+					);
+					const fileContent = `import type { Column } from '@repo/db/schema';
+
+export const columnsInDatabase = ${JSON.stringify(columnsWithPositionsConvertedToSequenceOfInts, null, 2)} as const satisfies Column[];
+
+export type ColumnInDatabase = (typeof columnsInDatabase)[number];
+`.trim();
+					await writeFile(COLUMNS_IN_DB_FILE_PATH, fileContent);
+					await execa("pnpm", [
+						"biome",
+						"check",
+						"--write",
+						COLUMNS_IN_DB_FILE_PATH,
+					]);
+				}
+				return COLUMNS_IN_DATABASE;
+			},
 		},
 		syncColumnsToPageProperties: async () => {
 			const columnsInDb = await columnServices.getAllColumns();
