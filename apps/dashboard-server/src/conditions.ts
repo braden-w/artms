@@ -21,8 +21,8 @@ import {
 } from "drizzle-orm";
 import { z } from "zod";
 
-// Constants for comparison, non-comparison, and logical operators
-export const comparisonOperators = [
+// Constants for comparison, non-comparison, and group operators
+export const COMPARISON_OPERATORS = [
 	"==",
 	"!=",
 	">",
@@ -40,60 +40,38 @@ export const comparisonOperators = [
 	"is not empty",
 ] as const;
 
-const LOGICAL_OPERATORS = ["AND", "OR"] as const;
+const COMBINE_OPERATORS = ["AND", "OR"] as const;
 
-// Types derived from constants
-const combineOperatorSchema = z.enum(LOGICAL_OPERATORS);
+const combineOperatorSchema = z.enum(COMBINE_OPERATORS);
 type CombineOperator = z.infer<typeof combineOperatorSchema>;
 
-// Union type for Condition
-const conditionSchema = z.object({
+const filterConditionSchema = z.object({
 	type: z.literal("condition"),
 	columnName: z.string(),
-	operator: z.enum(comparisonOperators),
+	operator: z.enum(COMPARISON_OPERATORS),
 	value: pagePropertyValueSchema,
 });
-type Condition = z.infer<typeof conditionSchema>;
 
-type ConditionUntypedColumnName = Omit<Condition, "columnName"> & {
-	columnName: string;
+type FilterCondition = z.infer<typeof filterConditionSchema>;
+
+type FilterGroup = {
+	type: "group";
+	combinator: CombineOperator;
+	conditions: (FilterCondition | FilterGroup)[];
 };
 
-// Recursive definition for Filter
-type LogicalGroup = {
-	type: "logical";
-	operator: CombineOperator;
-	conditions: Filter[];
-};
-
-// Union type for Filter
-export type Filter = Condition | LogicalGroup;
-
-type LogicalGroupUntypedColumnName = {
-	type: "logical";
-	operator: CombineOperator;
-	conditions: FilterUntypedColumnName[];
-};
-
-type FilterUntypedColumnName =
-	| ConditionUntypedColumnName
-	| LogicalGroupUntypedColumnName;
-
-export const filterSchema: z.ZodType<
-	Filter,
-	z.ZodTypeDef,
-	FilterUntypedColumnName
-> = z.union([
-	conditionSchema,
+export const filterGroupSchema: z.ZodType<FilterGroup> = z.lazy(() =>
 	z.object({
-		type: z.literal("logical"),
-		operator: z.enum(LOGICAL_OPERATORS),
-		conditions: z.array(z.lazy(() => filterSchema)),
+		type: z.literal("group"),
+		combinator: combineOperatorSchema,
+		conditions: z.array(z.union([filterConditionSchema, filterGroupSchema])),
 	}),
-]);
+);
 
-// Function to evaluate the filter (simplified for illustration)
-function evaluateCondition(row: SelectPage, condition: Condition): boolean {
+function evaluateCondition(
+	row: SelectPage,
+	condition: FilterCondition,
+): boolean {
 	const { operator, value: targetValue, columnName } = condition;
 	if (!(columnName in row)) {
 		throw new Error(`Column ${columnName} does not exist in the row`);
@@ -171,7 +149,7 @@ export function evaluateFilter(row: SelectPage, filter: Filter): boolean {
 	switch (filter.type) {
 		case "condition":
 			return evaluateCondition(row, filter);
-		case "logical": {
+		case "group": {
 			const results = filter.conditions.map((cond) =>
 				evaluateFilter(row, cond),
 			);
@@ -189,7 +167,7 @@ export function evaluateFilter(row: SelectPage, filter: Filter): boolean {
 
 export function buildWhereClause(filter: Filter): SQL | undefined {
 	if (filter.type === "condition") return buildCondition(filter);
-	if (filter.type === "logical") {
+	if (filter.type === "group") {
 		const subClauses = filter.conditions.map(buildWhereClause);
 		switch (filter.operator) {
 			case "AND":
@@ -201,7 +179,7 @@ export function buildWhereClause(filter: Filter): SQL | undefined {
 	throw new Error("Invalid filter type");
 }
 
-function buildCondition(condition: Condition): SQL | undefined {
+function buildCondition(condition: FilterCondition): SQL | undefined {
 	const { columnName, operator, value } = condition;
 	if (!(columnName in pagesTable)) {
 		throw new Error(`Column ${columnName} does not exist in the pages table`);
