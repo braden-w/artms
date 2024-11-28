@@ -142,7 +142,7 @@ export function DataTable() {
 			},
 		});
 
-	const { mutate: deletePage, isPending: isDeletePending } =
+	const { mutate: deletePageById, isPending: isDeletePending } =
 		trpc.pages.deletePageById.useMutation({
 			onMutate: async ({ id }) => {
 				await utils.pages.getPagesByWhereClause.cancel();
@@ -224,7 +224,7 @@ export function DataTable() {
 		// 					variant="ghost"
 		// 					size="icon"
 		// 					onClick={async () => {
-		// 						deletePage(page.id);
+		// 						deletePageById(page.id);
 		// 						toast.success("Success", { description: "Row deleted!" });
 		// 					}}
 		// 				>
