@@ -45,34 +45,32 @@ const COMBINE_OPERATORS = ["AND", "OR"] as const;
 const combineOperatorSchema = z.enum(COMBINE_OPERATORS);
 type CombineOperator = z.infer<typeof combineOperatorSchema>;
 
-type RuleOrGroup = FilterRule | FilterGroup;
+type RuleOrGroup = Rule | Group;
 
-const filterRuleSchema = z.object({
+const ruleSchema = z.object({
 	type: z.literal("condition"),
 	columnName: z.string(),
 	operator: comparisonOperatorSchema,
 	value: pagePropertyValueSchema,
 });
-type FilterRule = z.infer<typeof filterRuleSchema>;
+type Rule = z.infer<typeof ruleSchema>;
 
-const filterGroupSchema: z.ZodType<FilterGroup> = z.lazy(() =>
+const groupSchema: z.ZodType<Group> = z.lazy(() =>
 	z.object({
 		type: z.literal("group"),
 		combinator: combineOperatorSchema,
-		rulesOrGroups: z
-			.array(z.union([filterRuleSchema, filterGroupSchema]))
-			.nonempty(),
+		rulesOrGroups: z.array(z.union([ruleSchema, groupSchema])).nonempty(),
 	}),
 );
-type FilterGroup = {
+type Group = {
 	type: "group";
 	combinator: CombineOperator;
 	rulesOrGroups: [RuleOrGroup, ...RuleOrGroup[]];
 };
 
 // Top level filter type
-export type Filter = FilterGroup;
-export const filterSchema = filterGroupSchema;
+export type Filter = Group;
+export const filterSchema = groupSchema;
 
 export function evaluateFilter(row: SelectPage, filter: Filter): boolean {
 	return evaluateGroup(row, filter);
@@ -88,7 +86,7 @@ function evaluateRuleOrGroup(
 	return evaluateGroup(row, ruleOrGroup);
 }
 
-function evaluateGroup(row: SelectPage, group: FilterGroup): boolean {
+function evaluateGroup(row: SelectPage, group: Group): boolean {
 	const results = group.rulesOrGroups.map((ruleOrGroup) =>
 		evaluateRuleOrGroup(row, ruleOrGroup),
 	);
@@ -101,7 +99,7 @@ function evaluateGroup(row: SelectPage, group: FilterGroup): boolean {
 	}
 }
 
-function evaluateRule(row: SelectPage, rule: FilterRule): boolean {
+function evaluateRule(row: SelectPage, rule: Rule): boolean {
 	const { operator, value: targetValue, columnName } = rule;
 	if (!(columnName in row)) {
 		throw new Error(`Column ${columnName} does not exist in the row`);
@@ -192,7 +190,7 @@ function ruleOrGroupToWhereClause(ruleOrGroup: RuleOrGroup): SQL {
 	return groupToWhereClause(ruleOrGroup);
 }
 
-function groupToWhereClause(group: FilterGroup): SQL {
+function groupToWhereClause(group: Group): SQL {
 	const subClauses = group.rulesOrGroups.map(ruleOrGroupToWhereClause) as [
 		SQL,
 		...SQL[],
@@ -208,7 +206,7 @@ function groupToWhereClause(group: FilterGroup): SQL {
 	}
 }
 
-function ruleToWhereClause(condition: FilterRule): SQL {
+function ruleToWhereClause(condition: Rule): SQL {
 	const { columnName, operator, value } = condition;
 	if (!(columnName in pagesTable)) {
 		throw new Error(`Column ${columnName} does not exist in the pages table`);
