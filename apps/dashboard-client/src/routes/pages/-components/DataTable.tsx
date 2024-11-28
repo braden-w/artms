@@ -35,7 +35,7 @@ import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Route } from "..";
 import { RenderValue } from "./RenderValue";
-import { generateDefaultPage } from "@repo/dashboard-server/utils";
+import { generateDefaultPage, isString } from "@repo/dashboard-server/utils";
 
 export function DataTable() {
 	const tableParams = Route.useSearch();
@@ -404,13 +404,14 @@ export function DataTable() {
 									.map((column) => (
 										<DropdownMenuCheckboxItem
 											key={column.id}
-											className="capitalize"
 											checked={column.getIsVisible()}
 											onCheckedChange={(value) =>
 												column.toggleVisibility(!!value)
 											}
 										>
-											{column.id.replaceAll("_", " ")}
+											{isString(column.columnDef.header)
+												? column.columnDef.header
+												: column.id.replaceAll("_", " ")}
 										</DropdownMenuCheckboxItem>
 									))}
 							</DropdownMenuContent>
