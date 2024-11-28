@@ -8,43 +8,45 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-import { DEFAULT_TAG_COLOR } from "@/constants";
-import { cn, isStringArray } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { ColumnInDatabase } from "@repo/dashboard-server/COLUMNS_IN_DATABASE";
 import type {
 	PagePropertyValue,
 	SelectPage,
 } from "@repo/dashboard-server/schema";
+// import { TiptapEditor } from "@/components/tip-tap/TiptapEditor";
+import { isStringArray } from "@repo/dashboard-server/utils";
 import { parseDate } from "chrono-node";
 import { parseISO } from "date-fns";
 import { format, formatInTimeZone } from "date-fns-tz";
 import { CalendarIcon } from "lucide-react";
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 import { FancyBox } from "./FancyBox";
-import { TiptapEditor } from "@/components/tip-tap/TiptapEditor";
+import { evaluateFilter } from "@repo/dashboard-server/conditions";
 
 export type SaveStatus = "Saved" | "Unsaved";
 
 export function RenderValue({
 	value,
 	column,
-	isDisabled = false,
-	saveStatus,
+	isSaving,
 	onChange: externalOnChange,
 	onBlur,
 	page,
 }: {
 	value: PagePropertyValue;
 	column: ColumnInDatabase;
-	isDisabled?: boolean;
-	saveStatus: SaveStatus;
+	isSaving: boolean;
 	onChange: (newValue: PagePropertyValue) => void;
-	onBlur: () => void;
+	onBlur: (internalValue: PagePropertyValue) => void;
 	page: SelectPage;
 }) {
+	const isDisabled =
+		(column.filter && !evaluateFilter(page, column.filter)) ?? false;
+	const saveStatus: SaveStatus = isSaving ? "Unsaved" : "Saved";
 	const TRIGGER_CLASS = cn(
 		buttonVariants({ variant: !isDisabled ? "ghost" : "secondary" }),
 		"h-full w-full justify-start truncate rounded-none py-0 font-normal min-h-10",
@@ -87,7 +89,7 @@ export function RenderValue({
 					className="rounded-none"
 					value={displayValue}
 					onChange={(e) => onChange(e.target.value)}
-					onBlur={onBlur}
+					onBlur={(e) => onBlur(e.target.value)}
 					disabled={isDisabled}
 				/>
 			);
@@ -107,7 +109,8 @@ export function RenderValue({
 							id={id}
 							value={displayValue}
 							onChange={(e) => onChange(e.target.value)}
-							onBlur={onBlur}
+							onBlur={(e) => onBlur(e.target.value)}
+							disabled={isDisabled}
 						/>
 					</PopoverContent>
 				</Popover>
@@ -116,7 +119,7 @@ export function RenderValue({
 			return (
 				<Dialog
 					onOpenChange={(isOpen) => {
-						if (!isOpen) onBlur();
+						if (!isOpen) onBlur(internalValue);
 					}}
 				>
 					<DialogTrigger asChild>
@@ -141,7 +144,7 @@ export function RenderValue({
 					dateDisplayFormat={column.dateDisplayFormat}
 					saveStatus={saveStatus}
 					setValue={onChange}
-					onPopoverClose={onBlur}
+					onPopoverClose={() => onBlur(internalValue)}
 					disabled={isDisabled}
 					className={TRIGGER_CLASS}
 					page={page}
@@ -153,7 +156,7 @@ export function RenderValue({
 					value={displayValue}
 					column={column}
 					setValue={onChange}
-					onPopoverClose={onBlur}
+					onPopoverClose={() => onBlur(internalValue)}
 					disabled={isDisabled}
 					className={TRIGGER_CLASS}
 				/>
@@ -164,7 +167,7 @@ export function RenderValue({
 					value={isStringArray(value) ? value : []}
 					column={column}
 					setValue={onChange}
-					onPopoverClose={onBlur}
+					onPopoverClose={() => onBlur(internalValue)}
 					disabled={isDisabled}
 					className={TRIGGER_CLASS}
 				/>
@@ -177,7 +180,7 @@ export function RenderValue({
 						if (value === "indeterminate") return;
 						const newValue = value ? "TRUE" : "FALSE";
 						onChange(newValue);
-						onBlur();
+						onBlur(newValue);
 					}}
 					disabled={isDisabled}
 				/>
