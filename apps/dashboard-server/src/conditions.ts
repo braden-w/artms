@@ -191,15 +191,18 @@ function ruleOrGroupToWhereClause(ruleOrGroup: FilterRule | FilterGroup): SQL {
 }
 
 function groupToWhereClause(group: FilterGroup): SQL {
-	const subClauses = group.rulesOrGroups.map(ruleOrGroupToWhereClause);
+	const subClauses = group.rulesOrGroups.map(ruleOrGroupToWhereClause) as [
+		SQL,
+		...SQL[],
+	];
 
 	switch (group.combinator) {
 		case "AND":
-			return and(...subClauses);
+			return and(...subClauses) as SQL;
 		case "OR":
-			return or(...subClauses);
+			return or(...subClauses) as SQL;
 		default:
-			return and(...subClauses);
+			return and(...subClauses) as SQL;
 	}
 }
 
