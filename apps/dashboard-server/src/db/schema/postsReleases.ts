@@ -1,10 +1,10 @@
+import { assetsTable } from "#db/schema/assets";
+import { users } from "#db/schema/auth";
+import { pagesTable } from "#db/schema/pages";
 import { nanoid } from "#utils";
 import { relations } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { assetsTable } from "./assets";
-import { pagesTable } from "./pages";
 import { createSelectSchema } from "drizzle-zod";
-import { users } from "./auth";
 
 export const audiencesTable = sqliteTable("audiences", {
 	id: text()

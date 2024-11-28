@@ -20,7 +20,7 @@ import {
 	type SelectPage,
 	pagePropertyValueSchema,
 	pagesTable,
-} from "./db/schema/pages";
+} from "#db/schema/pages";
 
 // Constants for comparison, non-comparison, and logical operators
 export const comparisonOperators = [

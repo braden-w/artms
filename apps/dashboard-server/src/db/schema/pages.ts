@@ -1,10 +1,10 @@
+import { COLUMNS_IN_DATABASE } from "#db/COLUMNS_IN_DATABASE";
+import { embeddings } from "#db/schema/embeddings";
+import { releasesTable } from "#db/schema/postsReleases";
+import { nanoid } from "#utils";
 import { relations } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { z } from "zod";
-import { COLUMNS_IN_DATABASE } from "#db/COLUMNS_IN_DATABASE";
-import { nanoid } from "#utils";
-import { embeddings } from "./embeddings";
-import { releasesTable } from "./postsReleases";
 
 const SINGLE_VALUE_PROPERTIES = COLUMNS_IN_DATABASE.filter(
 	(column) => column.isArray === false,

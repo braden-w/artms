@@ -1,9 +1,9 @@
 import { customAlphabet } from "nanoid";
-import type { SelectPage } from "./db/schema/pages";
+import type { SelectPage } from "#db/schema/pages";
 import {
 	type ColumnInDatabase,
 	COLUMNS_IN_DATABASE,
-} from "./db/COLUMNS_IN_DATABASE";
+} from "#db/COLUMNS_IN_DATABASE";
 
 const NANO_ID_CHARS = "0123456789abcdefghijklmnopqrstuvwxyz";
 const NANO_ID_LENGTH = 21;

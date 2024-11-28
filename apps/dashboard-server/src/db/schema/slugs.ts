@@ -1,7 +1,7 @@
+import { pagesTable } from "#db/schema/pages";
 import { nanoid } from "#utils";
 import { relations, sql } from "drizzle-orm";
 import { sqliteTable, text, unique } from "drizzle-orm/sqlite-core";
-import { pagesTable } from "./pages";
 
 export const slugsTable = sqliteTable(
 	"slugs",

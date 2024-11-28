@@ -1,4 +1,4 @@
-import type { Column } from "./schema/columns";
+import type { Column } from "#db/schema/columns";
 
 export const COLUMNS_IN_DATABASE = [
 	{

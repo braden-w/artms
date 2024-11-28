@@ -1,8 +1,8 @@
+import { pagesTable } from "#db/schema/pages";
+import { releasesTable } from "#db/schema/postsReleases";
 import type { ContributorInfo, MediaMetadata } from "#googlePhotos";
 import { relations } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { pagesTable } from "./pages";
-import { releasesTable } from "./postsReleases";
 
 export const assetsTable = sqliteTable("assets", {
 	id: text().primaryKey(),
