@@ -1,4 +1,7 @@
-import { DEFAULT_DATE_DISPLAY_FORMAT } from "#constants";
+import {
+	COLUMNS_IN_DB_FILE_PATH,
+	DEFAULT_DATE_DISPLAY_FORMAT,
+} from "#constants";
 import { COLUMNS_IN_DATABASE } from "#db/COLUMNS_IN_DATABASE";
 import type {
 	Column,
@@ -12,6 +15,8 @@ import { generateDefaultPage } from "#utils";
 import { TRPCError } from "@trpc/server";
 import { asc, eq, sql } from "drizzle-orm";
 import { getTableConfig } from "drizzle-orm/sqlite-core";
+import { writeFile } from "node:fs/promises";
+import { execa } from "execa";
 
 export function createCtxServices(db: Database) {
 	const columnServices = createColumnServices(db);
@@ -26,10 +31,34 @@ export function createCtxServices(db: Database) {
 
 function createColumnServices(db: Database) {
 	return {
-		getAllColumns: () =>
-			db.query.columnsTable.findMany({
+		getAllColumns: async () => {
+			const allColumns = await db.query.columnsTable.findMany({
 				orderBy: asc(columnsTable.position),
-			}),
+			});
+			const isLocalColumnsUpToDate = areArraysEqual(
+				COLUMNS_IN_DATABASE,
+				allColumns,
+			);
+			if (!isLocalColumnsUpToDate) {
+				const columnsWithPositionsConvertedToSequenceOfInts = allColumns.map(
+					({ position, ...c }, i) => ({ ...c, position: i }),
+				);
+				const fileContent = `import type { Column } from '@repo/db/schema';
+
+export const columnsInDatabase = ${JSON.stringify(columnsWithPositionsConvertedToSequenceOfInts, null, 2)} as const satisfies Column[];
+
+export type ColumnInDatabase = (typeof columnsInDatabase)[number];
+`.trim();
+				await writeFile(COLUMNS_IN_DB_FILE_PATH, fileContent);
+				await execa("pnpm", [
+					"biome",
+					"check",
+					"--write",
+					COLUMNS_IN_DB_FILE_PATH,
+				]);
+			}
+			return COLUMNS_IN_DATABASE;
+		},
 		setColumnByName: (column: Column) =>
 			db
 				.update(columnsTable)
@@ -153,6 +182,9 @@ function createSyncServices({
 			.from(sql`pragma_table_info(${getTableConfig(pagesTable).name})`)
 			.then((columns) => columns.map((column) => column.name));
 	return {
+		columns: {
+			down: async () => {},
+		},
 		syncColumnsToPageProperties: async () => {
 			const columnsInDb = await columnServices.getAllColumns();
 			const lastColPos = Math.max(0, ...columnsInDb.map((c) => c.position));
@@ -180,4 +212,19 @@ function createSyncServices({
 			return columnsInDbWithMissingColumns;
 		},
 	};
+}
+
+function areArraysEqual<T extends Record<string, unknown>>(
+	array1: T[],
+	array2: T[],
+) {
+	if (array1.length !== array2.length) return false;
+	return array1.every((obj1, i) => {
+		const obj2 = array2[i];
+		if (!obj2) return false;
+		const areObjsDeepEqual =
+			Object.keys(obj1).length === Object.keys(obj2).length &&
+			Object.keys(obj1).every((key) => obj1[key] === obj2[key]);
+		return areObjsDeepEqual;
+	});
 }
