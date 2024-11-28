@@ -38,7 +38,8 @@ import { RenderValue } from "./RenderValue";
 import { generateDefaultPage } from "@repo/dashboard-server/utils";
 
 export function DataTable() {
-	const { filter, orderBy, limit, offset } = Route.useSearch();
+	const tableParams = Route.useSearch();
+	const { filter, orderBy, limit, offset } = tableParams;
 	const navigate = useNavigate();
 	const utils = trpc.useUtils();
 
@@ -46,26 +47,17 @@ export function DataTable() {
 		data: { pageOfPages, allColumns } = { pageOfPages: [], allColumns: [] },
 		isPending: isPagesPending,
 		error: pagesError,
-	} = trpc.pages.getPagesByWhereClause.useQuery({
-		filter,
-		orderBy,
-		limit,
-		offset,
-	});
+	} = trpc.pages.getPagesByWhereClause.useQuery(tableParams);
 
 	const { mutate: replacePage, isPending: isReplacePagePending } =
 		trpc.pages.replacePage.useMutation({
 			onMutate: async (newPage) => {
 				skipAutoResetPageIndex();
 				await utils.pages.getPagesByWhereClause.cancel();
-				const prevPages = utils.pages.getPagesByWhereClause.getData({
-					filter,
-					orderBy,
-					limit,
-					offset,
-				});
+				const prevPages =
+					utils.pages.getPagesByWhereClause.getData(tableParams);
 				utils.pages.getPagesByWhereClause.setData(
-					{ filter, orderBy, limit, offset },
+					tableParams,
 					(oldPageOfPages) => {
 						if (!oldPageOfPages) return;
 						const { pageOfPages, allColumns } = oldPageOfPages;
@@ -84,17 +76,12 @@ export function DataTable() {
 			onError: (err, newPage, context) => {
 				if (!context) return;
 				utils.pages.getPagesByWhereClause.setData(
-					{ filter, orderBy, limit, offset },
+					tableParams,
 					context.prevPages,
 				);
 			},
 			onSettled: () => {
-				utils.pages.getPagesByWhereClause.invalidate({
-					filter,
-					orderBy,
-					limit,
-					offset,
-				});
+				utils.pages.getPagesByWhereClause.invalidate(tableParams);
 			},
 			onSuccess: () => {
 				toast.success("Saved", {
@@ -108,14 +95,10 @@ export function DataTable() {
 			onMutate: async (newPage) => {
 				skipAutoResetPageIndex();
 				await utils.pages.getPagesByWhereClause.cancel();
-				const prevPages = utils.pages.getPagesByWhereClause.getData({
-					filter,
-					orderBy,
-					limit,
-					offset,
-				});
+				const prevPages =
+					utils.pages.getPagesByWhereClause.getData(tableParams);
 				utils.pages.getPagesByWhereClause.setData(
-					{ filter, orderBy, limit, offset },
+					tableParams,
 					(oldPageOfPages) => {
 						if (!oldPageOfPages) return;
 						const { pageOfPages, allColumns } = oldPageOfPages;
@@ -130,17 +113,12 @@ export function DataTable() {
 			onError: (err, newPage, context) => {
 				if (!context) return;
 				utils.pages.getPagesByWhereClause.setData(
-					{ filter, orderBy, limit, offset },
+					tableParams,
 					context.prevPages,
 				);
 			},
 			onSettled: () => {
-				utils.pages.getPagesByWhereClause.invalidate({
-					filter,
-					orderBy,
-					limit,
-					offset,
-				});
+				utils.pages.getPagesByWhereClause.invalidate(tableParams);
 			},
 			onSuccess: () => {
 				toast.success("Success", { description: "Row added!" });
@@ -156,14 +134,10 @@ export function DataTable() {
 		trpc.pages.deletePageById.useMutation({
 			onMutate: async ({ id }) => {
 				await utils.pages.getPagesByWhereClause.cancel();
-				const prevPages = utils.pages.getPagesByWhereClause.getData({
-					filter,
-					orderBy,
-					limit,
-					offset,
-				});
+				const prevPages =
+					utils.pages.getPagesByWhereClause.getData(tableParams);
 				utils.pages.getPagesByWhereClause.setData(
-					{ filter, orderBy, limit, offset },
+					tableParams,
 					(oldPageOfPages) => {
 						if (!oldPageOfPages) return;
 						const { pageOfPages, allColumns } = oldPageOfPages;
@@ -178,17 +152,12 @@ export function DataTable() {
 			onError: (err, { id }, context) => {
 				if (!context) return;
 				utils.pages.getPagesByWhereClause.setData(
-					{ filter, orderBy, limit, offset },
+					tableParams,
 					context.prevPages,
 				);
 			},
 			onSettled: () => {
-				utils.pages.getPagesByWhereClause.invalidate({
-					filter,
-					orderBy,
-					limit,
-					offset,
-				});
+				utils.pages.getPagesByWhereClause.invalidate(tableParams);
 			},
 			onSuccess: () => {
 				toast.success("Saved", {
@@ -205,7 +174,7 @@ export function DataTable() {
 			cell: ({ getValue, row }) => {
 				const pageId = getValue<string>();
 				const correspondingPageInCache = utils.pages.getPagesByWhereClause
-					.getData({ filter, orderBy, limit, offset })
+					.getData(tableParams)
 					?.pageOfPages.find((p) => p.id === pageId);
 				if (!correspondingPageInCache) return null;
 				return (
@@ -248,12 +217,7 @@ export function DataTable() {
 						const utils = trpc.useUtils();
 						const pageId = getValue<string>();
 						const correspondingPageInCache = utils.pages.getPagesByWhereClause
-							.getData({
-								filter,
-								orderBy,
-								limit,
-								offset,
-							})
+							.getData(tableParams)
 							?.pageOfPages.find((p) => p.id === pageId);
 						if (!correspondingPageInCache) return null;
 						return (
