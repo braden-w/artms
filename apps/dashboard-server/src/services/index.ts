@@ -5,8 +5,8 @@ import type {
 	InsertPage,
 	PagePropertyValue,
 	SelectPage,
-} from "#db/schema";
-import { columnsTable, pagesTable } from "#db/schema";
+} from "#db/schema/index";
+import { columnsTable, pagesTable } from "#db/schema/index";
 import type { Database } from "#trpc";
 import { generateDefaultPage } from "#utils";
 import { TRPCError } from "@trpc/server";

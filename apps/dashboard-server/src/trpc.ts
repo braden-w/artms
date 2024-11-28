@@ -1,7 +1,7 @@
 import { env } from "hono/adapter";
-import * as schema from "#db/schema";
+import * as schema from "#db/schema/index";
 import { validateEnv } from "#env";
-import { createCtxServices } from "#services";
+import { createCtxServices } from "#services/index";
 import { createClient as createLibsqlClient } from "@libsql/client";
 import { TRPCError, initTRPC } from "@trpc/server";
 import { drizzle } from "drizzle-orm/libsql";
