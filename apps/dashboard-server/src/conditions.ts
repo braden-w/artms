@@ -39,26 +39,19 @@ export const COMPARISON_OPERATORS = [
 	"is empty",
 	"is not empty",
 ] as const;
+const comparisonOperatorSchema = z.enum(COMPARISON_OPERATORS);
 
 const COMBINE_OPERATORS = ["AND", "OR"] as const;
-
 const combineOperatorSchema = z.enum(COMBINE_OPERATORS);
 type CombineOperator = z.infer<typeof combineOperatorSchema>;
 
 const filterConditionSchema = z.object({
 	type: z.literal("condition"),
 	columnName: z.string(),
-	operator: z.enum(COMPARISON_OPERATORS),
+	operator: comparisonOperatorSchema,
 	value: pagePropertyValueSchema,
 });
-
 type FilterCondition = z.infer<typeof filterConditionSchema>;
-
-type FilterGroup = {
-	type: "group";
-	combinator: CombineOperator;
-	conditions: (FilterCondition | FilterGroup)[];
-};
 
 export const filterGroupSchema: z.ZodType<FilterGroup> = z.lazy(() =>
 	z.object({
@@ -67,6 +60,11 @@ export const filterGroupSchema: z.ZodType<FilterGroup> = z.lazy(() =>
 		conditions: z.array(z.union([filterConditionSchema, filterGroupSchema])),
 	}),
 );
+type FilterGroup = {
+	type: "group";
+	combinator: CombineOperator;
+	conditions: (FilterCondition | FilterGroup)[];
+};
 
 function evaluateCondition(
 	row: SelectPage,
