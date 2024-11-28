@@ -10,6 +10,10 @@ export const pagesRouter = router({
 		ctx.services.pages.getAllPages(),
 	),
 
+	getPageById: protectedProcedure
+		.input(z.object({ id: z.string() }))
+		.query(({ ctx, input: { id } }) => ctx.services.pages.getPageById(id)),
+
 	setPage: protectedProcedure
 		.input(selectPageSchema)
 		.mutation(({ ctx, input }) => ctx.services.pages.setPage(input)),
