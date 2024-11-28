@@ -171,21 +171,36 @@ function evaluateRule(row: SelectPage, rule: FilterRule): boolean {
 	}
 }
 
-export function buildWhereClause(filter: Filter): SQL | undefined {
-	if (filter.type === "condition") return buildCondition(filter);
-	if (filter.type === "group") {
-		const subClauses = filter.rulesOrGroups.map(buildWhereClause);
-		switch (filter.operator) {
-			case "AND":
-				return and(...subClauses);
-			case "OR":
-				return or(...subClauses);
-		}
+export function filterToWhereClause(filter: Filter): SQL | undefined {
+	const isMoreThanOneRuleOrGroup = filter.rulesOrGroups.length > 1;
+	if (isMoreThanOneRuleOrGroup) return groupToWhereClause(filter);
+
+	const [firstRuleOrGroup] = filter.rulesOrGroups;
+	const isFirstRule = firstRuleOrGroup?.type === "condition";
+	if (isFirstRule) {
+		const firstRule = firstRuleOrGroup;
+		return ruleToWhereClause(firstRule);
 	}
-	throw new Error("Invalid filter type");
 }
 
-function buildCondition(condition: FilterRule): SQL | undefined {
+function ruleOrGroupToWhereClause(
+	ruleOrGroup: FilterRule | FilterGroup,
+): SQL | undefined {
+	if (ruleOrGroup.type === "condition") return ruleToWhereClause(ruleOrGroup);
+	return groupToWhereClause(ruleOrGroup);
+}
+
+function groupToWhereClause(group: FilterGroup): SQL | undefined {
+	const subClauses = group.rulesOrGroups.map(ruleOrGroupToWhereClause);
+	switch (group.combinator) {
+		case "AND":
+			return and(...subClauses);
+		case "OR":
+			return or(...subClauses);
+	}
+}
+
+function ruleToWhereClause(condition: FilterRule): SQL | undefined {
 	const { columnName, operator, value } = condition;
 	if (!(columnName in pagesTable)) {
 		throw new Error(`Column ${columnName} does not exist in the pages table`);
