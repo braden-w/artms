@@ -3,12 +3,7 @@ import {
 	DEFAULT_DATE_DISPLAY_FORMAT,
 } from "#constants";
 import { COLUMNS_IN_DATABASE } from "#db/COLUMNS_IN_DATABASE";
-import type {
-	Column,
-	InsertPage,
-	PagePropertyValue,
-	SelectPage,
-} from "#db/schema/index";
+import type { Column, PagePropertyValue, SelectPage } from "#db/schema/index";
 import { columnsTable, pagesTable } from "#db/schema/index";
 import type { Database } from "#trpc";
 import { generateDefaultPage } from "#utils";
@@ -73,7 +68,21 @@ function createPageService(db: Database) {
 		},
 		getPageById: (id: string) =>
 			db.query.pagesTable.findFirst({ where: eq(pagesTable.id, id) }),
-		createPage: async (partialPage?: InsertPage) => {
+		createDefaultPage: async () => {
+			const newPage = generateDefaultPage();
+			const [insertedPage] = await db
+				.insert(pagesTable)
+				.values(newPage)
+				.returning();
+			if (!insertedPage) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: `Failed to insert page with id ${newPage.id}`,
+				});
+			}
+			return insertedPage;
+		},
+		createPageWithInitialData: async (partialPage: Partial<SelectPage>) => {
 			const newPage = generateDefaultPage(partialPage);
 			const [insertedPage] = await db
 				.insert(pagesTable)
@@ -87,7 +96,8 @@ function createPageService(db: Database) {
 			}
 			return insertedPage;
 		},
-		insertPages: async (pages: InsertPage[]) => {
+		addPage: (page: SelectPage) => db.insert(pagesTable).values(page),
+		addPages: async (pages: SelectPage[]) => {
 			const rowsChunks = chunkArray(pages, 500);
 			for (const rowChunk of rowsChunks) {
 				await db.insert(pagesTable).values(rowChunk);

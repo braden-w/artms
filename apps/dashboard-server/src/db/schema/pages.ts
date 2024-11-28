@@ -82,9 +82,9 @@ export const selectPageSchema = z.object({
 
 export type SelectPage = z.infer<typeof selectPageSchema>;
 
-export const insertPageSchema = selectPageSchema.omit({ id: true }).partial();
+const insertPageSchema = selectPageSchema.partial();
 
-export type InsertPage = z.infer<typeof insertPageSchema>;
+type InsertPage = z.infer<typeof insertPageSchema>;
 
 export const markdownPageSchema = insertPageSchema.extend({ id: z.string() });
 export type MarkdownPage = z.infer<typeof markdownPageSchema>;

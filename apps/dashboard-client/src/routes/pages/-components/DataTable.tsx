@@ -101,8 +101,8 @@ export function DataTable() {
 			},
 		});
 
-	const { mutate: createPage, isPending: isInsertPending } =
-		trpc.pages.createPage.useMutation({
+	const { mutate: addPage, isPending: isAddPagePending } =
+		trpc.pages.addPage.useMutation({
 			onMutate: async (newPage) => {
 				await utils.pages.getPagesByWhereClause.cancel();
 				const prevPages = utils.pages.getPagesByWhereClause.getData({
@@ -115,9 +115,10 @@ export function DataTable() {
 					{ filter, orderBy, limit, offset },
 					(oldPageOfPages) => {
 						if (!oldPageOfPages) return;
+						const { pageOfPages, allColumns } = oldPageOfPages;
 						return {
-							pageOfPages: [...oldPageOfPages.pageOfPages, newPage],
-							allColumns: oldPageOfPages.allColumns,
+							pageOfPages: [...pageOfPages, newPage],
+							allColumns,
 						};
 					},
 				);
@@ -143,7 +144,7 @@ export function DataTable() {
 			},
 		});
 
-	const { mutate: deletePageById, isPending: isDeletePending } =
+	const { mutate: deletePageById, isPending: isDeletePageByIdPending } =
 		trpc.pages.deletePageById.useMutation({
 			onMutate: async ({ id }) => {
 				await utils.pages.getPagesByWhereClause.cancel();
@@ -451,13 +452,13 @@ export function DataTable() {
 									))}
 							</DropdownMenuContent>
 						</DropdownMenu>
-						<Button onClick={() => createPage()}>
+						<Button onClick={() => createDefaultPage()}>
 							<PlusIcon className="mr-2 h-4 w-4" />
 							Add
 						</Button>
 						<Button
 							onClick={() => {
-								createPage();
+								createDefaultPage();
 								navigate(`/pages/${newPage.id}`);
 							}}
 						>

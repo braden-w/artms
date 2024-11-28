@@ -28,6 +28,7 @@
 		"#*": "./src/*.ts"
 	},
 	"exports": {
+		"./*": "./src/*.ts",
 		"./_app": "./src/routers/_app.ts",
 		"./conditions": "./src/conditions.ts",
 		"./searchSchema": "./src/searchSchema.ts",
