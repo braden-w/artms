@@ -16,6 +16,7 @@ import {
 import { trpc } from "@/router";
 import { evaluateFilter } from "@repo/dashboard-server/conditions";
 import type { Column, SelectPage } from "@repo/dashboard-server/schema";
+import { generateDefaultPage, isString } from "@repo/dashboard-server/utils";
 import { useNavigate } from "@tanstack/react-router";
 import type {
 	ColumnDef,
@@ -31,11 +32,10 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import { PlusIcon, TrashIcon } from "lucide-react";
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Route } from "..";
 import { RenderValue } from "./RenderValue";
-import { generateDefaultPage, isString } from "@repo/dashboard-server/utils";
 
 export function DataTable() {
 	const tableParams = Route.useSearch();
