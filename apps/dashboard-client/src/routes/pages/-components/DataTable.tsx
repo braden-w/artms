@@ -411,7 +411,7 @@ export function DataTable() {
 										>
 											{isString(column.columnDef.header)
 												? column.columnDef.header
-												: column.id.replaceAll("_", " ")}
+												: column.id}
 										</DropdownMenuCheckboxItem>
 									))}
 							</DropdownMenuContent>
