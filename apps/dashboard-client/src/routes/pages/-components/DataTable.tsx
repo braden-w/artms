@@ -55,6 +55,7 @@ export function DataTable() {
 	const { mutate: replacePage, isPending: isReplacePagePending } =
 		trpc.pages.replacePage.useMutation({
 			onMutate: async (newPage) => {
+				skipAutoResetPageIndex();
 				await utils.pages.getPagesByWhereClause.cancel();
 				const prevPages = utils.pages.getPagesByWhereClause.getData({
 					filter,
@@ -104,6 +105,7 @@ export function DataTable() {
 	const { mutate: addPage, isPending: isAddPagePending } =
 		trpc.pages.addPage.useMutation({
 			onMutate: async (newPage) => {
+				skipAutoResetPageIndex();
 				await utils.pages.getPagesByWhereClause.cancel();
 				const prevPages = utils.pages.getPagesByWhereClause.getData({
 					filter,
@@ -257,23 +259,15 @@ export function DataTable() {
 									""
 								}
 								column={column}
-								isDisabled={
-									!(
-										!column.filter ||
-										evaluateFilter(correspondingPageInCache, column.filter)
-									)
-								}
-								saveStatus={saveStatus}
-								onChange={(newValue) => {
-									setPageSaveDbDebounce((page) => ({
-										...page,
-										[column.name]: newValue,
-									}));
-								}}
-								onBlur={() =>
-									setPageInPagesWithRerender(correspondingPageInCache)
-								}
+								isSaving={isReplacePagePending}
 								page={correspondingPageInCache}
+								onChange={(newValue) => {}}
+								onBlur={(internalValue) =>
+									replacePage({
+										...correspondingPageInCache,
+										[column.name]: internalValue,
+									})
+								}
 							/>
 						);
 					},
@@ -287,6 +281,11 @@ export function DataTable() {
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
 		calculateColumnVisibility({ columns: allColumns, pages: pageOfPages }),
 	);
+	useUpdateColumnVisibilityWhenPagesOrColumnsChange({
+		allColumns,
+		pageOfPages,
+		setColumnVisibility,
+	});
 
 	const table = useReactTable({
 		data: pageOfPages,
@@ -314,14 +313,6 @@ export function DataTable() {
 
 	if (isPagesPending) return <p>Loading...</p>;
 	if (pagesError) return <p>Error: {JSON.stringify(pagesError)}</p>;
-
-	const setPageInPagesWithRerender = (updatedPage: Page) => {
-		skipAutoResetPageIndex();
-		replacePage(updatedPage);
-		setColumnVisibility(
-			calculateColumnVisibility({ columns: allColumns, pages: pageOfPages }),
-		);
-	};
 
 	return (
 		<div className="p-4 flex flex-col justify-center gap-2">
@@ -517,12 +508,28 @@ export function DataTable() {
 	);
 }
 
+function useUpdateColumnVisibilityWhenPagesOrColumnsChange({
+	allColumns,
+	pageOfPages,
+	setColumnVisibility,
+}: {
+	allColumns: Column[];
+	pageOfPages: SelectPage[];
+	setColumnVisibility: (visibility: VisibilityState) => void;
+}) {
+	useEffect(() => {
+		setColumnVisibility(
+			calculateColumnVisibility({ columns: allColumns, pages: pageOfPages }),
+		);
+	}, [pageOfPages, allColumns, setColumnVisibility]);
+}
+
 function calculateColumnVisibility({
 	columns,
 	pages,
 }: {
 	columns: Column[];
-	pages: Page[];
+	pages: SelectPage[];
 }) {
 	const columnVisibility: VisibilityState = {};
 	for (const { name: columnName, filter } of columns) {
