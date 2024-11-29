@@ -31,7 +31,7 @@ import { useDebouncedCallback } from "use-debounce";
 import { FancyBox } from "./FancyBox";
 import { TiptapEditor } from "@/components/tip-tap/TiptapEditor";
 
-const DEBOUNCE_MS = 500;
+export const DEBOUNCE_MS = 500;
 export type SaveStatus = "Saved" | "Unsaved";
 
 export function RenderValueAsCell({
