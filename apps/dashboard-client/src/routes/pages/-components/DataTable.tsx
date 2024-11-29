@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/table";
 import { trpc } from "@/router";
 import { evaluateFilter } from "@repo/dashboard-server/conditions";
-import type { Column, SelectPage } from "@repo/dashboard-server/schema";
+import type { Column, PagePropertyValue, SelectPage } from "@repo/dashboard-server/schema";
 import { generateDefaultPage, isString } from "@repo/dashboard-server/utils";
 import { useLoaderData, useNavigate } from "@tanstack/react-router";
 import type {
@@ -219,6 +219,13 @@ export function DataTable() {
 							.getData(tableParams)
 							?.pageOfPages.find((p) => p.id === pageId);
 						if (!correspondingPageInCache) return null;
+
+						const syncCellValueToTable = (internalValue: PagePropertyValue) =>
+							replacePageAndUpdateCache({
+								...correspondingPageInCache,
+								[column.name]: internalValue,
+							});
+
 						return (
 							<RenderValueAsCell
 								key={`${pageId}-${column.name}`}
@@ -228,12 +235,7 @@ export function DataTable() {
 								}
 								column={column}
 								page={correspondingPageInCache}
-								syncCellValueToTable={(internalValue) =>
-									replacePageAndUpdateCache({
-										...correspondingPageInCache,
-										[column.name]: internalValue,
-									})
-								}
+								onBlur={syncCellValueToTable}
 							/>
 						);
 					},

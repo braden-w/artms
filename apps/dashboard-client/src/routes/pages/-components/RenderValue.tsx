@@ -70,12 +70,12 @@ export function useDebouncedReplacePage({
 export function RenderValueAsCell({
 	value,
 	column,
-	syncCellValueToTable,
+	onBlur,
 	page,
 }: {
 	value: PagePropertyValue;
 	column: ColumnInDatabase;
-	syncCellValueToTable: (finalValue: PagePropertyValue) => void;
+	onBlur: (finalValue: PagePropertyValue) => void;
 	page: SelectPage;
 }) {
 	const { debouncedReplacePage, hasUnsavedChanges, isReplacePagePending } =
@@ -122,7 +122,7 @@ export function RenderValueAsCell({
 					className="rounded-none"
 					value={displayValue}
 					onChange={(e) => onChange(e.target.value)}
-					onBlur={(e) => syncCellValueToTable(e.target.value)}
+					onBlur={(e) => onBlur(e.target.value)}
 					disabled={isDisabled}
 				/>
 			);
@@ -140,7 +140,7 @@ export function RenderValueAsCell({
 							id={id}
 							value={displayValue}
 							onChange={(e) => onChange(e.target.value)}
-							onBlur={(e) => syncCellValueToTable(e.target.value)}
+							onBlur={(e) => onBlur(e.target.value)}
 							disabled={isDisabled}
 						/>
 					</PopoverContent>
@@ -150,7 +150,7 @@ export function RenderValueAsCell({
 			return (
 				<Dialog
 					onOpenChange={(isOpen) => {
-						if (!isOpen) syncCellValueToTable(internalValue);
+						if (!isOpen) onBlur(internalValue);
 					}}
 				>
 					<DialogTrigger className={TRIGGER_CLASS} disabled={isDisabled}>
@@ -174,7 +174,7 @@ export function RenderValueAsCell({
 					dateDisplayFormat={column.dateDisplayFormat}
 					saveStatus={saveStatus}
 					setValue={onChange}
-					onPopoverClose={() => syncCellValueToTable(internalValue)}
+					onPopoverClose={() => onBlur(internalValue)}
 					disabled={isDisabled}
 					className={TRIGGER_CLASS}
 					page={page}
@@ -186,7 +186,7 @@ export function RenderValueAsCell({
 					value={displayValue}
 					column={column}
 					setValue={onChange}
-					onPopoverClose={() => syncCellValueToTable(internalValue)}
+					onPopoverClose={() => onBlur(internalValue)}
 					disabled={isDisabled}
 					className={TRIGGER_CLASS}
 				/>
@@ -197,7 +197,7 @@ export function RenderValueAsCell({
 					value={isStringArray(value) ? value : []}
 					column={column}
 					setValue={onChange}
-					onPopoverClose={() => syncCellValueToTable(internalValue)}
+					onPopoverClose={() => onBlur(internalValue)}
 					disabled={isDisabled}
 					className={TRIGGER_CLASS}
 				/>
@@ -210,7 +210,7 @@ export function RenderValueAsCell({
 						if (value === "indeterminate") return;
 						const newValue = value ? "TRUE" : "FALSE";
 						onChange(newValue);
-						syncCellValueToTable(newValue);
+						onBlur(newValue);
 					}}
 					disabled={isDisabled}
 				/>
