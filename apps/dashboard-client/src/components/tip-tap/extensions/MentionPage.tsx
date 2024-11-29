@@ -1,14 +1,19 @@
-import type { SelectPage } from "@repo/dashboard-server/db/schema/pages";
-import type { StringWithHtmlFragments } from "@repo/dashboard-server/utils";
+import type { StringWithHtmlFragments } from "@repo/dashboard-server/services/index";
 import { generateDefaultPage } from "@repo/dashboard-server/utils";
 import { toast } from "sonner";
+import type { ExtensionServices } from "../extensions";
 import { type Entry, createSuggestionExtension } from "./createSuggestion";
+import { trpc } from "@/router";
 
 interface PageEntry extends Entry {
 	action: () => void;
 }
 
-export const MentionPage = (page: SelectPage) =>
+export const MentionPage = ({
+	page,
+	addPage,
+	getPagesByFts,
+}: ExtensionServices) =>
 	createSuggestionExtension<PageEntry>({
 		name: "mentionPage",
 		char: "[[",
@@ -32,36 +37,37 @@ export const MentionPage = (page: SelectPage) =>
 				description: newPage.content ?? "",
 				iconName: "Book",
 				action: async () => {
-					const { data, error } = await actions.pages.upsertPages([newPage]);
+					await addPage(newPage);
 					toast.success("Success", { description: "Row added!" });
 					const pageLink = `[${newPage.title}](/pages/${newPage.id})` as const;
 					editor.chain().focus().insertContent(pageLink).run();
 				},
 			} satisfies PageEntry;
-			const { data: matchingPages, error } = await actions.pages.getPagesByFts({
-				query,
-			});
-			if (error) return [firstEntry];
-			const entries: PageEntry[] = [
-				firstEntry,
-				...matchingPages.map(
-					(page) =>
-						({
-							type: "entry",
-							id: page.id,
-							title: page.title ?? "",
-							description: page.content ?? "",
-							iconName: "Book",
-							action: () => {
-								const cleanedTitle = stripHtml(page.title);
-								const pageLink =
-									`[${cleanedTitle}](/pages/${page.id})` as const;
-								editor.chain().focus().insertContent(pageLink).run();
-							},
-						}) satisfies PageEntry,
-				),
-			];
-			return entries;
+			try {
+				const matchingPages = await getPagesByFts(query);
+				const entries: PageEntry[] = [
+					firstEntry,
+					...matchingPages.map(
+						(page) =>
+							({
+								type: "entry",
+								id: page.id,
+								title: page.title ?? "",
+								description: page.content ?? "",
+								iconName: "Book",
+								action: () => {
+									const cleanedTitle = stripHtml(page.title);
+									const pageLink =
+										`[${cleanedTitle}](/pages/${page.id})` as const;
+									editor.chain().focus().insertContent(pageLink).run();
+								},
+							}) satisfies PageEntry,
+					),
+				];
+				return entries;
+			} catch (error) {
+				return [firstEntry];
+			}
 		},
 	});
 
