@@ -17,7 +17,7 @@ import { trpc } from "@/router";
 import { evaluateFilter } from "@repo/dashboard-server/conditions";
 import type { Column, SelectPage } from "@repo/dashboard-server/schema";
 import { generateDefaultPage, isString } from "@repo/dashboard-server/utils";
-import { useNavigate } from "@tanstack/react-router";
+import { useLoaderData, useNavigate } from "@tanstack/react-router";
 import type {
 	ColumnDef,
 	ColumnFiltersState,
@@ -35,9 +35,11 @@ import { Loader2, PlusIcon, TrashIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Route } from "..";
+import { FilterForm } from "./FilterForm";
 import { RenderValue } from "./RenderValue";
 
 export function DataTable() {
+	const initialData = useLoaderData({ from: "/pages/" });
 	const tableParams = Route.useSearch();
 	const { filter, orderBy, limit, offset } = tableParams;
 	const navigate = useNavigate();
@@ -47,7 +49,8 @@ export function DataTable() {
 		data: { pageOfPages, allColumns } = { pageOfPages: [], allColumns: [] },
 		isPending: isPagesPending,
 		error: pagesError,
-	} = trpc.pages.getPagesByWhereClause.useQuery(tableParams);
+		refetch: refetchPages,
+	} = trpc.pages.getPagesByWhereClause.useQuery(tableParams, { initialData });
 
 	const { mutate: replacePage, isPending: isReplacePagePending } =
 		trpc.pages.replacePage.useMutation({
@@ -274,115 +277,20 @@ export function DataTable() {
 		},
 	});
 
-	if (filter.type !== "condition") {
-		throw new Error("Filter must be a condition");
-	}
-
 	if (isPagesPending) return <p>Loading...</p>;
 	if (pagesError) return <p>Error: {JSON.stringify(pagesError)}</p>;
 
 	return (
 		<div className="p-4 flex flex-col justify-center gap-2">
-			{/* <form
-				onSubmit={(e) => {
-					e.preventDefault();
-					return refetchPages();
+			<FilterForm
+				allColumns={allColumns}
+				defaultValues={{
+					filter,
+					orderBy,
+					limit,
+					offset,
 				}}
-				className="flex gap-2 items-center"
-			>
-				<Label htmlFor="columnName" className="sr-only">
-					Column Name
-				</Label>
-				<Select
-					name="columnName"
-					defaultValue={filter.columnName}
-					value={filter.columnName}
-					onValueChange={(value) => setFilter({ ...filter, columnName: value })}
-				>
-					<SelectTrigger className="w-[280px]">
-						<SelectValue id="columnName" placeholder="Select a column..." />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectGroup>
-							{columnNames.map((column) => (
-								<SelectItem key={column} value={column}>
-									{column}
-								</SelectItem>
-							))}
-						</SelectGroup>
-					</SelectContent>
-				</Select>
-
-				<Label htmlFor="operator" className="sr-only">
-					Operator
-				</Label>
-				<Select
-					name="operator"
-					defaultValue={filter.operator}
-					value={filter.operator}
-					onValueChange={(value) => setFilter({ ...filter, operator: value })}
-				>
-					<SelectTrigger className="w-[280px]">
-						<SelectValue id="operator" placeholder="Operator" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectGroup>
-							{comparisonOperators.map((operator) => (
-								<SelectItem key={operator} value={operator}>
-									{operator}
-								</SelectItem>
-							))}
-						</SelectGroup>
-					</SelectContent>
-				</Select>
-
-				<Label htmlFor="value" className="sr-only">
-					Value
-				</Label>
-				<Input
-					id="value"
-					name="value"
-					type="text"
-					placeholder="Value..."
-					value={filter.value}
-					onChange={(e) => setFilter({ ...filter, value: e.target.value })}
-				/>
-
-				<Label htmlFor="orderBy" className="sr-only">
-					Order By
-				</Label>
-				<Input
-					id="orderBy"
-					name="orderBy"
-					type="text"
-					placeholder="Order By..."
-					value={orderBy}
-					onChange={(e) => setOrderBy(e.target.value)}
-				/>
-
-				<Label htmlFor="limit">Limit</Label>
-				<Input
-					id="limit"
-					name="limit"
-					type="number"
-					placeholder="Limit"
-					value={limit}
-					onChange={(e) => setLimit(Number.parseInt(e.target.value, 10))}
-				/>
-
-				<Label htmlFor="offset">Offset</Label>
-				<Input
-					id="offset"
-					name="offset"
-					type="number"
-					placeholder="Offset"
-					value={offset}
-					onChange={(e) => setOffset(Number.parseInt(e.target.value, 10))}
-				/>
-				<Button type="submit" className="h-10">
-					Submit
-				</Button>
-			</form> */}
+			/>
 			<div className="flex h-full w-full flex-col gap-2">
 				<div className="flex h-full w-full flex-col gap-2">
 					<div className="flex gap-2">
