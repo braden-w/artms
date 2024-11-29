@@ -69,11 +69,8 @@ export function RenderValueAsCell({
 	);
 
 	const debouncedReplacePage = useDebouncedCallback(
-		(newValue: PagePropertyValue) =>
-			replacePage(
-				{ ...page, [column.name]: newValue },
-				{ onSettled: () => setHasUnsavedChanges(false) },
-			),
+		(page: SelectPage) =>
+			replacePage(page, { onSettled: () => setHasUnsavedChanges(false) }),
 		DEBOUNCE_MS,
 	);
 
@@ -82,7 +79,7 @@ export function RenderValueAsCell({
 		setInternalValue(newValue);
 		setHasUnsavedChanges(true);
 		/* Make the real update afterwards */
-		debouncedReplacePage(newValue);
+		debouncedReplacePage({ ...page, [column.name]: newValue });
 	};
 
 	switch (column.type) {
