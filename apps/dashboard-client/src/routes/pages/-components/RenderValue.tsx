@@ -31,17 +31,17 @@ import { FancyBox } from "./FancyBox";
 
 export type SaveStatus = "Saved" | "Unsaved";
 
-export function RenderValue({
+export function RenderValueAsCell({
 	value,
 	column,
-	isPendingExternally,
-	onBlur,
+	isSyncingCellValueToTable: isPendingExternally,
+	submitAndSyncCellValueToTable: submitSyncCellValueToTable,
 	page,
 }: {
 	value: PagePropertyValue;
 	column: ColumnInDatabase;
-	isPendingExternally: boolean;
-	onBlur: (finalValue: PagePropertyValue) => void;
+	isSyncingCellValueToTable: boolean;
+	submitAndSyncCellValueToTable: (finalValue: PagePropertyValue) => void;
 	page: SelectPage;
 }) {
 	const { mutate: replacePage, isPending: isReplacePagePending } =
@@ -90,7 +90,7 @@ export function RenderValue({
 					className="rounded-none"
 					value={displayValue}
 					onChange={(e) => onChange(e.target.value)}
-					onBlur={(e) => onBlur(e.target.value)}
+					onBlur={(e) => submitSyncCellValueToTable(e.target.value)}
 					disabled={isDisabled}
 				/>
 			);
@@ -114,7 +114,7 @@ export function RenderValue({
 							id={id}
 							value={displayValue}
 							onChange={(e) => onChange(e.target.value)}
-							onBlur={(e) => onBlur(e.target.value)}
+							onBlur={(e) => submitSyncCellValueToTable(e.target.value)}
 							disabled={isDisabled}
 						/>
 					</PopoverContent>
@@ -124,7 +124,7 @@ export function RenderValue({
 			return (
 				<Dialog
 					onOpenChange={(isOpen) => {
-						if (!isOpen) onBlur(internalValue);
+						if (!isOpen) submitSyncCellValueToTable(internalValue);
 					}}
 				>
 					<DialogTrigger asChild>
@@ -149,7 +149,7 @@ export function RenderValue({
 					dateDisplayFormat={column.dateDisplayFormat}
 					saveStatus={saveStatus}
 					setValue={onChange}
-					onPopoverClose={() => onBlur(internalValue)}
+					onPopoverClose={() => submitSyncCellValueToTable(internalValue)}
 					disabled={isDisabled}
 					className={TRIGGER_CLASS}
 					page={page}
@@ -161,7 +161,7 @@ export function RenderValue({
 					value={displayValue}
 					column={column}
 					setValue={onChange}
-					onPopoverClose={() => onBlur(internalValue)}
+					onPopoverClose={() => submitSyncCellValueToTable(internalValue)}
 					disabled={isDisabled}
 					className={TRIGGER_CLASS}
 				/>
@@ -172,7 +172,7 @@ export function RenderValue({
 					value={isStringArray(value) ? value : []}
 					column={column}
 					setValue={onChange}
-					onPopoverClose={() => onBlur(internalValue)}
+					onPopoverClose={() => submitSyncCellValueToTable(internalValue)}
 					disabled={isDisabled}
 					className={TRIGGER_CLASS}
 				/>
@@ -185,7 +185,7 @@ export function RenderValue({
 						if (value === "indeterminate") return;
 						const newValue = value ? "TRUE" : "FALSE";
 						onChange(newValue);
-						onBlur(newValue);
+						submitSyncCellValueToTable(newValue);
 					}}
 					disabled={isDisabled}
 				/>

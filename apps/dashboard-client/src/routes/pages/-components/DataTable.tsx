@@ -36,7 +36,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Route } from "..";
 import { FilterForm } from "./FilterForm";
-import { RenderValue } from "./RenderValue";
+import { RenderValueAsCell } from "./RenderValue";
 
 export function DataTable() {
 	const initialData = useLoaderData({ from: "/pages/" });
@@ -220,21 +220,21 @@ export function DataTable() {
 							?.pageOfPages.find((p) => p.id === pageId);
 						if (!correspondingPageInCache) return null;
 						return (
-							<RenderValue
+							<RenderValueAsCell
 								key={`${pageId}-${column.name}`}
 								value={
 									correspondingPageInCache[column.name as keyof SelectPage] ??
 									""
 								}
 								column={column}
-								isPendingExternally={isReplacePageAndUpdateCachePending}
 								page={correspondingPageInCache}
-								onBlur={(internalValue) =>
+								submitAndSyncCellValueToTable={(internalValue) =>
 									replacePageAndUpdateCache({
 										...correspondingPageInCache,
 										[column.name]: internalValue,
 									})
 								}
+								isSyncingCellValueToTable={isReplacePageAndUpdateCachePending}
 							/>
 						);
 					},
