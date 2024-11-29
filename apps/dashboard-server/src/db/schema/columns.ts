@@ -1,6 +1,6 @@
 import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { z } from "zod";
-import type { Filter } from "#conditions";
+import { filterSchema, type Filter } from "#conditions";
 import type { ColumnInDatabase } from "#db/COLUMNS_IN_DATABASE";
 import { COLUMNS_IN_DATABASE } from "#db/COLUMNS_IN_DATABASE";
 
@@ -34,6 +34,17 @@ export const columnsTable = sqliteTable("columns", {
 });
 
 export const PROPERTIES = COLUMNS_IN_DATABASE.map((column) => column.name);
+
+export const columnSchema = z.object({
+	name: z.string(),
+	type: z.enum(columnTypeOptions),
+	position: z.number(),
+	isArray: z.boolean(),
+	options: z.array(optionsSchema),
+	filter: filterSchema.nullable(),
+	dateDisplayFormat: z.string(),
+	shortcut: z.string().nullable(),
+});
 
 export const propertySchema = z
 	.string()
