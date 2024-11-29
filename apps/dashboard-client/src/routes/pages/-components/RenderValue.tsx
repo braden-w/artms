@@ -46,6 +46,7 @@ function useDebouncedReplacePage({
 			replacePage(newPage, { onSettled: () => setHasUnsavedChanges(false) }),
 		debounceMs,
 	);
+
 	return {
 		debouncedReplacePage: (newPage: SelectPage) => {
 			setHasUnsavedChanges(true);
@@ -57,7 +58,6 @@ function useDebouncedReplacePage({
 		 * Use this to show loading spinners or disable rapid repeat submissions.
 		 */
 		isReplacePagePending,
-
 		/**
 		 * True from the moment changes are made until they are successfully saved.
 		 * Includes both the debounce waiting period and the actual save operation.
