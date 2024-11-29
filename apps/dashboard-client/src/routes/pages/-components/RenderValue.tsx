@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 import { FancyBox } from "./FancyBox";
 
+const DEBOUNCE_MS = 500;
 export type SaveStatus = "Saved" | "Unsaved";
 
 export function RenderValueAsCell({
@@ -66,11 +67,18 @@ export function RenderValueAsCell({
 		"h-full w-full justify-start truncate rounded-none py-0 font-normal min-h-10",
 	);
 
+	const debouncedReplacePage = useDebouncedCallback(
+		(newValue: PagePropertyValue) => {
+			replacePage({ ...page, [column.name]: newValue });
+		},
+		DEBOUNCE_MS,
+	);
+
 	const onChange = (newValue: PagePropertyValue) => {
 		/* Make update synchronous, to avoid caret jumping when the value doesn't change asynchronously */
 		setInternalValue(newValue);
 		/* Make the real update afterwards */
-		replacePage({ ...page, [column.name]: newValue });
+		debouncedReplacePage(newValue);
 	};
 
 	switch (column.type) {
