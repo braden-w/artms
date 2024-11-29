@@ -9,6 +9,7 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { trpc } from "@/router";
 import type { ColumnInDatabase } from "@repo/dashboard-server/COLUMNS_IN_DATABASE";
 import { evaluateFilter } from "@repo/dashboard-server/conditions";
 import { DEFAULT_TAG_COLOR } from "@repo/dashboard-server/constants";
@@ -23,11 +24,10 @@ import { parseISO } from "date-fns";
 import { format, formatInTimeZone } from "date-fns-tz";
 import { CalendarIcon } from "lucide-react";
 import type React from "react";
-import { type Dispatch, type SetStateAction, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 import { FancyBox } from "./FancyBox";
-import { trpc } from "@/router";
 
 export type SaveStatus = "Saved" | "Unsaved";
 
@@ -41,7 +41,7 @@ export function RenderValue({
 	value: PagePropertyValue;
 	column: ColumnInDatabase;
 	isSaving: boolean;
-	onBlur: (internalValue: PagePropertyValue) => void;
+	onBlur: (finalValue: PagePropertyValue) => void;
 	page: SelectPage;
 }) {
 	const { mutate: replacePage, isPending: isReplacePagePending } =
