@@ -71,13 +71,11 @@ export function RenderValueAsCell({
 	value,
 	column,
 	syncCellValueToTable,
-	isSyncingCellValueToTable,
 	page,
 }: {
 	value: PagePropertyValue;
 	column: ColumnInDatabase;
 	syncCellValueToTable: (finalValue: PagePropertyValue) => void;
-	isSyncingCellValueToTable: boolean;
 	page: SelectPage;
 }) {
 	const { debouncedReplacePage, hasUnsavedChanges, isReplacePagePending } =
@@ -94,8 +92,7 @@ export function RenderValueAsCell({
 		? JSON.stringify(internalValue)
 		: (internalValue ?? "");
 	const isDisabled = !!column.filter && !evaluateFilter(page, column.filter);
-	const saveStatus: SaveStatus =
-		hasUnsavedChanges || isSyncingCellValueToTable ? "Unsaved" : "Saved";
+	const saveStatus: SaveStatus = hasUnsavedChanges ? "Unsaved" : "Saved";
 	const TRIGGER_CLASS = cn(
 		buttonVariants({ variant: !isDisabled ? "ghost" : "secondary" }),
 		"h-full w-full justify-start truncate rounded-none py-0 font-normal min-h-10",
