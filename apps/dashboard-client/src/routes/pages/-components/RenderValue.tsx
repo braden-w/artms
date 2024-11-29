@@ -14,6 +14,7 @@ import type { ColumnInDatabase } from "@repo/dashboard-server/COLUMNS_IN_DATABAS
 import { evaluateFilter } from "@repo/dashboard-server/conditions";
 import { DEFAULT_TAG_COLOR } from "@repo/dashboard-server/constants";
 import type {
+	Option,
 	PagePropertyValue,
 	SelectPage,
 } from "@repo/dashboard-server/schema";
@@ -231,7 +232,7 @@ export function SingleSelectCombobox({
 		},
 	});
 	const debouncedSetOption = useDebouncedCallback(
-		(newOptions) => setColumn({ ...column, options: newOptions }),
+		(newOptions: Option[]) => setColumn({ ...column, options: newOptions }),
 		500,
 	);
 	return (
@@ -287,7 +288,7 @@ export function MultiSelectCombobox({
 		},
 	});
 	const debouncedSetOption = useDebouncedCallback(
-		(newOptions) => setColumn({ ...column, options: newOptions }),
+		(newOptions: Option[]) => setColumn({ ...column, options: newOptions }),
 		500,
 	);
 	return (
