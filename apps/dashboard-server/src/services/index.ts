@@ -4,14 +4,18 @@ import {
 } from "#constants";
 import { COLUMNS_IN_DATABASE } from "#db/COLUMNS_IN_DATABASE";
 import type { Column, PagePropertyValue, SelectPage } from "#db/schema/index";
-import { columnsTable, pagesTable } from "#db/schema/index";
+import { columnsTable, pagesFts, pagesTable } from "#db/schema/index";
 import type { Database } from "#trpc";
 import { generateDefaultPage } from "#utils";
 import { TRPCError } from "@trpc/server";
 import { asc, eq, sql } from "drizzle-orm";
 import { getTableConfig } from "drizzle-orm/sqlite-core";
-import { execa } from "execa";
-import { writeFile } from "node:fs/promises";
+import { z } from "zod";
+// import { execa } from "execa";
+// import { writeFile } from "node:fs/promises";
+
+const StringWithHtmlFragments = z.string().brand("StringWithHtmlFragments");
+export type StringWithHtmlFragments = z.infer<typeof StringWithHtmlFragments>;
 
 export function createCtxServices(db: Database) {
 	const columnServices = createColumnServices(db);
@@ -26,10 +30,10 @@ export function createCtxServices(db: Database) {
 
 function createColumnServices(db: Database) {
 	return {
-		getAllColumns: () =>
-			db.query.columnsTable.findMany({
-				orderBy: asc(columnsTable.position),
-			}),
+		getAllColumns: () => COLUMNS_IN_DATABASE,
+		// db.query.columnsTable.findMany({
+		// 	orderBy: asc(columnsTable.position),
+		// }),
 		setColumnByName: (column: Column) =>
 			db
 				.update(columnsTable)
@@ -103,7 +107,7 @@ function createPageService(db: Database) {
 				await db.insert(pagesTable).values(rowChunk);
 			}
 		},
-		upsertPage: (page: InsertPage) =>
+		upsertPage: (page: SelectPage) =>
 			db
 				.insert(pagesTable)
 				.values(page)
@@ -118,7 +122,7 @@ function createPageService(db: Database) {
 						),
 					),
 				}),
-		upsertPages: async (rows: InsertPage[]) => {
+		upsertPages: async (rows: SelectPage[]) => {
 			const rowsChunks = chunkArray(rows, 500);
 			for (const rowChunk of rowsChunks) {
 				await db
@@ -157,6 +161,32 @@ function createPageService(db: Database) {
 		deletePageById: (id: string) =>
 			db.delete(pagesTable).where(eq(pagesTable.id, id)),
 		deleteAllPages: () => db.delete(pagesTable),
+
+		getPagesByFts: async ({
+			query,
+			limit,
+			offset,
+		}: { query: string; limit: number; offset: number }) => {
+			const pages = await db
+				.select({
+					id: pagesFts.id,
+					title:
+						sql<StringWithHtmlFragments>`snippet("pages_fts", 1, '<mark>', '</mark>', '...', 50)`.as(
+							"title",
+						),
+					content:
+						sql<StringWithHtmlFragments>`snippet("pages_fts", 2, '<mark>', '</mark>', '...', 50)`.as(
+							"content",
+						),
+				})
+				.from(pagesFts)
+				.where(
+					sql`${pagesFts} match 'title:' || ${query} || ' OR content:' || ${query}`,
+				)
+				.limit(limit)
+				.offset(offset);
+			return pages;
+		},
 	};
 }
 
