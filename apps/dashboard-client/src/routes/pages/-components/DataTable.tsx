@@ -13,7 +13,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { trpc } from "@/router";
+import { trpc, trpcClient } from "@/router";
 import { evaluateFilter } from "@repo/dashboard-server/conditions";
 import type { Column, SelectPage } from "@repo/dashboard-server/schema";
 import { generateDefaultPage, isString } from "@repo/dashboard-server/utils";
@@ -51,20 +51,6 @@ export function DataTable() {
 		error: pagesError,
 		refetch: refetchPages,
 	} = trpc.pages.getPagesByWhereClause.useQuery(tableParams, { initialData });
-
-	const { mutate: replacePage, isPending: isReplacePagePending } =
-		trpc.pages.replacePage.useMutation({
-			onError: (err) => {
-				toast.error("Error while saving row", {
-					description: err.message,
-				});
-			},
-			onSuccess: () => {
-				toast.success("Saved", {
-					description: "Your changes have been saved.",
-				});
-			},
-		});
 
 	const {
 		mutate: replacePageAndUpdateCache,
@@ -241,16 +227,8 @@ export function DataTable() {
 									""
 								}
 								column={column}
-								isSaving={
-									isReplacePagePending || isReplacePageAndUpdateCachePending
-								}
+								isSaving={isReplacePageAndUpdateCachePending}
 								page={correspondingPageInCache}
-								onChange={(newValue) => {
-									replacePage({
-										...correspondingPageInCache,
-										[column.name]: newValue,
-									});
-								}}
 								onBlur={(internalValue) =>
 									replacePageAndUpdateCache({
 										...correspondingPageInCache,

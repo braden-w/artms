@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import type { ColumnInDatabase } from "@repo/dashboard-server/COLUMNS_IN_DATABASE";
+import { evaluateFilter } from "@repo/dashboard-server/conditions";
+import { DEFAULT_TAG_COLOR } from "@repo/dashboard-server/constants";
 import type {
 	PagePropertyValue,
 	SelectPage,
@@ -21,12 +23,11 @@ import { parseISO } from "date-fns";
 import { format, formatInTimeZone } from "date-fns-tz";
 import { CalendarIcon } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
+import { type Dispatch, type SetStateAction, useState } from "react";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 import { FancyBox } from "./FancyBox";
-import { evaluateFilter } from "@repo/dashboard-server/conditions";
-import { DEFAULT_TAG_COLOR } from "@repo/dashboard-server/constants";
+import { trpc } from "@/router";
 
 export type SaveStatus = "Saved" | "Unsaved";
 
@@ -34,20 +35,22 @@ export function RenderValue({
 	value,
 	column,
 	isSaving,
-	onChange: externalOnChange,
 	onBlur,
 	page,
 }: {
 	value: PagePropertyValue;
 	column: ColumnInDatabase;
 	isSaving: boolean;
-	onChange: (newValue: PagePropertyValue) => void;
 	onBlur: (internalValue: PagePropertyValue) => void;
 	page: SelectPage;
 }) {
+	const { mutate: replacePage, isPending: isReplacePagePending } =
+		trpc.pages.replacePage.useMutation();
+
 	const isDisabled =
 		(column.filter && !evaluateFilter(page, column.filter)) ?? false;
-	const saveStatus: SaveStatus = isSaving ? "Unsaved" : "Saved";
+	const saveStatus: SaveStatus =
+		isSaving || isReplacePagePending ? "Unsaved" : "Saved";
 	const TRIGGER_CLASS = cn(
 		buttonVariants({ variant: !isDisabled ? "ghost" : "secondary" }),
 		"h-full w-full justify-start truncate rounded-none py-0 font-normal min-h-10",
@@ -70,7 +73,7 @@ export function RenderValue({
 		/* Make update synchronous, to avoid caret jumping when the value doesn't change asynchronously */
 		setInternalValue(newValue);
 		/* Make the real update afterwards */
-		externalOnChange(newValue);
+		replacePage({ ...page, [column.name]: newValue });
 	};
 
 	switch (column.type) {
@@ -143,7 +146,6 @@ export function RenderValue({
 				</Dialog>
 			);
 		case "Date":
-			return null;
 			return (
 				<NaturalLanguageInput
 					value={displayValue}
