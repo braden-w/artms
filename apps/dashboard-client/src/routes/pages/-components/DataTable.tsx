@@ -13,7 +13,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { trpc, trpcClient } from "@/router";
+import { trpc } from "@/router";
 import { evaluateFilter } from "@repo/dashboard-server/conditions";
 import type { Column, SelectPage } from "@repo/dashboard-server/schema";
 import { generateDefaultPage, isString } from "@repo/dashboard-server/utils";
