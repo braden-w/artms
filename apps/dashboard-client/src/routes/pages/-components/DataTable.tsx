@@ -234,7 +234,6 @@ export function DataTable() {
 										[column.name]: internalValue,
 									})
 								}
-								isSyncingCellValueToTable={isReplacePageAndUpdateCachePending}
 							/>
 						);
 					},
