@@ -108,14 +108,8 @@ export function RenderValueAsCell({
 		case "Text":
 			return (
 				<Popover>
-					<PopoverTrigger asChild>
-						<button
-							className={TRIGGER_CLASS}
-							disabled={isDisabled}
-							type="button"
-						>
-							{displayValue}
-						</button>
+					<PopoverTrigger className={TRIGGER_CLASS} disabled={isDisabled}>
+						{displayValue}
 					</PopoverTrigger>
 					<PopoverContent className="p-0">
 						<div className="bg-accent text-muted-foreground absolute right-5 top-5 z-10 mb-5 rounded-lg px-2 py-1 text-sm">
@@ -138,11 +132,10 @@ export function RenderValueAsCell({
 						if (!isOpen) syncCellValueToTable(internalValue);
 					}}
 				>
-					<DialogTrigger asChild>
-						<button className={TRIGGER_CLASS} disabled={isDisabled}>
-							{displayValue}
-						</button>
+					<DialogTrigger className={TRIGGER_CLASS} disabled={isDisabled}>
+						{displayValue}
 					</DialogTrigger>
+
 					<DialogContent className="flex h-full max-h-[calc(100vh-4rem)] w-full max-w-7xl flex-col overflow-y-auto">
 						{/* <TiptapEditor
 							value={displayValue}
@@ -358,11 +351,9 @@ export function NaturalLanguageInput({
 				if (!isOpen) onPopoverClose();
 			}}
 		>
-			<PopoverTrigger asChild>
-				<button className={className} disabled={disabled}>
-					<CalendarIcon className="mr-2 h-4 w-4" />
-					{readableWithRespectToPageTimezone}
-				</button>
+			<PopoverTrigger className={className} disabled={disabled}>
+				<CalendarIcon className="mr-2 h-4 w-4" />
+				{readableWithRespectToPageTimezone}
 			</PopoverTrigger>
 			<PopoverContent className="flex w-full max-w-7xl flex-col gap-2">
 				<div className="bg-accent text-muted-foreground absolute right-5 top-5 z-10 mb-5 rounded-lg px-2 py-1 text-sm">
