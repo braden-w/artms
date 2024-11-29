@@ -14,7 +14,7 @@ export const searchSchema = z.object({
 			},
 		],
 	}),
-	orderBy: z.string().optional().default(""),
+	orderBy: z.string().optional().default("date desc"),
 	limit: z.coerce.number().int().positive().optional().default(10),
 	offset: z.coerce.number().int().min(0).optional().default(0),
 });
