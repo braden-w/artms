@@ -49,4 +49,14 @@ export const pagesRouter = router({
 				allColumns: allColumns as typeof COLUMNS_IN_DATABASE,
 			};
 		}),
+
+	getPagesByFts: protectedProcedure
+		.input(
+			z.object({
+				query: z.string().refine((s) => s.length > 0),
+				limit: z.number().optional().default(10),
+				offset: z.number().optional().default(0),
+			}),
+		)
+		.query(({ ctx, input }) => ctx.services.pages.getPagesByFts(input)),
 });
