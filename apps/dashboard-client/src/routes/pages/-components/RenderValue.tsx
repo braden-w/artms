@@ -58,8 +58,7 @@ export function RenderValueAsCell({
 	const displayValue = isStringArray(internalValue)
 		? JSON.stringify(internalValue)
 		: (internalValue ?? "");
-	const isDisabled =
-		(column.filter && !evaluateFilter(page, column.filter)) ?? false;
+	const isDisabled = !!column.filter && !evaluateFilter(page, column.filter);
 	const saveStatus: SaveStatus =
 		hasUnsavedChanges || isSyncingCellValueToTable ? "Unsaved" : "Saved";
 	const TRIGGER_CLASS = cn(
