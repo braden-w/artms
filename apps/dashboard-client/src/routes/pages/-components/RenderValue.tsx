@@ -98,7 +98,11 @@ export function RenderValue({
 			return (
 				<Popover>
 					<PopoverTrigger asChild>
-						<button className={TRIGGER_CLASS} disabled={isDisabled}>
+						<button
+							className={TRIGGER_CLASS}
+							disabled={isDisabled}
+							type="button"
+						>
 							{displayValue}
 						</button>
 					</PopoverTrigger>
