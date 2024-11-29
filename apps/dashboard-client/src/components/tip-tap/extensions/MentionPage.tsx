@@ -3,7 +3,6 @@ import { generateDefaultPage } from "@repo/dashboard-server/utils";
 import { toast } from "sonner";
 import type { ExtensionServices } from "../extensions";
 import { type Entry, createSuggestionExtension } from "./createSuggestion";
-import { trpc } from "@/router";
 
 interface PageEntry extends Entry {
 	action: () => void;
