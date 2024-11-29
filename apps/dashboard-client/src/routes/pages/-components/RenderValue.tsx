@@ -51,9 +51,20 @@ function useDebouncedReplacePage({
 			setHasUnsavedChanges(true);
 			debouncedReplacePage(newPage);
 		},
-		hasUnsavedChanges,
+		/**
+		 * True during the actual network request to save changes to the server.
+		 * This is a subset of hasUnsavedChanges - it's only true during the final save operation.
+		 * Use this to show loading spinners or disable rapid repeat submissions.
+		 */
 		isReplacePagePending,
-	};
+
+		/**
+		 * True from the moment changes are made until they are successfully saved.
+		 * Includes both the debounce waiting period and the actual save operation.
+		 * Use this to show "Unsaved changes" indicators to users.
+		 */
+		hasUnsavedChanges,
+	}
 }
 
 export function RenderValueAsCell({
