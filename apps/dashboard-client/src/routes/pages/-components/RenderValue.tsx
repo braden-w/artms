@@ -35,23 +35,25 @@ export const DEFAULT_DEBOUNCE_MS = 500;
 export type SaveStatus = "Saved" | "Unsaved";
 
 function useDebouncedReplacePage({
-	page,
-	columnName,
-	onSettled,
 	debounceMs = DEFAULT_DEBOUNCE_MS,
-}: {
-	page: SelectPage;
-	columnName: string;
-	onSettled?: () => void;
-	debounceMs?: number;
-}) {
-	const { mutate: replacePage } = trpc.pages.replacePage.useMutation();
+}: { debounceMs?: number } = {}) {
+	const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+	const { mutate: replacePage, isPending: isReplacePagePending } =
+		trpc.pages.replacePage.useMutation();
+
 	const debouncedReplacePage = useDebouncedCallback(
-		(newValue: PagePropertyValue) =>
-			replacePage({ ...page, [columnName]: newValue }, { onSettled }),
+		(newPage: SelectPage) =>
+			replacePage(newPage, { onSettled: () => setHasUnsavedChanges(false) }),
 		debounceMs,
 	);
-	return debouncedReplacePage;
+	return {
+		debouncedReplacePage: (newPage: SelectPage) => {
+			setHasUnsavedChanges(true);
+			debouncedReplacePage(newPage);
+		},
+		hasUnsavedChanges,
+		isReplacePagePending,
+	};
 }
 
 export function RenderValueAsCell({
@@ -67,12 +69,8 @@ export function RenderValueAsCell({
 	isSyncingCellValueToTable: boolean;
 	page: SelectPage;
 }) {
-	const debouncedReplacePage = useDebouncedReplacePage({
-		page,
-		columnName: column.name,
-		onSettled: () => setHasUnsavedChanges(false),
-	});
-	const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+	const { debouncedReplacePage, hasUnsavedChanges, isReplacePagePending } =
+		useDebouncedReplacePage();
 	const [internalValue, setInternalValue] = useState(value);
 	const [previousValue, setPreviousValue] = useState(value);
 	if (value !== previousValue) {
@@ -95,7 +93,6 @@ export function RenderValueAsCell({
 	const onChange = (newValue: PagePropertyValue) => {
 		/* Make update synchronous, to avoid caret jumping when the value doesn't change asynchronously */
 		setInternalValue(newValue);
-		setHasUnsavedChanges(true);
 		/* Make the real update afterwards */
 		debouncedReplacePage({ ...page, [column.name]: newValue });
 	};
