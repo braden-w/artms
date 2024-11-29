@@ -225,16 +225,14 @@ export function SingleSelectCombobox({
 		value,
 		color: DEFAULT_TAG_COLOR,
 	};
-	const debouncedSetOption = useDebouncedCallback(
-		async (newOptions) => {
-			const { data, error } = await actions.columns.setColumn({
-				...column,
-				options: newOptions,
-			});
+	const { mutate: setColumn } = trpc.columns.setColumn.useMutation({
+		onSuccess: () => {
 			toast.success("Saved", { description: "Your changes have been saved." });
 		},
+	});
+	const debouncedSetOption = useDebouncedCallback(
+		(newOptions) => setColumn({ ...column, options: newOptions }),
 		500,
-		{ leading: false, trailing: true },
 	);
 	return (
 		<FancyBox
@@ -283,18 +281,14 @@ export function MultiSelectCombobox({
 				color: DEFAULT_TAG_COLOR,
 			},
 	);
-	const debouncedSetOption = useDebouncedCallback(
-		async (newOptions) => {
-			const { data, error } = await actions.columns.setColumn({
-				...column,
-				options: newOptions,
-			});
-			toast.success("Saved", {
-				description: "Your changes have been saved.",
-			});
+	const { mutate: setColumn } = trpc.columns.setColumn.useMutation({
+		onSuccess: () => {
+			toast.success("Saved", { description: "Your changes have been saved." });
 		},
+	});
+	const debouncedSetOption = useDebouncedCallback(
+		(newOptions) => setColumn({ ...column, options: newOptions }),
 		500,
-		{ leading: false, trailing: true },
 	);
 	return (
 		<FancyBox
