@@ -54,37 +54,10 @@ export function DataTable() {
 
 	const { mutate: replacePage, isPending: isReplacePagePending } =
 		trpc.pages.replacePage.useMutation({
-			onMutate: async (newPage) => {
-				skipAutoResetPageIndex();
-				await utils.pages.getPagesByWhereClause.cancel();
-				const prevPages =
-					utils.pages.getPagesByWhereClause.getData(tableParams);
-				utils.pages.getPagesByWhereClause.setData(
-					tableParams,
-					(oldPageOfPages) => {
-						if (!oldPageOfPages) return;
-						const { pageOfPages, allColumns } = oldPageOfPages;
-						return {
-							pageOfPages: pageOfPages.map((currentPage) => {
-								const shouldReplacePage = currentPage.id === newPage.id;
-								if (shouldReplacePage) return newPage;
-								return currentPage;
-							}),
-							allColumns,
-						};
-					},
-				);
-				return { prevPages };
-			},
-			onError: (err, newPage, context) => {
-				if (!context) return;
-				utils.pages.getPagesByWhereClause.setData(
-					tableParams,
-					context.prevPages,
-				);
-			},
-			onSettled: () => {
-				utils.pages.getPagesByWhereClause.invalidate(tableParams);
+			onError: (err) => {
+				toast.error("Error while saving row", {
+					description: err.message,
+				});
 			},
 			onSuccess: () => {
 				toast.success("Saved", {
@@ -92,6 +65,48 @@ export function DataTable() {
 				});
 			},
 		});
+
+	const {
+		mutate: replacePageAndUpdateCache,
+		isPending: isReplacePageAndUpdateCachePending,
+	} = trpc.pages.replacePage.useMutation({
+		onMutate: async (newPage) => {
+			skipAutoResetPageIndex();
+			await utils.pages.getPagesByWhereClause.cancel();
+			const prevPages = utils.pages.getPagesByWhereClause.getData(tableParams);
+			utils.pages.getPagesByWhereClause.setData(
+				tableParams,
+				(oldPageOfPages) => {
+					if (!oldPageOfPages) return;
+					const { pageOfPages, allColumns } = oldPageOfPages;
+					return {
+						pageOfPages: pageOfPages.map((currentPage) => {
+							const shouldReplacePage = currentPage.id === newPage.id;
+							if (shouldReplacePage) return newPage;
+							return currentPage;
+						}),
+						allColumns,
+					};
+				},
+			);
+			return { prevPages };
+		},
+		onError: (err, newPage, context) => {
+			if (!context) return;
+			utils.pages.getPagesByWhereClause.setData(tableParams, context.prevPages);
+			toast.error("Error while saving row", {
+				description: err.message,
+			});
+		},
+		onSettled: () => {
+			utils.pages.getPagesByWhereClause.invalidate(tableParams);
+		},
+		onSuccess: () => {
+			toast.success("Saved", {
+				description: "Your changes have been saved.",
+			});
+		},
+	});
 
 	const { mutate: addPage, isPending: isAddPagePending } =
 		trpc.pages.addPage.useMutation({
@@ -226,11 +241,18 @@ export function DataTable() {
 									""
 								}
 								column={column}
-								isSaving={isReplacePagePending}
+								isSaving={
+									isReplacePagePending || isReplacePageAndUpdateCachePending
+								}
 								page={correspondingPageInCache}
-								onChange={(newValue) => {}}
-								onBlur={(internalValue) =>
+								onChange={(newValue) => {
 									replacePage({
+										...correspondingPageInCache,
+										[column.name]: newValue,
+									});
+								}}
+								onBlur={(internalValue) =>
+									replacePageAndUpdateCache({
 										...correspondingPageInCache,
 										[column.name]: internalValue,
 									})
