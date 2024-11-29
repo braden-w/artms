@@ -54,7 +54,7 @@ export function RenderValueAsCell({
 		setInternalValue(value);
 	}
 
-	const id = `${page.id}-${column.name}`;
+	const id = `${page.id}-${column.name}` as const;
 	const displayValue = isStringArray(internalValue)
 		? JSON.stringify(internalValue)
 		: (internalValue ?? "");
