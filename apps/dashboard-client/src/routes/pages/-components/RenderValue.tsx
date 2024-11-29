@@ -35,14 +35,14 @@ export type SaveStatus = "Saved" | "Unsaved";
 export function RenderValueAsCell({
 	value,
 	column,
-	isSyncingCellValueToTable: isPendingExternally,
-	submitAndSyncCellValueToTable: submitSyncCellValueToTable,
+	syncCellValueToTable,
+	isSyncingCellValueToTable,
 	page,
 }: {
 	value: PagePropertyValue;
 	column: ColumnInDatabase;
+	syncCellValueToTable: (finalValue: PagePropertyValue) => void;
 	isSyncingCellValueToTable: boolean;
-	submitAndSyncCellValueToTable: (finalValue: PagePropertyValue) => void;
 	page: SelectPage;
 }) {
 	const { mutate: replacePage } = trpc.pages.replacePage.useMutation();
@@ -61,7 +61,7 @@ export function RenderValueAsCell({
 	const isDisabled =
 		(column.filter && !evaluateFilter(page, column.filter)) ?? false;
 	const saveStatus: SaveStatus =
-		hasUnsavedChanges || isPendingExternally ? "Unsaved" : "Saved";
+		hasUnsavedChanges || isSyncingCellValueToTable ? "Unsaved" : "Saved";
 	const TRIGGER_CLASS = cn(
 		buttonVariants({ variant: !isDisabled ? "ghost" : "secondary" }),
 		"h-full w-full justify-start truncate rounded-none py-0 font-normal min-h-10",
@@ -101,7 +101,7 @@ export function RenderValueAsCell({
 					className="rounded-none"
 					value={displayValue}
 					onChange={(e) => onChange(e.target.value)}
-					onBlur={(e) => submitSyncCellValueToTable(e.target.value)}
+					onBlur={(e) => syncCellValueToTable(e.target.value)}
 					disabled={isDisabled}
 				/>
 			);
@@ -125,7 +125,7 @@ export function RenderValueAsCell({
 							id={id}
 							value={displayValue}
 							onChange={(e) => onChange(e.target.value)}
-							onBlur={(e) => submitSyncCellValueToTable(e.target.value)}
+							onBlur={(e) => syncCellValueToTable(e.target.value)}
 							disabled={isDisabled}
 						/>
 					</PopoverContent>
@@ -135,7 +135,7 @@ export function RenderValueAsCell({
 			return (
 				<Dialog
 					onOpenChange={(isOpen) => {
-						if (!isOpen) submitSyncCellValueToTable(internalValue);
+						if (!isOpen) syncCellValueToTable(internalValue);
 					}}
 				>
 					<DialogTrigger asChild>
@@ -160,7 +160,7 @@ export function RenderValueAsCell({
 					dateDisplayFormat={column.dateDisplayFormat}
 					saveStatus={saveStatus}
 					setValue={onChange}
-					onPopoverClose={() => submitSyncCellValueToTable(internalValue)}
+					onPopoverClose={() => syncCellValueToTable(internalValue)}
 					disabled={isDisabled}
 					className={TRIGGER_CLASS}
 					page={page}
@@ -172,7 +172,7 @@ export function RenderValueAsCell({
 					value={displayValue}
 					column={column}
 					setValue={onChange}
-					onPopoverClose={() => submitSyncCellValueToTable(internalValue)}
+					onPopoverClose={() => syncCellValueToTable(internalValue)}
 					disabled={isDisabled}
 					className={TRIGGER_CLASS}
 				/>
@@ -183,7 +183,7 @@ export function RenderValueAsCell({
 					value={isStringArray(value) ? value : []}
 					column={column}
 					setValue={onChange}
-					onPopoverClose={() => submitSyncCellValueToTable(internalValue)}
+					onPopoverClose={() => syncCellValueToTable(internalValue)}
 					disabled={isDisabled}
 					className={TRIGGER_CLASS}
 				/>
@@ -196,7 +196,7 @@ export function RenderValueAsCell({
 						if (value === "indeterminate") return;
 						const newValue = value ? "TRUE" : "FALSE";
 						onChange(newValue);
-						submitSyncCellValueToTable(newValue);
+						syncCellValueToTable(newValue);
 					}}
 					disabled={isDisabled}
 				/>

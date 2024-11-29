@@ -228,7 +228,7 @@ export function DataTable() {
 								}
 								column={column}
 								page={correspondingPageInCache}
-								submitAndSyncCellValueToTable={(internalValue) =>
+								syncCellValueToTable={(internalValue) =>
 									replacePageAndUpdateCache({
 										...correspondingPageInCache,
 										[column.name]: internalValue,
