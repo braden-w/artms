@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { trpc } from "@/router";
-import { DEBOUNCE_MS } from "@/routes/pages/-components/RenderValue";
+import { DEFAULT_DEBOUNCE_MS } from "@/routes/pages/-components/RenderValue";
 import type { SelectPage } from "@repo/dashboard-server/db/schema/pages";
 import { PAGE_LINK_PATTERN } from "@repo/dashboard-server/utils";
 import { Node, type NodeViewProps, mergeAttributes } from "@tiptap/core";
@@ -18,7 +18,7 @@ function NoteEmbedComponent({ node }: NodeViewProps) {
 	const debouncedReplacePage = useDebouncedCallback(
 		(page: SelectPage) =>
 			replacePage(page, { onSettled: () => setHasUnsavedChanges(false) }),
-		DEBOUNCE_MS,
+		DEFAULT_DEBOUNCE_MS,
 	);
 
 	if (!page) return null;
