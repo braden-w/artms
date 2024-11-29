@@ -70,8 +70,18 @@ function createPageService(db: Database) {
 			} while (rs.length === OFFSET_SIZE);
 			return rows;
 		},
-		getPageById: (id: string) =>
-			db.query.pagesTable.findFirst({ where: eq(pagesTable.id, id) }),
+		getPageById: async (id: string) => {
+			const maybePage = await db.query.pagesTable.findFirst({
+				where: eq(pagesTable.id, id),
+			});
+			if (!maybePage) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: `Page with id ${id} not found`,
+				});
+			}
+			return maybePage;
+		},
 		createDefaultPage: async () => {
 			const newPage = generateDefaultPage();
 			const [insertedPage] = await db
