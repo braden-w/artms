@@ -10,6 +10,7 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
+		"@hookform/resolvers": "^3.9.1",
 		"@radix-ui/react-accordion": "^1.2.1",
 		"@radix-ui/react-alert-dialog": "^1.1.2",
 		"@radix-ui/react-checkbox": "^1.1.2",
@@ -37,11 +38,13 @@
 		"lucide-react": "^0.452.0",
 		"react": "19.0.0-beta-26f2496093-20240514",
 		"react-dom": "19.0.0-beta-26f2496093-20240514",
+		"react-hook-form": "^7.53.2",
 		"react-hotkeys-hook": "^4.6.1",
 		"sonner": "^1.7.0",
 		"superjson": "^2.2.1",
 		"tailwind-merge": "^2.5.3",
 		"tailwindcss-animate": "^1.0.7",
+		"use-debounce": "^10.0.4",
 		"zod": "^3.23.8"
 	},
 	"devDependencies": {
