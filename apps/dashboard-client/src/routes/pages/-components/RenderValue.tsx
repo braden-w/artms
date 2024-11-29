@@ -34,13 +34,13 @@ export type SaveStatus = "Saved" | "Unsaved";
 export function RenderValue({
 	value,
 	column,
-	isSaving,
+	isPendingExternally,
 	onBlur,
 	page,
 }: {
 	value: PagePropertyValue;
 	column: ColumnInDatabase;
-	isSaving: boolean;
+	isPendingExternally: boolean;
 	onBlur: (finalValue: PagePropertyValue) => void;
 	page: SelectPage;
 }) {
@@ -60,7 +60,7 @@ export function RenderValue({
 	const isDisabled =
 		(column.filter && !evaluateFilter(page, column.filter)) ?? false;
 	const saveStatus: SaveStatus =
-		isSaving || isReplacePagePending ? "Unsaved" : "Saved";
+		isPendingExternally || isReplacePagePending ? "Unsaved" : "Saved";
 	const TRIGGER_CLASS = cn(
 		buttonVariants({ variant: !isDisabled ? "ghost" : "secondary" }),
 		"h-full w-full justify-start truncate rounded-none py-0 font-normal min-h-10",

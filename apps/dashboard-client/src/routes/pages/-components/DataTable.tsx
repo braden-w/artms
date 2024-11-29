@@ -227,7 +227,7 @@ export function DataTable() {
 									""
 								}
 								column={column}
-								isSaving={isReplacePageAndUpdateCachePending}
+								isPendingExternally={isReplacePageAndUpdateCachePending}
 								page={correspondingPageInCache}
 								onBlur={(internalValue) =>
 									replacePageAndUpdateCache({
