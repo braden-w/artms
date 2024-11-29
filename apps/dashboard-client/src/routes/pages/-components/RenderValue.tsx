@@ -34,7 +34,7 @@ import { TiptapEditor } from "@/components/tip-tap/TiptapEditor";
 export const DEFAULT_DEBOUNCE_MS = 500;
 export type SaveStatus = "Saved" | "Unsaved";
 
-function useDebouncedReplacePage({
+export function useDebouncedReplacePage({
 	debounceMs = DEFAULT_DEBOUNCE_MS,
 }: { debounceMs?: number } = {}) {
 	const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -64,7 +64,7 @@ function useDebouncedReplacePage({
 		 * Use this to show "Unsaved changes" indicators to users.
 		 */
 		hasUnsavedChanges,
-	}
+	};
 }
 
 export function RenderValueAsCell({
