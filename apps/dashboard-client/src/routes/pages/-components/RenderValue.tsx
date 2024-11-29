@@ -68,12 +68,11 @@ export function RenderValueAsCell({
 	);
 
 	const debouncedReplacePage = useDebouncedCallback(
-		(newValue: PagePropertyValue) => {
+		(newValue: PagePropertyValue) =>
 			replacePage(
 				{ ...page, [column.name]: newValue },
 				{ onSettled: () => setHasUnsavedChanges(false) },
-			);
-		},
+			),
 		DEBOUNCE_MS,
 	);
 
