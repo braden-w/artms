@@ -72,7 +72,6 @@ export function RenderValueAsCell({
 
 	const debouncedReplacePage = useDebouncedCallback(
 		(newValue: PagePropertyValue) => {
-			setIsDebouncePending(true);
 			replacePage(
 				{ ...page, [column.name]: newValue },
 				{ onSettled: () => setIsDebouncePending(false) },
