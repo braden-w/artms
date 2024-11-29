@@ -47,6 +47,7 @@ export function RenderValueAsCell({
 }) {
 	const { mutate: replacePage, isPending: isReplacePagePending } =
 		trpc.pages.replacePage.useMutation();
+	const [isDebouncePending, setIsDebouncePending] = useState(false);
 	const [internalValue, setInternalValue] = useState(value);
 	const [previousValue, setPreviousValue] = useState(value);
 	if (value !== previousValue) {
@@ -61,7 +62,9 @@ export function RenderValueAsCell({
 	const isDisabled =
 		(column.filter && !evaluateFilter(page, column.filter)) ?? false;
 	const saveStatus: SaveStatus =
-		isPendingExternally || isReplacePagePending ? "Unsaved" : "Saved";
+		isDebouncePending || isPendingExternally || isReplacePagePending
+			? "Unsaved"
+			: "Saved";
 	const TRIGGER_CLASS = cn(
 		buttonVariants({ variant: !isDisabled ? "ghost" : "secondary" }),
 		"h-full w-full justify-start truncate rounded-none py-0 font-normal min-h-10",
@@ -69,7 +72,11 @@ export function RenderValueAsCell({
 
 	const debouncedReplacePage = useDebouncedCallback(
 		(newValue: PagePropertyValue) => {
-			replacePage({ ...page, [column.name]: newValue });
+			setIsDebouncePending(true);
+			replacePage(
+				{ ...page, [column.name]: newValue },
+				{ onSettled: () => setIsDebouncePending(false) },
+			);
 		},
 		DEBOUNCE_MS,
 	);
@@ -77,6 +84,7 @@ export function RenderValueAsCell({
 	const onChange = (newValue: PagePropertyValue) => {
 		/* Make update synchronous, to avoid caret jumping when the value doesn't change asynchronously */
 		setInternalValue(newValue);
+		setIsDebouncePending(true);
 		/* Make the real update afterwards */
 		debouncedReplacePage(newValue);
 	};
