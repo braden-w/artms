@@ -31,8 +31,28 @@ import { useDebouncedCallback } from "use-debounce";
 import { FancyBox } from "./FancyBox";
 import { TiptapEditor } from "@/components/tip-tap/TiptapEditor";
 
-export const DEBOUNCE_MS = 500;
+export const DEFAULT_DEBOUNCE_MS = 500;
 export type SaveStatus = "Saved" | "Unsaved";
+
+function useDebouncedReplacePage({
+	page,
+	columnName,
+	onSettled,
+	debounceMs = DEFAULT_DEBOUNCE_MS,
+}: {
+	page: SelectPage;
+	columnName: string;
+	onSettled?: () => void;
+	debounceMs?: number;
+}) {
+	const { mutate: replacePage } = trpc.pages.replacePage.useMutation();
+	const debouncedReplacePage = useDebouncedCallback(
+		(newValue: PagePropertyValue) =>
+			replacePage({ ...page, [columnName]: newValue }, { onSettled }),
+		debounceMs,
+	);
+	return debouncedReplacePage;
+}
 
 export function RenderValueAsCell({
 	value,
@@ -47,7 +67,11 @@ export function RenderValueAsCell({
 	isSyncingCellValueToTable: boolean;
 	page: SelectPage;
 }) {
-	const { mutate: replacePage } = trpc.pages.replacePage.useMutation();
+	const debouncedReplacePage = useDebouncedReplacePage({
+		page,
+		columnName: column.name,
+		onSettled: () => setHasUnsavedChanges(false),
+	});
 	const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 	const [internalValue, setInternalValue] = useState(value);
 	const [previousValue, setPreviousValue] = useState(value);
@@ -66,12 +90,6 @@ export function RenderValueAsCell({
 	const TRIGGER_CLASS = cn(
 		buttonVariants({ variant: !isDisabled ? "ghost" : "secondary" }),
 		"h-full w-full justify-start truncate rounded-none py-0 font-normal min-h-10",
-	);
-
-	const debouncedReplacePage = useDebouncedCallback(
-		(page: SelectPage) =>
-			replacePage(page, { onSettled: () => setHasUnsavedChanges(false) }),
-		DEBOUNCE_MS,
 	);
 
 	const onChange = (newValue: PagePropertyValue) => {
