@@ -29,6 +29,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 import { FancyBox } from "./FancyBox";
+import { TiptapEditor } from "@/components/tip-tap/TiptapEditor";
 
 const DEBOUNCE_MS = 500;
 export type SaveStatus = "Saved" | "Unsaved";
@@ -137,12 +138,12 @@ export function RenderValueAsCell({
 					</DialogTrigger>
 
 					<DialogContent className="flex h-full max-h-[calc(100vh-4rem)] w-full max-w-7xl flex-col overflow-y-auto">
-						{/* <TiptapEditor
+						<TiptapEditor
 							value={displayValue}
 							setValue={onChange}
 							saveStatus={saveStatus}
 							page={page}
-						/> */}
+						/>
 					</DialogContent>
 				</Dialog>
 			);
