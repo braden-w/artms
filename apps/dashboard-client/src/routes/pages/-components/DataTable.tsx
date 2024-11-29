@@ -277,9 +277,6 @@ export function DataTable() {
 		},
 	});
 
-	if (isPagesPending) return <p>Loading...</p>;
-	if (pagesError) return <p>Error: {JSON.stringify(pagesError)}</p>;
-
 	return (
 		<div className="p-4 flex flex-col justify-center gap-2">
 			<FilterForm
