@@ -46,7 +46,17 @@ export function RenderValue({
 }) {
 	const { mutate: replacePage, isPending: isReplacePagePending } =
 		trpc.pages.replacePage.useMutation();
+	const [internalValue, setInternalValue] = useState(value);
+	const [previousValue, setPreviousValue] = useState(value);
+	if (value !== previousValue) {
+		setPreviousValue(value);
+		setInternalValue(value);
+	}
 
+	const id = `${page.id}-${column.name}`;
+	const displayValue = isStringArray(internalValue)
+		? JSON.stringify(internalValue)
+		: (internalValue ?? "");
 	const isDisabled =
 		(column.filter && !evaluateFilter(page, column.filter)) ?? false;
 	const saveStatus: SaveStatus =
@@ -55,19 +65,6 @@ export function RenderValue({
 		buttonVariants({ variant: !isDisabled ? "ghost" : "secondary" }),
 		"h-full w-full justify-start truncate rounded-none py-0 font-normal min-h-10",
 	);
-
-	const id = `${page.id}-${column.name}`;
-
-	const [internalValue, setInternalValue] = useState(value);
-	const [previousValue, setPreviousValue] = useState(value);
-	if (value !== previousValue) {
-		setPreviousValue(value);
-		setInternalValue(value);
-	}
-
-	const displayValue = isStringArray(internalValue)
-		? JSON.stringify(internalValue)
-		: (internalValue ?? "");
 
 	const onChange = (newValue: PagePropertyValue) => {
 		/* Make update synchronous, to avoid caret jumping when the value doesn't change asynchronously */
