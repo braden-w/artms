@@ -9,15 +9,14 @@ const VIDEO_ID = "thst-430-1";
 processVideoRelease(VIDEO_ID);
 
 async function processVideoRelease(videoId: string) {
+	const videoFolderPath = path.resolve(videoId);
+	const inputFolderPath = path.join(videoFolderPath, "input");
 	const {
-		inputs: {
-			script,
-			narrationFileStream,
-			narrationPath,
-			backgroundVideoFilePath,
-		},
-		outputs: { outputVideoPath: videoPath, srtPath },
-	} = await createFolderPaths(videoId);
+		script,
+		narrationFileStream,
+		narrationPath,
+		backgroundVideoFilePath,
+	} = await getAndValidateInputFiles(inputFolderPath);
 
 	if (!process.env.OPENAI_API_KEY) {
 		throw new Error("OPENAI_API_KEY environment variable is required");
@@ -39,26 +38,32 @@ async function processVideoRelease(videoId: string) {
 		console.log(`Word: ${word.word}, Start: ${word.start}, End: ${word.end}`);
 	}
 
+	const outputFolderPath = path.join(videoFolderPath, "output");
+	const targetOutputVideoPath = path.join(outputFolderPath, "output.mp4");
+	const outputSrtPath = path.join(outputFolderPath, "transcript.srt");
+
 	const srtFilePath = await createSrtFile({
 		words: transcript.words,
-		outputPath: srtPath,
+		outputPath: outputSrtPath,
 	});
 
 	const outputVideoPath = await burnSubtitlesAndOverlayAudio({
 		backgroundVideoFilePath,
 		audioFilePath: narrationPath,
 		srtFilePath,
-		outputVideoPath: videoPath,
+		outputVideoPath: targetOutputVideoPath,
 	});
 
 	return outputVideoPath;
 }
 
-async function createFolderPaths(videoId: string) {
-	const folderPath = path.resolve(videoId);
-	const markdownScriptPath = path.join(folderPath, "script.md");
-	const narrationPath = path.join(folderPath, "recording.m4a");
-	const backgroundVideoFilePath = path.join(folderPath, "background_video.mov");
+async function getAndValidateInputFiles(inputFolderPath: string) {
+	const markdownScriptPath = path.join(inputFolderPath, "script.md");
+	const narrationPath = path.join(inputFolderPath, "recording.m4a");
+	const backgroundVideoFilePath = path.join(
+		inputFolderPath,
+		"background_video.mov",
+	);
 
 	const [isMarkdownScriptExists, isNarrationExists, isBackgroundVideoExists] =
 		await Promise.all([
@@ -77,16 +82,10 @@ async function createFolderPaths(videoId: string) {
 	const narrationFileStream = createReadStream(narrationPath);
 
 	return {
-		inputs: {
-			script,
-			narrationFileStream,
-			narrationPath,
-			backgroundVideoFilePath,
-		},
-		outputs: {
-			outputVideoPath: path.join(folderPath, "output.mp4"),
-			srtPath: path.join(folderPath, "transcript.srt"),
-		},
+		script,
+		narrationPath,
+		narrationFileStream,
+		backgroundVideoFilePath,
 	};
 }
 
@@ -156,13 +155,13 @@ async function burnSubtitlesAndOverlayAudio({
 }) {
 	const proc =
 		await Bun.$`ffmpeg -i ${backgroundVideoFilePath} -i ${audioFilePath} \
-      -filter_complex "[0:v]subtitles=${srtFilePath}:force_style='FontName=Lato-Black,FontSize=12,PrimaryColour=&H000000,OutlineColour=&HFFFFFF,Outline=3,BorderStyle=3,Alignment=2,MarginV=42'[v];[0:a]volume=0.1[bg_audio];[1:a][bg_audio]amix=inputs=2:duration=shortest[a]" \
-      -map "[v]" -map "[a]" \
-      -c:v libx264 -preset slow -crf 23 -profile:v high \
-      -pix_fmt yuv420p -movflags +faststart \
-      -c:a aac -b:a 192k \
-      -r 30 -g 60 -bf 2 \
-      -shortest -y ${outputVideoPath}`;
+						-filter_complex "[0:v]subtitles=${srtFilePath}:force_style='FontName=Lato-Black,FontSize=12,PrimaryColour=&H000000,OutlineColour=&HFFFFFF,Outline=3,BorderStyle=3,Alignment=2,MarginV=42'[v];[0:a]volume=0.1[bg_audio];[1:a][bg_audio]amix=inputs=2:duration=shortest[a]" \
+						-map "[v]" -map "[a]" \
+						-c:v libx264 -preset slow -crf 23 -profile:v high \
+						-pix_fmt yuv420p -movflags +faststart \
+						-c:a aac -b:a 192k \
+						-r 30 -g 60 -bf 2 \
+						-shortest -y ${outputVideoPath}`;
 
 	console.log(`Video with subtitles saved as ${outputVideoPath}`);
 	console.log(proc.stdout);
