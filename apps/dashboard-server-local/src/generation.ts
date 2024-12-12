@@ -38,19 +38,22 @@ async function processVideoRelease(videoId: string) {
 		console.log(`Word: ${word.word}, Start: ${word.start}, End: ${word.end}`);
 	}
 
-	const outputFolderPath = path.join(videoFolderPath, "output");
-	const targetOutputVideoPath = path.join(outputFolderPath, "output.mp4");
-	const outputSrtPath = path.join(outputFolderPath, "transcript.srt");
+	const targetOutputFolderPath = path.join(videoFolderPath, "output");
+	const targetOutputVideoPath = path.join(targetOutputFolderPath, "output.mp4");
+	const targetOutputSrtPath = path.join(
+		targetOutputFolderPath,
+		"transcript.srt",
+	);
 
-	const srtFilePath = await createSrtFile({
+	const outputSrtFilePath = await createSrtFile({
 		words: transcript.words,
-		outputPath: outputSrtPath,
+		outputPath: targetOutputSrtPath,
 	});
 
 	const outputVideoPath = await burnSubtitlesAndOverlayAudio({
 		backgroundVideoFilePath,
 		audioFilePath: narrationPath,
-		srtFilePath,
+		srtFilePath: outputSrtFilePath,
 		outputVideoPath: targetOutputVideoPath,
 	});
 
