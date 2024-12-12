@@ -4,9 +4,8 @@ import * as path from "node:path";
 import OpenAI from "openai";
 import type { TranscriptionWord } from "openai/resources/audio/transcriptions";
 
-const VIDEO_ID = "thst-430-1";
-
-processVideoRelease(VIDEO_ID);
+processVideoRelease("thst-430-1");
+processVideoRelease("thst-430-2");
 
 async function processVideoRelease(videoId: string) {
 	const videoFolderPath = path.resolve(videoId);
