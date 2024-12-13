@@ -14,7 +14,7 @@ export const Route = createFileRoute("/pages/$id")({
 function Page() {
 	const { id } = Route.useParams();
 	return (
-		<main className="container max-w-7xl">
+		<main className="container max-w-5xl">
 			<PageEditor id={id} />
 		</main>
 	);
