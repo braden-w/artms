@@ -55,9 +55,9 @@ export function TextMenu({
 			}}
 			updateDelay={100}
 		>
-			<Toolbar.Wrapper>
+			<div className="bg-card text-card-foreground inline-flex h-8 leading-none gap-1">
 				<ContentTypePicker editor={editor} />
-				<Toolbar.Divider />
+				<Separator orientation="vertical" className="mx-1" />
 				<Toolbar.Button
 					tooltip="Bold"
 					tooltipShortcut={["Mod", "B"]}
@@ -191,7 +191,7 @@ export function TextMenu({
 				>
 					<TiptapIcon name="Quote" />
 				</Toolbar.Button>
-			</Toolbar.Wrapper>
+			</div>
 		</BubbleMenu>
 	);
 }
