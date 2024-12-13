@@ -35,7 +35,7 @@ export const Route = createRootRouteWithContext<{
 					<ModeToggle />
 				</header>
 
-				<main className="flex-1 bg-background/80">
+				<main className="container flex-1 bg-background/80">
 					<Outlet />
 				</main>
 			</div>
