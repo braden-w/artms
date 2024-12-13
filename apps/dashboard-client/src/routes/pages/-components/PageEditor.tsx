@@ -31,11 +31,7 @@ import {
 
 export function PageEditorDialog({ id }: { id: string }) {
 	return (
-		<Dialog
-			onOpenChange={(isOpen) => {
-				if (!isOpen) onBlur();
-			}}
-		>
+		<Dialog>
 			<DialogTrigger asChild>
 				<Button variant="ghost" size="icon">
 					<EditIcon />
