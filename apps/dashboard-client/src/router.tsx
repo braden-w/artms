@@ -20,7 +20,7 @@ const trpcClient = trpc.createClient({
 	],
 });
 
-export const clientUtils = createTRPCQueryUtils({
+export const trpcQueryUtils = createTRPCQueryUtils({
 	queryClient,
 	client: trpcClient,
 });
@@ -39,6 +39,9 @@ export const createRouter = () =>
 				</trpc.Provider>
 			);
 		},
+		defaultPreload: "intent",
+		defaultPreloadStaleTime: 0,
+		context: { trpcQueryUtils },
 	});
 
 // Register the router instance for type safety

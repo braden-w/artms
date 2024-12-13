@@ -1,4 +1,3 @@
-import { clientUtils } from "@/router";
 import { searchSchema } from "@repo/dashboard-server/searchSchema";
 import { createFileRoute } from "@tanstack/react-router";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";
@@ -14,8 +13,8 @@ export const Route = createFileRoute("/pages/")({
 		limit: search.limit,
 		offset: search.offset,
 	}),
-	loader: async ({ deps }) =>
-		clientUtils.pages.getPagesByWhereClause.ensureData({
+	loader: async ({ deps, context: { trpcQueryUtils } }) =>
+		trpcQueryUtils.pages.getPagesByWhereClause.ensureData({
 			filter: deps.filter,
 			orderBy: deps.orderBy,
 			limit: deps.limit,
