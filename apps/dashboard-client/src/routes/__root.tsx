@@ -1,13 +1,16 @@
 import logoImage from "@/assets/logo.jpeg?w=64&h=64";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
+import type { trpcQueryUtils } from "@/router";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { Outlet, createRootRoute } from "@tanstack/react-router";
+import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 
 const NAME = "braden";
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<{
+	trpcQueryUtils: typeof trpcQueryUtils;
+}>()({
 	component: () => (
 		<>
 			<div className="flex min-h-screen flex-col">
