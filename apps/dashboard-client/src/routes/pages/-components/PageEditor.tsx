@@ -44,9 +44,6 @@ export function PageEditorDialog({ id }: { id: string }) {
 	);
 }
 
-const pageToTitleSubtitleContent = (page: SelectPage) =>
-	`# ${page.title ?? ""}\n\n## ${page.subtitle ?? ""}\n\n${page.content ?? ""}`;
-
 export function PageEditor({ id }: { id: string }) {
 	const { debouncedReplacePage, saveStatus } = useDebouncedReplacePage();
 	const [page] = trpc.pages.getPageById.useSuspenseQuery({ id });
@@ -89,7 +86,7 @@ export function PageEditor({ id }: { id: string }) {
 		return { title, subtitle, content };
 	};
 
-	const titleSubtitleContent = pageToTitleSubtitleContent(page);
+	const titleSubtitleContent = `# ${page.title ?? ""}\n\n## ${page.subtitle ?? ""}\n\n${page.content ?? ""}`;
 	const titleSubtitle = `# ${page.title ?? ""}\n\n## ${page.subtitle ?? ""}`;
 
 	return (
