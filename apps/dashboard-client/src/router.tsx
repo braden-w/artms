@@ -39,6 +39,8 @@ export const createRouter = () =>
 				</trpc.Provider>
 			);
 		},
+		defaultPreload: "intent",
+		defaultPreloadStaleTime: 0,
 	});
 
 // Register the router instance for type safety
