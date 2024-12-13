@@ -67,10 +67,6 @@ export function TiptapEditor({
 		}
 	}, [editor, value]);
 
-	const characterCount = editor?.storage.characterCount || {
-		characters: () => 0,
-		words: () => 0,
-	};
 	if (!editor) return null;
 	return (
 		<div className="flex h-full" ref={menuContainerRef}>
