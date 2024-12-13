@@ -1,3 +1,8 @@
+import {
+	ResizableHandle,
+	ResizablePanel,
+	ResizablePanelGroup,
+} from "@/components/ui/resizable";
 import { TiptapEditor } from "@/components/tip-tap/TiptapEditor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,16 +14,10 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import {
-	ResizableHandle,
-	ResizablePanel,
-	ResizablePanelGroup,
-} from "@/components/ui/resizable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/router";
 import { evaluateFilter } from "@repo/dashboard-server/conditions";
-import type { SelectPage } from "@repo/dashboard-server/db/schema/pages";
 import { useQuery } from "@tanstack/react-query";
 import { EditIcon, X } from "lucide-react";
 import {
@@ -26,6 +25,7 @@ import {
 	type SaveStatus,
 	useDebouncedReplacePage,
 } from "./RenderValue";
+
 // import { CommandPalette } from "./CommandPalette";
 // import { promptButtons } from "./prompts";
 
@@ -90,42 +90,45 @@ export function PageEditor({ id }: { id: string }) {
 	const titleSubtitle = `# ${page.title ?? ""}\n\n## ${page.subtitle ?? ""}`;
 
 	return (
-		<div className="flex max-h-[calc(100vh-8rem)] flex-col gap-2">
-			<dl className="-my-3 divide-y divide-muted text-sm">
-				{columns
-					.filter(({ filter }) => {
-						const isColumnShouldBeVisible =
-							!filter || evaluateFilter(page, filter);
-						return isColumnShouldBeVisible;
-					})
-					.map((column) => (
-						<div
-							className="grid grid-cols-1 gap-1 sm:grid-cols-3 sm:gap-4"
-							key={column.name}
-						>
-							<dt className="p-2 font-medium text-foreground">{column.name}</dt>
-							<dd className="text-foreground sm:col-span-2">
-								<RenderValueAsCell
-									value={page[column.name]}
-									column={column}
-									page={page}
-								/>
-							</dd>
-						</div>
-					))}
-			</dl>
-			<div className="flex flex-wrap items-center gap-2 rounded-md bg-muted p-1">
-				{/* {promptButtons.map(({ label, component: Component }, index) => (
+		<ResizablePanelGroup direction="vertical" className="h-full">
+			<div className="overflow-y-auto">
+				<dl className="divide-y divide-muted text-sm">
+					{columns
+						.filter(({ filter }) => {
+							const isColumnShouldBeVisible =
+								!filter || evaluateFilter(page, filter);
+							return isColumnShouldBeVisible;
+						})
+						.map((column) => (
+							<div
+								className="grid grid-cols-1 gap-1 sm:grid-cols-3 sm:gap-4"
+								key={column.name}
+							>
+								<dt className="p-2 font-medium text-foreground">
+									{column.name}
+								</dt>
+								<dd className="text-foreground sm:col-span-2">
+									<RenderValueAsCell
+										value={page[column.name]}
+										column={column}
+										page={page}
+									/>
+								</dd>
+							</div>
+						))}
+				</dl>
+				<div className="flex flex-wrap items-center gap-2 rounded-md bg-muted p-1">
+					{/* {promptButtons.map(({ label, component: Component }, index) => (
 					<Component key={label} page={page} setPage={setPageSaveDbDebounce} />
 				))} */}
-				{/* <SuggestOnTypeResonance page={page} setPage={setPageSaveDbDebounce} />
+					{/* <SuggestOnTypeResonance page={page} setPage={setPageSaveDbDebounce} />
 					<SuggestTitleSubtitle page={page} setPage={setPageSaveDbImmediate} /> */}
-				{/* <SuggestFromVoiceTranscript
+					{/* <SuggestFromVoiceTranscript
 						page={page}
 						setPage={setPageSaveDbImmediate}
 					/> */}
-			</div>
-			{/* <div className="p-1 bg-muted flex gap-2 items-center rounded-md">
+				</div>
+				{/* <div className="p-1 bg-muted flex gap-2 items-center rounded-md">
 				<Button
 					onClick={() =>
 						createRelease({
@@ -183,66 +186,69 @@ export function PageEditor({ id }: { id: string }) {
 					</SheetContent>
 				</Sheet>
 			</div> */}
-			<Tabs defaultValue="single">
-				<div className="flex items-center justify-between">
-					<TabsList>
-						<TabsTrigger value="single">Main Editor</TabsTrigger>
-						<TabsTrigger value="split">Split Editor</TabsTrigger>
-					</TabsList>
-				</div>
+			</div>
+			<div className="overflow-y-auto">
+				<Tabs defaultValue="single">
+					<div className="flex items-center justify-between">
+						<TabsList>
+							<TabsTrigger value="single">Main Editor</TabsTrigger>
+							<TabsTrigger value="split">Split Editor</TabsTrigger>
+						</TabsList>
+					</div>
 
-				<TabsContent value="single">
-					<TiptapEditor
-						key={page.id}
-						value={titleSubtitleContent}
-						setValue={(text) => {
-							const { title, subtitle, content } = processText(text);
-							debouncedReplacePage({ ...page, title, subtitle, content });
-						}}
-						saveStatus={saveStatus}
-						page={page}
-					/>
-				</TabsContent>
-				<TabsContent value="split">
-					<TiptapEditor
-						key={`${page.id}-title-subtitle`}
-						value={titleSubtitle}
-						setValue={(text) => {
-							const { title, subtitle } = processText(text);
-							debouncedReplacePage({ ...page, title, subtitle });
-						}}
-						saveStatus={saveStatus}
-						page={page}
-					/>
-					<SplitEditor
-						key={`${page.id}-split`}
-						draftText={page.content_draft ?? ""}
-						setDraftText={(text) =>
-							debouncedReplacePage({ ...page, content_draft: text })
-						}
-						reviewText={page.content_review ?? ""}
-						setReviewText={(text) =>
-							debouncedReplacePage({ ...page, content_review: text })
-						}
-						contentText={page.content ?? ""}
-						setContentText={(text) =>
-							debouncedReplacePage({ ...page, content: text })
-						}
-						saveStatus={saveStatus}
-						page={page}
-					/>
-				</TabsContent>
-			</Tabs>
-			{/* TODO: Restore Inbound and Outbound Links */}
-			{/* <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					<TabsContent value="single">
+						<TiptapEditor
+							key={page.id}
+							value={titleSubtitleContent}
+							setValue={(text) => {
+								const { title, subtitle, content } = processText(text);
+								debouncedReplacePage({ ...page, title, subtitle, content });
+							}}
+							saveStatus={saveStatus}
+							page={page}
+						/>
+					</TabsContent>
+					<TabsContent value="split">
+						<TiptapEditor
+							key={`${page.id}-title-subtitle`}
+							value={titleSubtitle}
+							setValue={(text) => {
+								const { title, subtitle } = processText(text);
+								debouncedReplacePage({ ...page, title, subtitle });
+							}}
+							saveStatus={saveStatus}
+							page={page}
+						/>
+						<SplitEditor
+							key={`${page.id}-split`}
+							draftText={page.content_draft ?? ""}
+							setDraftText={(text) =>
+								debouncedReplacePage({ ...page, content_draft: text })
+							}
+							reviewText={page.content_review ?? ""}
+							setReviewText={(text) =>
+								debouncedReplacePage({ ...page, content_review: text })
+							}
+							contentText={page.content ?? ""}
+							setContentText={(text) =>
+								debouncedReplacePage({ ...page, content: text })
+							}
+							saveStatus={saveStatus}
+							page={page}
+						/>
+					</TabsContent>
+				</Tabs>
+				{/* TODO: Restore Inbound and Outbound Links */}
+				{/* <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 					<InboundLinks page={page} setPage={setPageSaveDbDebounce} />
 					<OutboundLinks page={page} />
 				</div> */}
-			{/* <Button as-child>
+				{/* <Button as-child>
 				<a :href="`/notes/${page.id}/suggest`">Suggest Connections</a>
 			</Button> */}
-			{/* <CommandPalette page={page} setPage={setPageSaveDbImmediate} /> */}
-		</div>
+				{/* <CommandPalette page={page} setPage={setPageSaveDbImmediate} /> */}
+			</div>
+		</ResizablePanelGroup>
 	);
 }
 
