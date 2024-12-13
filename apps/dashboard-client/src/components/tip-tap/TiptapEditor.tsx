@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import type { SaveStatus } from "@/routes/pages/-components/RenderValue";
 import type { SelectPage } from "@repo/dashboard-server/schema";
 import { EditorContent, useEditor } from "@tiptap/react";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { LinkMenu } from "./menus/LinkMenu";
 import { TextMenu } from "./menus/TextMenu";
 import { trpc } from "@/router";
@@ -61,12 +61,11 @@ export function TiptapEditor({
 		},
 	});
 
-	// Sync the editor content with the value
-	// useEffect(() => {
-	// 	if (editor && editor.storage.markdown.getMarkdown() !== value) {
-	// 		editor.commands.setContent(value);
-	// 	}
-	// }, [editor, value]);
+	useEffect(() => {
+		if (editor && editor.storage.markdown.getMarkdown() !== value) {
+			editor.commands.setContent(value, false);
+		}
+	}, [editor, value]);
 
 	const characterCount = editor?.storage.characterCount || {
 		characters: () => 0,
