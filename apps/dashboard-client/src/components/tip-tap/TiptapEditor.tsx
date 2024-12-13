@@ -8,7 +8,7 @@ import { LinkMenu } from "./menus/LinkMenu";
 import { TextMenu } from "./menus/TextMenu";
 import { trpc } from "@/router";
 
-const proseClasses = [
+const PROSE_CLASSES = [
 	"prose dark:prose-invert",
 	"prose-sm sm:prose-base md:prose-lg lg:prose-xl",
 	"prose-img:mx-auto prose-img:max-h-[36rem] sm:prose-img:max-h-[48rem]",
@@ -41,7 +41,6 @@ export function TiptapEditor({
 	const menuContainerRef = useRef<HTMLDivElement>(null);
 	const editorRef = useRef<HTMLDivElement>(null);
 	const editor = useEditor({
-		// Set the initial content to the value
 		content: value,
 		onUpdate: ({ editor }) => {
 			const newValue = editor.storage.markdown.getMarkdown() as string;
@@ -57,8 +56,7 @@ export function TiptapEditor({
 				autocomplete: "off",
 				autocorrect: "off",
 				autocapitalize: "off",
-				// class: 'min-h-full',
-				class: cn(proseClasses, "focus:outline-none max-w-full"),
+				class: cn(PROSE_CLASSES, "focus:outline-none max-w-full"),
 			},
 		},
 	});
