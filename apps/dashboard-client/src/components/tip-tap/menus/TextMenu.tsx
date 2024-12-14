@@ -14,68 +14,20 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/router";
-import {
-	autoUpdate,
-	flip,
-	offset,
-	shift,
-	useFloating,
-} from "@floating-ui/react";
 import * as Popover from "@radix-ui/react-popover";
 import type { SelectPage } from "@repo/dashboard-server/db/schema/pages";
 import { generateDefaultPage } from "@repo/dashboard-server/utils";
 import {
 	Node,
 	type NodeViewRendererProps,
-	isNodeSelection,
 	isTextSelection,
-	posToDOMRect,
 } from "@tiptap/core";
 import type { Editor } from "@tiptap/react";
 import { NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
 import type { icons } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
-const useFloatingMenu = ({ editor }: { editor: Editor }) => {
-	const [open, setOpen] = useState(false);
-
-	const { floatingStyles, refs } = useFloating({
-		placement: "top",
-		middleware: [offset(8), shift(), flip()],
-		whileElementsMounted: autoUpdate,
-		strategy: "fixed",
-	});
-
-	useEffect(() => {
-		const updatePosition = () => {
-			const virtualElement = {
-				...editor.view.dom,
-
-				getBoundingClientRect: () => {
-					const { state } = editor;
-					const { from, to } = state.selection;
-
-					if (isNodeSelection(state.selection)) {
-						const node = editor.view.nodeDOM(from) as HTMLElement;
-						if (node) return node.getBoundingClientRect();
-					}
-
-					return posToDOMRect(editor.view, from, to);
-				},
-			} satisfies Element;
-
-			refs.setPositionReference(virtualElement);
-		};
-
-		editor.on("selectionUpdate", updatePosition);
-		return () => {
-			editor.off("selectionUpdate", updatePosition);
-		};
-	}, [editor, refs]);
-
-	return { refs, floatingStyles, open, setOpen };
-};
+import { useFloatingMenu } from "./useFloatingMenu";
 
 export function TextMenu({
 	editor,
