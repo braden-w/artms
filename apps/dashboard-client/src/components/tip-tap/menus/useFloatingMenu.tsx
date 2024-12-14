@@ -21,7 +21,8 @@ export function useFloatingMenu({ editor }: { editor: Editor }) {
 	});
 
 	useUpdateFloatingMenuPositionReferenceOnEditorSelection({ editor, refs });
-	useUpdateFloatingMenuVisibilityOnEditorSelectionAndBlur({ editor, setOpen });
+	useUpdateFloatingMenuVisibilityOnEditorSelection({ editor, setOpen });
+	useCloseFloatingMenuOnBlur({ editor, setOpen });
 
 	return { refs, floatingStyles, open, setOpen };
 }
@@ -56,7 +57,7 @@ function useUpdateFloatingMenuPositionReferenceOnEditorSelection<
 	}, [editor, refs]);
 }
 
-function useUpdateFloatingMenuVisibilityOnEditorSelectionAndBlur({
+function useUpdateFloatingMenuVisibilityOnEditorSelection({
 	editor,
 	setOpen,
 }: {
@@ -76,10 +77,20 @@ function useUpdateFloatingMenuVisibilityOnEditorSelectionAndBlur({
 		};
 
 		editor.on("selectionUpdate", updateFloatingMenuVisibility);
-		editor.on("blur", () => setOpen(false));
 
 		return () => {
 			editor.off("selectionUpdate", updateFloatingMenuVisibility);
+		};
+	}, [editor, setOpen]);
+}
+
+function useCloseFloatingMenuOnBlur({
+	editor,
+	setOpen,
+}: { editor: Editor; setOpen: (open: boolean) => void }) {
+	useEffect(() => {
+		editor.on("blur", () => setOpen(false));
+		return () => {
 			editor.off("blur", () => setOpen(false));
 		};
 	}, [editor, setOpen]);
