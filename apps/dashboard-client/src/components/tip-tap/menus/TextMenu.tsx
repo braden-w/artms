@@ -39,28 +39,31 @@ import { toast } from "sonner";
 
 const useFloatingMenu = ({ editor }: { editor: Editor }) => {
 	const [open, setOpen] = useState(false);
-	const virtualElement = {
-		...editor.view.dom,
-		getBoundingClientRect: () => {
-			const { state } = editor;
-			const { from, to } = state.selection;
-
-			if (isNodeSelection(state.selection)) {
-				const node = editor.view.nodeDOM(from) as HTMLElement;
-				if (node) return node.getBoundingClientRect();
-			}
-
-			return posToDOMRect(editor.view, from, to);
-		},
-	} satisfies Element;
 
 	const floating = useFloating({
 		middleware: [offset(8), shift(), flip()],
 		whileElementsMounted: autoUpdate,
 		placement: "top",
 		strategy: "fixed",
-		elements: { reference: virtualElement },
 	});
+
+	useEffect(() => {
+		const virtualElement = {
+			...editor.view.dom,
+			getBoundingClientRect: () => {
+				const { state } = editor;
+				const { from, to } = state.selection;
+
+				if (isNodeSelection(state.selection)) {
+					const node = editor.view.nodeDOM(from) as HTMLElement;
+					if (node) return node.getBoundingClientRect();
+				}
+
+				return posToDOMRect(editor.view, from, to);
+			},
+		} satisfies Element;
+		floating.refs.setPositionReference(virtualElement);
+	}, [editor, floating.refs]);
 
 	return { ...floating, open, setOpen };
 };
