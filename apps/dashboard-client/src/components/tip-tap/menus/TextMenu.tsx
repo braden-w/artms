@@ -190,27 +190,16 @@ export function TextMenu({
 							.run()
 					}
 				/>
-				<Popover.Root>
-					<Popover.Trigger asChild>
-						<ToggleButtonWithTooltip
-							icon="Highlighter"
-							tooltipTitle="Highlight text"
-							onClick={() => editor.chain().focus().toggleHighlight().run()}
-							isActive={editor.isActive("highlight")}
-						/>
-					</Popover.Trigger>
-					<Popover.Content side="top" sideOffset={8} asChild>
-						<Surface className="p-1">
-							{/* <MemoColorPicker
-                color={states.currentHighlight}
-                onChange={() => editor.chain().setHighlight().run()}
-                onClear={() => editor.chain().focus().unsetHighlight().run()}
-            /> */}
-						</Surface>
-					</Popover.Content>
-				</Popover.Root>
-				<Toolbar.Button
-					tooltip="Extract to new page"
+				<ToggleButtonWithTooltip
+					icon="Highlighter"
+					tooltipTitle="Highlight text"
+					onClick={() => editor.chain().focus().toggleHighlight().run()}
+					isActive={editor.isActive("highlight")}
+				/>
+
+				<ToggleButtonWithTooltip
+					icon="ExternalLink"
+					tooltipTitle="Extract to new page"
 					onClick={async () => {
 						const { from, to } = editor.view.state.selection;
 						const selectedText = editor.view.state.doc.textBetween(
@@ -233,11 +222,10 @@ export function TextMenu({
 						editor.chain().focus().insertContent(pageLink).run();
 					}}
 					isActive={false}
-				>
-					<TiptapIcon name="ExternalLink" />
-				</Toolbar.Button>
-				<Toolbar.Button
-					tooltip="Quote"
+				/>
+				<ToggleButtonWithTooltip
+					icon="Youtube"
+					tooltipTitle="Youtube"
 					onClick={() => {
 						const url = prompt("Enter YouTube URL");
 
@@ -250,9 +238,7 @@ export function TextMenu({
 						}
 					}}
 					isActive={false}
-				>
-					<TiptapIcon name="Quote" />
-				</Toolbar.Button>
+				/>
 			</div>
 		</div>
 	);
