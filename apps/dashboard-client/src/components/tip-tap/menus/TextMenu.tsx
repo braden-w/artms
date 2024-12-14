@@ -38,26 +38,11 @@ export function TextMenu({
 			toast.success("Success", { description: "Row added!" });
 		},
 	});
-	const { refs, floatingStyles, open, setOpen } = useFloatingMenu({ editor });
+	const { refs, floatingStyles, isFloatingMenuOpen } = useFloatingMenu({
+		editor,
+	});
 
-	useEffect(() => {
-		const handleSelectionUpdate = () => {
-			const { state } = editor;
-			const { empty: isSelectionEmpty, from, to } = state.selection;
-			const isEmptyTextBlock = !state.doc.textBetween(from, to).length;
-			setOpen(!isSelectionEmpty && !isEmptyTextBlock && editor.isEditable);
-		};
-
-		editor.on("selectionUpdate", handleSelectionUpdate);
-		editor.on("blur", () => setOpen(false));
-
-		return () => {
-			editor.off("selectionUpdate", handleSelectionUpdate);
-			editor.off("blur", () => setOpen(false));
-		};
-	}, [editor, setOpen]);
-
-	if (!open) return null;
+	if (!isFloatingMenuOpen) return null;
 
 	return (
 		<div
