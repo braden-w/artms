@@ -40,32 +40,41 @@ import { toast } from "sonner";
 const useFloatingMenu = ({ editor }: { editor: Editor }) => {
 	const [open, setOpen] = useState(false);
 
-	const floating = useFloating({
+	const { floatingStyles, refs } = useFloating({
+		placement: "top",
 		middleware: [offset(8), shift(), flip()],
 		whileElementsMounted: autoUpdate,
-		placement: "top",
 		strategy: "fixed",
 	});
 
 	useEffect(() => {
-		const virtualElement = {
-			...editor.view.dom,
-			getBoundingClientRect: () => {
-				const { state } = editor;
-				const { from, to } = state.selection;
+		const updatePosition = () => {
+			const virtualElement = {
+				...editor.view.dom,
 
-				if (isNodeSelection(state.selection)) {
-					const node = editor.view.nodeDOM(from) as HTMLElement;
-					if (node) return node.getBoundingClientRect();
-				}
+				getBoundingClientRect: () => {
+					const { state } = editor;
+					const { from, to } = state.selection;
 
-				return posToDOMRect(editor.view, from, to);
-			},
-		} satisfies Element;
-		floating.refs.setPositionReference(virtualElement);
-	}, [editor, floating.refs]);
+					if (isNodeSelection(state.selection)) {
+						const node = editor.view.nodeDOM(from) as HTMLElement;
+						if (node) return node.getBoundingClientRect();
+					}
 
-	return { ...floating, open, setOpen };
+					return posToDOMRect(editor.view, from, to);
+				},
+			} satisfies Element;
+
+			refs.setPositionReference(virtualElement);
+		};
+
+		editor.on("selectionUpdate", updatePosition);
+		return () => {
+			editor.off("selectionUpdate", updatePosition);
+		};
+	}, [editor, refs]);
+
+	return { refs, floatingStyles, open, setOpen };
 };
 
 export function TextMenu({
@@ -80,14 +89,12 @@ export function TextMenu({
 	const { refs, floatingStyles, open, setOpen } = useFloatingMenu({ editor });
 
 	useEffect(() => {
-		const handleSelectionUpdate = () =>
-			requestAnimationFrame(() => {
-				const { state } = editor;
-				const { empty: isSelectionEmpty, from, to } = state.selection;
-				const isEmptyTextBlock = !state.doc.textBetween(from, to).length;
-
-				setOpen(!isSelectionEmpty && !isEmptyTextBlock && editor.isEditable);
-			});
+		const handleSelectionUpdate = () => {
+			const { state } = editor;
+			const { empty: isSelectionEmpty, from, to } = state.selection;
+			const isEmptyTextBlock = !state.doc.textBetween(from, to).length;
+			setOpen(!isSelectionEmpty && !isEmptyTextBlock && editor.isEditable);
+		};
 
 		editor.on("selectionUpdate", handleSelectionUpdate);
 		editor.on("blur", () => setOpen(false));
