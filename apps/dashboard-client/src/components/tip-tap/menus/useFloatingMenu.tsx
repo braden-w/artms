@@ -1,14 +1,8 @@
 import type { ExtendedRefs, ReferenceType } from "@floating-ui/react";
-import {
-	autoUpdate,
-	flip,
-	offset,
-	shift,
-	useFloating,
-} from "@floating-ui/react";
+import { flip, offset, shift, useFloating } from "@floating-ui/react";
 import { isNodeSelection, posToDOMRect } from "@tiptap/core";
 import type { Editor } from "@tiptap/react";
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 
 export function useFloatingMenu({ editor }: { editor: Editor }) {
 	const [isFloatingMenuOpen, setIsFloatingMenuOpen] = useState(false);
@@ -16,8 +10,6 @@ export function useFloatingMenu({ editor }: { editor: Editor }) {
 	const { floatingStyles, refs } = useFloating({
 		placement: "top",
 		middleware: [offset(8), shift(), flip()],
-		whileElementsMounted: autoUpdate,
-		strategy: "fixed",
 	});
 
 	useUpdateFloatingMenuPositionReferenceOnEditorSelection({ editor, refs });
