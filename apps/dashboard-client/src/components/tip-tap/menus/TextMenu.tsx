@@ -12,6 +12,13 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
+import { Toggle } from "@/components/ui/toggle";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/router";
 import * as Popover from "@radix-ui/react-popover";
@@ -28,6 +35,73 @@ import type { icons } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useEditorFloatingMenu } from "./useFloatingMenu";
+
+const isMac =
+	typeof window !== "undefined"
+		? navigator.platform.toUpperCase().indexOf("MAC") >= 0
+		: false;
+
+function ToggleButtonWithTooltip({
+	tooltipTitle,
+	tooltipShortcut,
+	onClick,
+	icon: iconName,
+	isActive,
+}: {
+	tooltipTitle: string;
+	tooltipShortcut?: string[];
+	onClick: () => void;
+	icon: keyof typeof icons;
+	isActive: boolean;
+}) {
+	return (
+		<TooltipProvider>
+			<Tooltip>
+				<TooltipTrigger>
+					<Toggle
+						aria-label={tooltipTitle}
+						pressed={isActive}
+						onPressedChange={onClick}
+					>
+						<TiptapIcon name={iconName} />
+					</Toggle>
+				</TooltipTrigger>
+				<TooltipContent>
+					<span className="flex items-center gap-2 px-2.5 py-1 bg-white border border-neutral-100 rounded-lg shadow-sm z-[999]">
+						<span className="text-xs font-medium text-neutral-500">
+							{tooltipTitle}
+						</span>
+						{tooltipShortcut && (
+							<span className="flex items-center gap-0.5">
+								{tooltipShortcut.map((shortcutKey) => {
+									const shortcutKeyText = (() => {
+										if (shortcutKey === "Mod") {
+											return isMac ? "⌘" : "Ctrl";
+										}
+										if (shortcutKey === "Shift") {
+											return "⇧";
+										}
+										if (shortcutKey === "Alt") {
+											return isMac ? "⌥" : "Alt";
+										}
+										return shortcutKey;
+									})();
+									const className =
+										"inline-flex items-center justify-center w-5 h-5 p-1 text-[0.625rem] rounded font-semibold leading-none border border-neutral-200 text-neutral-500 border-b-2";
+									return (
+										<kbd className={className} key={shortcutKey}>
+											{shortcutKeyText}
+										</kbd>
+									);
+								})}
+							</span>
+						)}
+					</span>
+				</TooltipContent>
+			</Tooltip>
+		</TooltipProvider>
+	);
+}
 
 export function TextMenu({
 	editor,
@@ -53,66 +127,60 @@ export function TextMenu({
 			<div className="bg-card text-card-foreground inline-flex h-8 leading-none gap-1">
 				<ContentTypePicker editor={editor} />
 				<Separator orientation="vertical" className="mx-1" />
-				<Toolbar.Button
-					tooltip="Bold"
+				<ToggleButtonWithTooltip
+					icon="Bold"
+					tooltipTitle="Bold"
 					tooltipShortcut={["Mod", "B"]}
 					onClick={() => editor.chain().focus().toggleBold().run()}
 					isActive={editor.isActive("bold")}
-				>
-					<TiptapIcon name="Bold" />
-				</Toolbar.Button>
-				<Toolbar.Button
-					tooltip="Italic"
+				/>
+				<ToggleButtonWithTooltip
+					icon="Italic"
+					tooltipTitle="Italic"
 					tooltipShortcut={["Mod", "I"]}
 					onClick={() => editor.chain().focus().toggleItalic().run()}
 					isActive={editor.isActive("italic")}
-				>
-					<TiptapIcon name="Italic" />
-				</Toolbar.Button>
-				<Toolbar.Button
-					tooltip="Strikethrough"
+				/>
+				<ToggleButtonWithTooltip
+					icon="Strikethrough"
+					tooltipTitle="Strikethrough"
 					tooltipShortcut={["Mod", "Shift", "S"]}
 					onClick={() => editor.chain().focus().toggleStrike().run()}
 					isActive={editor.isActive("strike")}
-				>
-					<TiptapIcon name="Strikethrough" />
-				</Toolbar.Button>
-				<Toolbar.Button
-					tooltip="Subscript"
+				/>
+				<ToggleButtonWithTooltip
+					icon="Subscript"
+					tooltipTitle="Subscript"
 					onClick={() => editor.chain().focus().toggleSubscript().run()}
 					isActive={editor.isActive("subscript")}
-				>
-					<TiptapIcon name="Subscript" />
-				</Toolbar.Button>
-				<Toolbar.Button
-					tooltip="Superscript"
+				/>
+				<ToggleButtonWithTooltip
+					icon="Superscript"
+					tooltipTitle="Superscript"
 					onClick={() => editor.chain().focus().toggleSuperscript().run()}
 					isActive={editor.isActive("superscript")}
-				>
-					<TiptapIcon name="Superscript" />
-				</Toolbar.Button>
-				<Toolbar.Button
-					tooltip="Code"
+				/>
+				<ToggleButtonWithTooltip
+					icon="Code"
+					tooltipTitle="Code"
 					tooltipShortcut={["Mod", "E"]}
 					onClick={() => editor.chain().focus().toggleCode().run()}
 					isActive={editor.isActive("code")}
-				>
-					<TiptapIcon name="Code" />
-				</Toolbar.Button>
-				<Toolbar.Button
-					tooltip="Code block"
+				/>
+				<ToggleButtonWithTooltip
+					icon="CodeXml"
+					tooltipTitle="Code block"
+					tooltipShortcut={["Mod", "E"]}
 					onClick={() => editor.chain().focus().toggleCodeBlock().run()}
 					isActive={editor.isActive("codeBlock")}
-				>
-					<TiptapIcon name="CodeXml" />
-				</Toolbar.Button>
-				<Toolbar.Button
-					tooltip="Quote"
+				/>
+				<ToggleButtonWithTooltip
+					icon="Quote"
+					tooltipTitle="Quote"
+					tooltipShortcut={["Mod", "E"]}
 					onClick={() => editor.chain().focus().toggleBlockquote().run()}
 					isActive={editor.isActive("blockquote")}
-				>
-					<TiptapIcon name="Quote" />
-				</Toolbar.Button>
+				/>
 				<EditLinkPopover
 					onSetUrl={(url: string) =>
 						editor
@@ -124,13 +192,12 @@ export function TextMenu({
 				/>
 				<Popover.Root>
 					<Popover.Trigger asChild>
-						<Toolbar.Button
-							tooltip="Highlight text"
-							isActive={editor.isActive("highlight")}
+						<ToggleButtonWithTooltip
+							icon="Highlighter"
+							tooltipTitle="Highlight text"
 							onClick={() => editor.chain().focus().toggleHighlight().run()}
-						>
-							<TiptapIcon name="Highlighter" />
-						</Toolbar.Button>
+							isActive={editor.isActive("highlight")}
+						/>
 					</Popover.Trigger>
 					<Popover.Content side="top" sideOffset={8} asChild>
 						<Surface className="p-1">
