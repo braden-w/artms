@@ -90,12 +90,10 @@ export function TextMenu({
 			});
 
 		editor.on("selectionUpdate", handleSelectionUpdate);
-		editor.on("focus", handleSelectionUpdate);
 		editor.on("blur", () => setOpen(false));
 
 		return () => {
 			editor.off("selectionUpdate", handleSelectionUpdate);
-			editor.off("focus", handleSelectionUpdate);
 			editor.off("blur", () => setOpen(false));
 		};
 	}, [editor, setOpen]);
