@@ -5,7 +5,7 @@ import type { SelectPage } from "@repo/dashboard-server/schema";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { useEffect, useRef } from "react";
 import { LinkMenu } from "./menus/LinkMenu";
-import { TextMenu } from "./menus/TextMenu";
+import { FloatingEditorToolbar } from "./menus/FloatingEditorToolbar";
 import { trpc } from "@/router";
 
 const PROSE_CLASSES = [
@@ -61,12 +61,6 @@ export function TiptapEditor({
 		},
 	});
 
-	useEffect(() => {
-		if (editor && editor.storage.markdown.getMarkdown() !== value) {
-			editor.commands.setContent(value, false);
-		}
-	}, [editor, value]);
-
 	if (!editor) return null;
 	return (
 		<div className="flex h-full" ref={menuContainerRef}>
@@ -80,8 +74,8 @@ export function TiptapEditor({
 					className="flex-1 overflow-y-auto"
 				/>
 				{/* <ContentItemMenu editor={editor} /> */}
+				<FloatingEditorToolbar editor={editor} page={page} />
 				<LinkMenu editor={editor} appendTo={menuContainerRef} />
-				<TextMenu editor={editor} page={page} />
 			</div>
 		</div>
 	);

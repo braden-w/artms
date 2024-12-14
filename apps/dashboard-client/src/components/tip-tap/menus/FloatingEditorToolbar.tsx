@@ -36,74 +36,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useEditorFloatingMenu } from "./useFloatingMenu";
 
-const isMac =
-	typeof window !== "undefined"
-		? navigator.platform.toUpperCase().indexOf("MAC") >= 0
-		: false;
-
-function ToggleButtonWithTooltip({
-	tooltipTitle,
-	tooltipShortcut,
-	onClick,
-	icon: iconName,
-	isActive,
-}: {
-	tooltipTitle: string;
-	tooltipShortcut?: string[];
-	onClick: () => void;
-	icon: keyof typeof icons;
-	isActive: boolean;
-}) {
-	return (
-		<TooltipProvider>
-			<Tooltip>
-				<TooltipTrigger>
-					<Toggle
-						aria-label={tooltipTitle}
-						pressed={isActive}
-						onPressedChange={onClick}
-					>
-						<TiptapIcon name={iconName} />
-					</Toggle>
-				</TooltipTrigger>
-				<TooltipContent>
-					<span className="flex items-center gap-2 px-2.5 py-1 bg-white border border-neutral-100 rounded-lg shadow-sm z-[999]">
-						<span className="text-xs font-medium text-neutral-500">
-							{tooltipTitle}
-						</span>
-						{tooltipShortcut && (
-							<span className="flex items-center gap-0.5">
-								{tooltipShortcut.map((shortcutKey) => {
-									const shortcutKeyText = (() => {
-										if (shortcutKey === "Mod") {
-											return isMac ? "⌘" : "Ctrl";
-										}
-										if (shortcutKey === "Shift") {
-											return "⇧";
-										}
-										if (shortcutKey === "Alt") {
-											return isMac ? "⌥" : "Alt";
-										}
-										return shortcutKey;
-									})();
-									const className =
-										"inline-flex items-center justify-center w-5 h-5 p-1 text-[0.625rem] rounded font-semibold leading-none border border-neutral-200 text-neutral-500 border-b-2";
-									return (
-										<kbd className={className} key={shortcutKey}>
-											{shortcutKeyText}
-										</kbd>
-									);
-								})}
-							</span>
-						)}
-					</span>
-				</TooltipContent>
-			</Tooltip>
-		</TooltipProvider>
-	);
-}
-
-export function TextMenu({
+export function FloatingEditorToolbar({
 	editor,
 	page,
 }: { editor: Editor; page: SelectPage }) {
@@ -241,6 +174,71 @@ export function TextMenu({
 				/>
 			</div>
 		</div>
+	);
+}
+
+const isMac =
+	typeof window !== "undefined" ? /Mac/.test(navigator.userAgent) : false;
+
+function ToggleButtonWithTooltip({
+	tooltipTitle,
+	tooltipShortcut,
+	onClick,
+	icon: iconName,
+	isActive,
+}: {
+	tooltipTitle: string;
+	tooltipShortcut?: string[];
+	onClick: () => void;
+	icon: keyof typeof icons;
+	isActive: boolean;
+}) {
+	return (
+		<TooltipProvider>
+			<Tooltip>
+				<TooltipTrigger>
+					<Toggle
+						aria-label={tooltipTitle}
+						pressed={isActive}
+						onPressedChange={onClick}
+					>
+						<TiptapIcon name={iconName} />
+					</Toggle>
+				</TooltipTrigger>
+				<TooltipContent>
+					<span className="flex items-center gap-2 px-2.5 py-1 bg-white border border-neutral-100 rounded-lg shadow-sm z-[999]">
+						<span className="text-xs font-medium text-neutral-500">
+							{tooltipTitle}
+						</span>
+						{tooltipShortcut && (
+							<span className="flex items-center gap-0.5">
+								{tooltipShortcut.map((shortcutKey) => {
+									const shortcutKeyText = (() => {
+										if (shortcutKey === "Mod") {
+											return isMac ? "⌘" : "Ctrl";
+										}
+										if (shortcutKey === "Shift") {
+											return "⇧";
+										}
+										if (shortcutKey === "Alt") {
+											return isMac ? "⌥" : "Alt";
+										}
+										return shortcutKey;
+									})();
+									const className =
+										"inline-flex items-center justify-center w-5 h-5 p-1 text-[0.625rem] rounded font-semibold leading-none border border-neutral-200 text-neutral-500 border-b-2";
+									return (
+										<kbd className={className} key={shortcutKey}>
+											{shortcutKeyText}
+										</kbd>
+									);
+								})}
+							</span>
+						)}
+					</span>
+				</TooltipContent>
+			</Tooltip>
+		</TooltipProvider>
 	);
 }
 
