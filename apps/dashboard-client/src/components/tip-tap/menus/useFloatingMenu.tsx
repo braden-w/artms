@@ -4,7 +4,7 @@ import { isNodeSelection, posToDOMRect } from "@tiptap/core";
 import type { Editor } from "@tiptap/react";
 import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 
-export function useFloatingMenu({ editor }: { editor: Editor }) {
+export function useEditorFloatingMenu({ editor }: { editor: Editor }) {
 	const [isFloatingMenuOpen, setIsFloatingMenuOpen] = useState(false);
 
 	const { floatingStyles, refs } = useFloating({

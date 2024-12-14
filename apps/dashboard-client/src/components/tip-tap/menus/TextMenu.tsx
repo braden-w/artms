@@ -25,9 +25,9 @@ import {
 import type { Editor } from "@tiptap/react";
 import { NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
 import type { icons } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { useFloatingMenu } from "./useFloatingMenu";
+import { useEditorFloatingMenu } from "./useFloatingMenu";
 
 export function TextMenu({
 	editor,
@@ -38,7 +38,7 @@ export function TextMenu({
 			toast.success("Success", { description: "Row added!" });
 		},
 	});
-	const { refs, floatingStyles, isFloatingMenuOpen } = useFloatingMenu({
+	const { refs, floatingStyles, isFloatingMenuOpen } = useEditorFloatingMenu({
 		editor,
 	});
 
