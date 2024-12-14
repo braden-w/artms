@@ -20,12 +20,13 @@ export function useFloatingMenu({ editor }: { editor: Editor }) {
 		strategy: "fixed",
 	});
 
-	useUpdatePositionReferenceOnEditorSelection({ editor, refs });
+	useUpdateFloatingMenuPositionReferenceOnEditorSelection({ editor, refs });
+	useUpdateFloatingMenuVisibilityOnEditorSelectionAndBlur({ editor, setOpen });
 
 	return { refs, floatingStyles, open, setOpen };
 }
 
-function useUpdatePositionReferenceOnEditorSelection<
+function useUpdateFloatingMenuPositionReferenceOnEditorSelection<
 	RT extends ReferenceType = ReferenceType,
 >({ editor, refs }: { editor: Editor; refs: ExtendedRefs<RT> }) {
 	useEffect(() => {
@@ -53,4 +54,33 @@ function useUpdatePositionReferenceOnEditorSelection<
 			editor.off("selectionUpdate", updatePosition);
 		};
 	}, [editor, refs]);
+}
+
+function useUpdateFloatingMenuVisibilityOnEditorSelectionAndBlur({
+	editor,
+	setOpen,
+}: {
+	editor: Editor;
+	setOpen: (open: boolean) => void;
+}) {
+	useEffect(() => {
+		const updateFloatingMenuVisibility = () => {
+			const shouldFloatingMenuBeVisible = (() => {
+				const { state } = editor;
+				const { empty: isSelectionEmpty, from, to } = state.selection;
+				const isEmptyTextBlock = !state.doc.textBetween(from, to).length;
+				return !isSelectionEmpty && !isEmptyTextBlock && editor.isEditable;
+			})();
+
+			setOpen(shouldFloatingMenuBeVisible);
+		};
+
+		editor.on("selectionUpdate", updateFloatingMenuVisibility);
+		editor.on("blur", () => setOpen(false));
+
+		return () => {
+			editor.off("selectionUpdate", updateFloatingMenuVisibility);
+			editor.off("blur", () => setOpen(false));
+		};
+	}, [editor, setOpen]);
 }
