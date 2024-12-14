@@ -1,32 +1,69 @@
 import { Button } from "@/components/tip-tap/ui/Button";
-import {
-	DropdownButton,
-	DropdownCategoryTitle,
-} from "@/components/tip-tap/ui/Dropdown";
 import { TiptapIcon } from "@/components/tip-tap/ui/Icon";
 import { Surface } from "@/components/tip-tap/ui/Surface";
-import { Toolbar } from "@/components/tip-tap/ui/Toolbar";
-import { useState } from "react";
-// import { languages, tones } from '@/lib/constants'
 import { TableOfContents } from "@/components/tip-tap/ui/TableOfContents";
-import * as Dropdown from "@radix-ui/react-dropdown-menu";
-import * as Popover from "@radix-ui/react-popover";
+import { Toolbar } from "@/components/tip-tap/ui/Toolbar";
 import {
-	isTextSelection,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
+import { trpc } from "@/router";
+import {
+	autoUpdate,
+	flip,
+	offset,
+	shift,
+	useFloating,
+} from "@floating-ui/react";
+import * as Popover from "@radix-ui/react-popover";
+import type { SelectPage } from "@repo/dashboard-server/db/schema/pages";
+import { generateDefaultPage } from "@repo/dashboard-server/utils";
+import {
 	Node,
 	type NodeViewRendererProps,
+	isNodeSelection,
+	isTextSelection,
+	posToDOMRect,
 } from "@tiptap/core";
 import type { Editor } from "@tiptap/react";
-import {
-	BubbleMenu,
-	NodeViewWrapper,
-	ReactNodeViewRenderer,
-} from "@tiptap/react";
+import { NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
 import type { icons } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { generateDefaultPage } from "@repo/dashboard-server/utils";
-import { trpc } from "@/router";
-import type { SelectPage } from "@repo/dashboard-server/db/schema/pages";
+
+const useFloatingMenu = ({ editor }: { editor: Editor }) => {
+	const [open, setOpen] = useState(false);
+	const virtualElement = {
+		...editor.view.dom,
+		getBoundingClientRect: () => {
+			const { state } = editor;
+			const { from, to } = state.selection;
+
+			if (isNodeSelection(state.selection)) {
+				const node = editor.view.nodeDOM(from) as HTMLElement;
+				if (node) return node.getBoundingClientRect();
+			}
+
+			return posToDOMRect(editor.view, from, to);
+		},
+	} satisfies Element;
+
+	const floating = useFloating({
+		middleware: [offset(8), shift(), flip()],
+		whileElementsMounted: autoUpdate,
+		placement: "top",
+		strategy: "fixed",
+		elements: { reference: virtualElement },
+	});
+
+	return { ...floating, open, setOpen };
+};
 
 export function TextMenu({
 	editor,
@@ -37,23 +74,41 @@ export function TextMenu({
 			toast.success("Success", { description: "Row added!" });
 		},
 	});
+	const { refs, floatingStyles, open, setOpen } = useFloatingMenu({
+		editor,
+	});
+
+	const updateMenuVisibility = () => {
+		const { state } = editor;
+		const { empty, from, to } = state.selection;
+		const isEmptyTextBlock = !state.doc.textBetween(from, to).length;
+
+		setOpen(!empty && !isEmptyTextBlock && editor.isEditable);
+	};
+
+	useEffect(() => {
+		const handleSelectionUpdate = () => {
+			requestAnimationFrame(updateMenuVisibility);
+		};
+
+		editor.on("selectionUpdate", handleSelectionUpdate);
+		editor.on("focus", handleSelectionUpdate);
+		editor.on("blur", () => setOpen(false));
+
+		return () => {
+			editor.off("selectionUpdate", handleSelectionUpdate);
+			editor.off("focus", handleSelectionUpdate);
+			editor.off("blur", () => setOpen(false));
+		};
+	}, [editor, updateMenuVisibility, setOpen]);
+
+	if (!open) return null;
+
 	return (
-		<BubbleMenu
-			tippyOptions={{ popperOptions: { placement: "top-start" } }}
-			editor={editor}
-			pluginKey="textMenu"
-			shouldShow={({ view, from }) => {
-				if (!view) return false;
-
-				const domAtPos = view.domAtPos(from ?? 0).node as HTMLElement;
-				const nodeDOM = view.nodeDOM(from ?? 0) as HTMLElement;
-				const node = nodeDOM ?? domAtPos;
-
-				if (isCustomNodeSelected(editor, node)) return false;
-
-				return isAnyTextSelected({ editor });
-			}}
-			updateDelay={100}
+		<div
+			ref={refs.setFloating}
+			style={floatingStyles}
+			className="z-50 bg-card text-card-foreground shadow-lg rounded-lg p-1"
 		>
 			<div className="bg-card text-card-foreground inline-flex h-8 leading-none gap-1">
 				<ContentTypePicker editor={editor} />
@@ -192,7 +247,7 @@ export function TextMenu({
 					<TiptapIcon name="Quote" />
 				</Toolbar.Button>
 			</div>
-		</BubbleMenu>
+		</div>
 	);
 }
 
@@ -369,20 +424,17 @@ function ContentTypePicker({ editor }: { editor: Editor }) {
 	const activeItemIcon = activeNodeTypeToIcon[activeNodeType];
 
 	return (
-		<Dropdown.Root>
-			<Dropdown.Trigger asChild>
+		<DropdownMenu>
+			<DropdownMenuTrigger asChild>
 				<Toolbar.Button isActive={activeNodeType !== "paragraph"}>
 					<TiptapIcon name={activeItemIcon} />
 					<TiptapIcon name="ChevronDown" className="w-2 h-2" />
 				</Toolbar.Button>
-			</Dropdown.Trigger>
-			<Dropdown.Content asChild>
-				<Surface className="flex flex-col gap-1 px-2 py-4">
-					<div className="mt-2 first:mt-0">
-						<DropdownCategoryTitle>Hierarchy</DropdownCategoryTitle>
-					</div>
-					<DropdownButton
-						key="paragraph"
+			</DropdownMenuTrigger>
+			<DropdownMenuContent className="min-w-[180px]">
+				<div className="flex flex-col gap-1 px-2 py-4">
+					<DropdownMenuLabel>Hierarchy</DropdownMenuLabel>
+					<DropdownMenuItem
 						onClick={() =>
 							editor
 								.chain()
@@ -392,13 +444,15 @@ function ContentTypePicker({ editor }: { editor: Editor }) {
 								.setParagraph()
 								.run()
 						}
-						isActive={activeNodeType === "paragraph"}
+						className={cn(
+							activeNodeType === "paragraph" &&
+								"bg-accent text-accent-foreground ",
+						)}
 					>
-						<TiptapIcon name="Pilcrow" className="w-4 h-4 mr-1" />
+						<TiptapIcon name="Pilcrow" className="w-4 h-4 mr-2" />
 						Paragraph
-					</DropdownButton>
-					<DropdownButton
-						key="heading1"
+					</DropdownMenuItem>
+					<DropdownMenuItem
 						onClick={() =>
 							editor
 								.chain()
@@ -408,13 +462,15 @@ function ContentTypePicker({ editor }: { editor: Editor }) {
 								.setHeading({ level: 1 })
 								.run()
 						}
-						isActive={activeNodeType === "heading1"}
+						className={cn(
+							activeNodeType === "heading1" &&
+								"bg-accent text-accent-foreground ",
+						)}
 					>
-						<TiptapIcon name="Heading1" className="w-4 h-4 mr-1" />
+						<TiptapIcon name="Heading1" className="w-4 h-4 mr-2" />
 						Heading 1
-					</DropdownButton>
-					<DropdownButton
-						key="heading2"
+					</DropdownMenuItem>
+					<DropdownMenuItem
 						onClick={() =>
 							editor
 								.chain()
@@ -424,13 +480,15 @@ function ContentTypePicker({ editor }: { editor: Editor }) {
 								.setHeading({ level: 2 })
 								.run()
 						}
-						isActive={activeNodeType === "heading2"}
+						className={cn(
+							activeNodeType === "heading2" &&
+								"bg-accent text-accent-foreground ",
+						)}
 					>
-						<TiptapIcon name="Heading2" className="w-4 h-4 mr-1" />
+						<TiptapIcon name="Heading2" className="w-4 h-4 mr-2" />
 						Heading 2
-					</DropdownButton>
-					<DropdownButton
-						key="heading3"
+					</DropdownMenuItem>
+					<DropdownMenuItem
 						onClick={() =>
 							editor
 								.chain()
@@ -440,41 +498,51 @@ function ContentTypePicker({ editor }: { editor: Editor }) {
 								.setHeading({ level: 3 })
 								.run()
 						}
-						isActive={activeNodeType === "heading3"}
+						className={cn(
+							activeNodeType === "heading3" &&
+								"bg-accent text-accent-foreground ",
+						)}
 					>
-						<TiptapIcon name="Heading3" className="w-4 h-4 mr-1" />
+						<TiptapIcon name="Heading3" className="w-4 h-4 mr-2" />
 						Heading 3
-					</DropdownButton>
-					<div className="mt-2 first:mt-0">
-						<DropdownCategoryTitle>Lists</DropdownCategoryTitle>
-					</div>
-					<DropdownButton
-						key="bulletList"
+					</DropdownMenuItem>
+
+					<DropdownMenuSeparator />
+					<DropdownMenuLabel>Lists</DropdownMenuLabel>
+
+					<DropdownMenuItem
 						onClick={() => editor.chain().focus().toggleBulletList().run()}
-						isActive={activeNodeType === "bulletList"}
+						className={cn(
+							activeNodeType === "bulletList" &&
+								"bg-accent text-accent-foreground ",
+						)}
 					>
-						<TiptapIcon name="List" className="w-4 h-4 mr-1" />
+						<TiptapIcon name="List" className="w-4 h-4 mr-2" />
 						Bullet list
-					</DropdownButton>
-					<DropdownButton
-						key="orderedList"
+					</DropdownMenuItem>
+					<DropdownMenuItem
 						onClick={() => editor.chain().focus().toggleOrderedList().run()}
-						isActive={activeNodeType === "orderedList"}
+						className={cn(
+							activeNodeType === "orderedList" &&
+								"bg-accent text-accent-foreground ",
+						)}
 					>
-						<TiptapIcon name="ListOrdered" className="w-4 h-4 mr-1" />
+						<TiptapIcon name="ListOrdered" className="w-4 h-4 mr-2" />
 						Numbered list
-					</DropdownButton>
-					<DropdownButton
-						key="todoList"
+					</DropdownMenuItem>
+					<DropdownMenuItem
 						onClick={() => editor.chain().focus().toggleTaskList().run()}
-						isActive={activeNodeType === "taskList"}
+						className={cn(
+							activeNodeType === "taskList" &&
+								"bg-accent text-accent-foreground ",
+						)}
 					>
-						<TiptapIcon name="ListTodo" className="w-4 h-4 mr-1" />
+						<TiptapIcon name="ListTodo" className="w-4 h-4 mr-2" />
 						Todo list
-					</DropdownButton>
-				</Surface>
-			</Dropdown.Content>
-		</Dropdown.Root>
+					</DropdownMenuItem>
+				</div>
+			</DropdownMenuContent>
+		</DropdownMenu>
 	);
 }
 
