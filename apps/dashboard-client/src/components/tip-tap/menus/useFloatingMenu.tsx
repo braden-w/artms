@@ -1,7 +1,4 @@
 import type { ExtendedRefs, ReferenceType } from "@floating-ui/react";
-import { isNodeSelection, posToDOMRect } from "@tiptap/core";
-import type { Editor } from "@tiptap/react";
-import { useEffect, useState } from "react";
 import {
 	autoUpdate,
 	flip,
@@ -9,6 +6,9 @@ import {
 	shift,
 	useFloating,
 } from "@floating-ui/react";
+import { isNodeSelection, posToDOMRect } from "@tiptap/core";
+import type { Editor } from "@tiptap/react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 
 export function useFloatingMenu({ editor }: { editor: Editor }) {
 	const [open, setOpen] = useState(false);
@@ -60,10 +60,7 @@ function useUpdateFloatingMenuPositionReferenceOnEditorSelection<
 function useUpdateFloatingMenuVisibilityOnEditorSelection({
 	editor,
 	setOpen,
-}: {
-	editor: Editor;
-	setOpen: (open: boolean) => void;
-}) {
+}: { editor: Editor; setOpen: Dispatch<SetStateAction<boolean>> }) {
 	useEffect(() => {
 		const updateFloatingMenuVisibility = () => {
 			const shouldFloatingMenuBeVisible = (() => {
@@ -87,7 +84,7 @@ function useUpdateFloatingMenuVisibilityOnEditorSelection({
 function useCloseFloatingMenuOnBlur({
 	editor,
 	setOpen,
-}: { editor: Editor; setOpen: (open: boolean) => void }) {
+}: { editor: Editor; setOpen: Dispatch<SetStateAction<boolean>> }) {
 	useEffect(() => {
 		editor.on("blur", () => setOpen(false));
 		return () => {
