@@ -74,22 +74,17 @@ export function TextMenu({
 			toast.success("Success", { description: "Row added!" });
 		},
 	});
-	const { refs, floatingStyles, open, setOpen } = useFloatingMenu({
-		editor,
-	});
-
-	const updateMenuVisibility = () => {
-		const { state } = editor;
-		const { empty, from, to } = state.selection;
-		const isEmptyTextBlock = !state.doc.textBetween(from, to).length;
-
-		setOpen(!empty && !isEmptyTextBlock && editor.isEditable);
-	};
+	const { refs, floatingStyles, open, setOpen } = useFloatingMenu({ editor });
 
 	useEffect(() => {
-		const handleSelectionUpdate = () => {
-			requestAnimationFrame(updateMenuVisibility);
-		};
+		const handleSelectionUpdate = () =>
+			requestAnimationFrame(() => {
+				const { state } = editor;
+				const { empty: isSelectionEmpty, from, to } = state.selection;
+				const isEmptyTextBlock = !state.doc.textBetween(from, to).length;
+
+				setOpen(!isSelectionEmpty && !isEmptyTextBlock && editor.isEditable);
+			});
 
 		editor.on("selectionUpdate", handleSelectionUpdate);
 		editor.on("focus", handleSelectionUpdate);
@@ -100,7 +95,7 @@ export function TextMenu({
 			editor.off("focus", handleSelectionUpdate);
 			editor.off("blur", () => setOpen(false));
 		};
-	}, [editor, updateMenuVisibility, setOpen]);
+	}, [editor, setOpen]);
 
 	if (!open) return null;
 
