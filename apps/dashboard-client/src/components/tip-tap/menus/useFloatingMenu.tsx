@@ -25,7 +25,7 @@ export function useFloatingMenu({ editor }: { editor: Editor }) {
 	return { refs, floatingStyles, open, setOpen };
 }
 
-export function useUpdatePositionReferenceOnEditorSelection<
+function useUpdatePositionReferenceOnEditorSelection<
 	RT extends ReferenceType = ReferenceType,
 >({ editor, refs }: { editor: Editor; refs: ExtendedRefs<RT> }) {
 	useEffect(() => {
