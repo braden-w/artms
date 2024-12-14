@@ -11,7 +11,7 @@ import type { Editor } from "@tiptap/react";
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 
 export function useFloatingMenu({ editor }: { editor: Editor }) {
-	const [open, setOpen] = useState(false);
+	const [isFloatingMenuOpen, setIsFloatingMenuOpen] = useState(false);
 
 	const { floatingStyles, refs } = useFloating({
 		placement: "top",
@@ -21,10 +21,13 @@ export function useFloatingMenu({ editor }: { editor: Editor }) {
 	});
 
 	useUpdateFloatingMenuPositionReferenceOnEditorSelection({ editor, refs });
-	useUpdateFloatingMenuVisibilityOnEditorSelection({ editor, setOpen });
-	useCloseFloatingMenuOnBlur({ editor, setOpen });
+	useUpdateFloatingMenuVisibilityOnEditorSelection({
+		editor,
+		setIsFloatingMenuOpen,
+	});
+	useCloseFloatingMenuOnBlur({ editor, setIsFloatingMenuOpen });
 
-	return { refs, floatingStyles, open, setOpen };
+	return { refs, floatingStyles, isFloatingMenuOpen };
 }
 
 function useUpdateFloatingMenuPositionReferenceOnEditorSelection<
@@ -59,8 +62,11 @@ function useUpdateFloatingMenuPositionReferenceOnEditorSelection<
 
 function useUpdateFloatingMenuVisibilityOnEditorSelection({
 	editor,
-	setOpen,
-}: { editor: Editor; setOpen: Dispatch<SetStateAction<boolean>> }) {
+	setIsFloatingMenuOpen,
+}: {
+	editor: Editor;
+	setIsFloatingMenuOpen: Dispatch<SetStateAction<boolean>>;
+}) {
 	useEffect(() => {
 		const updateFloatingMenuVisibility = () => {
 			const shouldFloatingMenuBeVisible = (() => {
@@ -70,7 +76,7 @@ function useUpdateFloatingMenuVisibilityOnEditorSelection({
 				return !isSelectionEmpty && !isEmptyTextBlock && editor.isEditable;
 			})();
 
-			setOpen(shouldFloatingMenuBeVisible);
+			setIsFloatingMenuOpen(shouldFloatingMenuBeVisible);
 		};
 
 		editor.on("selectionUpdate", updateFloatingMenuVisibility);
@@ -78,17 +84,20 @@ function useUpdateFloatingMenuVisibilityOnEditorSelection({
 		return () => {
 			editor.off("selectionUpdate", updateFloatingMenuVisibility);
 		};
-	}, [editor, setOpen]);
+	}, [editor, setIsFloatingMenuOpen]);
 }
 
 function useCloseFloatingMenuOnBlur({
 	editor,
-	setOpen,
-}: { editor: Editor; setOpen: Dispatch<SetStateAction<boolean>> }) {
+	setIsFloatingMenuOpen,
+}: {
+	editor: Editor;
+	setIsFloatingMenuOpen: Dispatch<SetStateAction<boolean>>;
+}) {
 	useEffect(() => {
-		editor.on("blur", () => setOpen(false));
+		editor.on("blur", () => setIsFloatingMenuOpen(false));
 		return () => {
-			editor.off("blur", () => setOpen(false));
+			editor.off("blur", () => setIsFloatingMenuOpen(false));
 		};
-	}, [editor, setOpen]);
+	}, [editor, setIsFloatingMenuOpen]);
 }
