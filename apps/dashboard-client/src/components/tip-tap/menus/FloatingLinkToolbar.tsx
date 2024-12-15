@@ -22,7 +22,7 @@ export function FloatingLinkToolbar({
 	const { refs, floatingStyles, isFloatingMenuOpen, getFloatingProps } =
 		useEditorFloatingMenu({
 			editor,
-			getShouldFloatingMenuBeVisible: (editor) => editor.isActive("link"),
+			shouldShow: (editor) => editor.isActive("link"),
 		});
 	const { href: initialUrl, target } = editor.getAttributes("link");
 	const { title: initialTitle } = editor.getAttributes("text");

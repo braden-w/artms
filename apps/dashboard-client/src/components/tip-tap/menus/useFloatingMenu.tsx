@@ -14,10 +14,10 @@ import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 
 export function useEditorFloatingMenu({
 	editor,
-	getShouldFloatingMenuBeVisible,
+	shouldShow,
 }: {
 	editor: Editor;
-	getShouldFloatingMenuBeVisible: (editor: Editor) => boolean;
+	shouldShow: (editor: Editor) => boolean;
 }) {
 	const [isFloatingMenuOpen, setIsFloatingMenuOpen] = useState(false);
 
@@ -34,7 +34,7 @@ export function useEditorFloatingMenu({
 	useUpdateFloatingMenuVisibilityOnEditorSelection({
 		editor,
 		setIsFloatingMenuOpen,
-		getShouldFloatingMenuBeVisible,
+		shouldShow,
 	});
 
 	return {
@@ -79,16 +79,15 @@ function useUpdateFloatingMenuPositionReferenceOnEditorSelection<
 function useUpdateFloatingMenuVisibilityOnEditorSelection({
 	editor,
 	setIsFloatingMenuOpen,
-	getShouldFloatingMenuBeVisible,
+	shouldShow,
 }: {
 	editor: Editor;
 	setIsFloatingMenuOpen: Dispatch<SetStateAction<boolean>>;
-	getShouldFloatingMenuBeVisible: (editor: Editor) => boolean;
+	shouldShow: (editor: Editor) => boolean;
 }) {
 	useEffect(() => {
 		const updateFloatingMenuVisibility = () => {
-			const shouldFloatingMenuBeVisible =
-				getShouldFloatingMenuBeVisible(editor);
+			const shouldFloatingMenuBeVisible = shouldShow(editor);
 
 			setIsFloatingMenuOpen(shouldFloatingMenuBeVisible);
 		};
@@ -98,5 +97,5 @@ function useUpdateFloatingMenuVisibilityOnEditorSelection({
 		return () => {
 			editor.off("selectionUpdate", updateFloatingMenuVisibility);
 		};
-	}, [editor, getShouldFloatingMenuBeVisible, setIsFloatingMenuOpen]);
+	}, [editor, shouldShow, setIsFloatingMenuOpen]);
 }
