@@ -34,7 +34,7 @@ import { NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
 import type { icons } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useEditorFloatingMenu } from "./useFloatingMenu";
+import { useEditorFloatingToolbar } from "./useFloatingToolbar";
 
 export function FloatingEditorToolbar({
 	editor,
@@ -45,8 +45,8 @@ export function FloatingEditorToolbar({
 			toast.success("Success", { description: "Row added!" });
 		},
 	});
-	const { refs, floatingStyles, isFloatingMenuOpen, getFloatingProps } =
-		useEditorFloatingMenu({
+	const { refs, floatingStyles, isFloatingToolbarOpen, getFloatingProps } =
+		useEditorFloatingToolbar({
 			editor,
 			shouldShow: (editor) => {
 				const { state } = editor;
@@ -56,7 +56,7 @@ export function FloatingEditorToolbar({
 			},
 		});
 
-	if (!isFloatingMenuOpen) return null;
+	if (!isFloatingToolbarOpen) return null;
 
 	return (
 		<div

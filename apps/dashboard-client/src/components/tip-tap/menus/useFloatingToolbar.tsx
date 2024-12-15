@@ -12,41 +12,41 @@ import { isNodeSelection, posToDOMRect } from "@tiptap/core";
 import type { Editor } from "@tiptap/react";
 import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 
-export function useEditorFloatingMenu({
+export function useEditorFloatingToolbar({
 	editor,
 	shouldShow,
 }: {
 	editor: Editor;
 	shouldShow: (editor: Editor) => boolean;
 }) {
-	const [isFloatingMenuOpen, setIsFloatingMenuOpen] = useState(false);
+	const [isFloatingToolbarOpen, setIsFloatingToolbarOpen] = useState(false);
 
 	const { refs, floatingStyles, context } = useFloating({
 		placement: "top",
 		middleware: [offset(8), shift(), flip()],
-		open: isFloatingMenuOpen,
-		onOpenChange: setIsFloatingMenuOpen,
+		open: isFloatingToolbarOpen,
+		onOpenChange: setIsFloatingToolbarOpen,
 	});
 	const dismiss = useDismiss(context, { outsidePress: true });
 	const { getReferenceProps, getFloatingProps } = useInteractions([dismiss]);
 
-	useUpdateFloatingMenuPositionReferenceOnEditorSelection({ editor, refs });
-	useUpdateFloatingMenuVisibilityOnEditorSelection({
+	useUpdateFloatingToolbarPositionReferenceOnEditorSelection({ editor, refs });
+	useUpdateFloatingToolbarVisibilityOnEditorSelection({
 		editor,
-		setIsFloatingMenuOpen,
+		setIsFloatingToolbarOpen,
 		shouldShow,
 	});
 
 	return {
 		refs,
 		floatingStyles,
-		isFloatingMenuOpen,
+		isFloatingToolbarOpen,
 		getReferenceProps,
 		getFloatingProps,
 	};
 }
 
-function useUpdateFloatingMenuPositionReferenceOnEditorSelection<
+function useUpdateFloatingToolbarPositionReferenceOnEditorSelection<
 	RT extends ReferenceType = ReferenceType,
 >({ editor, refs }: { editor: Editor; refs: ExtendedRefs<RT> }) {
 	useEffect(() => {
@@ -76,26 +76,26 @@ function useUpdateFloatingMenuPositionReferenceOnEditorSelection<
 	}, [editor, refs]);
 }
 
-function useUpdateFloatingMenuVisibilityOnEditorSelection({
+function useUpdateFloatingToolbarVisibilityOnEditorSelection({
 	editor,
-	setIsFloatingMenuOpen,
+	setIsFloatingToolbarOpen,
 	shouldShow,
 }: {
 	editor: Editor;
-	setIsFloatingMenuOpen: Dispatch<SetStateAction<boolean>>;
+	setIsFloatingToolbarOpen: Dispatch<SetStateAction<boolean>>;
 	shouldShow: (editor: Editor) => boolean;
 }) {
 	useEffect(() => {
-		const updateFloatingMenuVisibility = () => {
-			const shouldFloatingMenuBeVisible = shouldShow(editor);
+		const updateFloatingToolbarVisibility = () => {
+			const shouldFloatingToolbarBeVisible = shouldShow(editor);
 
-			setIsFloatingMenuOpen(shouldFloatingMenuBeVisible);
+			setIsFloatingToolbarOpen(shouldFloatingToolbarBeVisible);
 		};
 
-		editor.on("selectionUpdate", updateFloatingMenuVisibility);
+		editor.on("selectionUpdate", updateFloatingToolbarVisibility);
 
 		return () => {
-			editor.off("selectionUpdate", updateFloatingMenuVisibility);
+			editor.off("selectionUpdate", updateFloatingToolbarVisibility);
 		};
-	}, [editor, shouldShow, setIsFloatingMenuOpen]);
+	}, [editor, shouldShow, setIsFloatingToolbarOpen]);
 }

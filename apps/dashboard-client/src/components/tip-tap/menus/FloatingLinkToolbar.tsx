@@ -3,7 +3,7 @@ import { Surface } from "@/components/tip-tap/ui/Surface";
 import { Button, buttonVariants } from "@/components/ui/button";
 import type { Editor } from "@tiptap/react";
 import { Fragment, useState } from "react";
-import { useEditorFloatingMenu } from "./useFloatingMenu";
+import { useEditorFloatingToolbar } from "./useFloatingToolbar";
 import { Separator } from "@/components/ui/separator";
 import {
 	Tooltip,
@@ -19,14 +19,14 @@ export function FloatingLinkToolbar({
 	editor: Editor;
 }) {
 	const [isShowEdit, setIsShowEdit] = useState(false);
-	const { refs, floatingStyles, isFloatingMenuOpen, getFloatingProps } =
-		useEditorFloatingMenu({
+	const { refs, floatingStyles, isFloatingToolbarOpen, getFloatingProps } =
+		useEditorFloatingToolbar({
 			editor,
 			shouldShow: (editor) => editor.isActive("link"),
 		});
 	const { href: initialUrl, target } = editor.getAttributes("link");
 	const { title: initialTitle } = editor.getAttributes("text");
-	if (!isFloatingMenuOpen) return null;
+	if (!isFloatingToolbarOpen) return null;
 	return (
 		<div
 			ref={refs.setFloating}
