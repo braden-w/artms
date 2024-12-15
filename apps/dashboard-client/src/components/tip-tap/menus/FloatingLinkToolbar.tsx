@@ -1,12 +1,17 @@
 import { TiptapIcon } from "@/components/tip-tap/ui/Icon";
 import { Surface } from "@/components/tip-tap/ui/Surface";
-import { Toolbar } from "@/components/tip-tap/ui/Toolbar";
-import Tooltip from "@/components/tip-tap/ui/Tooltip";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import type { Editor } from "@tiptap/react";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { useEditorFloatingMenu } from "./useFloatingMenu";
 import { Separator } from "@/components/ui/separator";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 export function FloatingLinkToolbar({
 	editor,
@@ -68,24 +73,49 @@ function LinkPreviewPanel({
 	onRemoveUrl: () => void;
 }) {
 	return (
-		<Surface className="flex items-center gap-2 p-2">
-			<Button variant="link" size="sm" asChild>
-				<a href={url} target="_blank" rel="noopener noreferrer">
-					{url}
-				</a>
-			</Button>
+		<Fragment>
+			<TooltipProvider>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<a
+							href={url}
+							target="_blank"
+							rel="noopener noreferrer"
+							className={cn(
+								buttonVariants({ variant: "link" }),
+								"break-all min-w-32",
+							)}
+						>
+							{url}
+						</a>
+					</TooltipTrigger>
+					<TooltipContent>Open link</TooltipContent>
+				</Tooltip>
+			</TooltipProvider>
 			<Separator orientation="vertical" className="mx-1" />
-			<Tooltip title="Edit link">
-				<Button variant="ghost" size="icon" onClick={onOpenLinkEditor}>
-					<TiptapIcon name="Pen" />
-				</Button>
-			</Tooltip>
-			<Tooltip title="Remove link">
-				<Button variant="ghost" size="icon" onClick={onRemoveUrl}>
-					<TiptapIcon name="Trash2" />
-				</Button>
-			</Tooltip>
-		</Surface>
+
+			<TooltipProvider>
+				<Tooltip>
+					<TooltipTrigger>
+						<Button variant="ghost" size="icon" onClick={onOpenLinkEditor}>
+							<TiptapIcon name="Pen" />
+						</Button>
+					</TooltipTrigger>
+					<TooltipContent>Edit link</TooltipContent>
+				</Tooltip>
+			</TooltipProvider>
+
+			<TooltipProvider>
+				<Tooltip>
+					<TooltipTrigger>
+						<Button variant="ghost" size="icon" onClick={onRemoveUrl}>
+							<TiptapIcon name="Trash2" />
+						</Button>
+					</TooltipTrigger>
+					<TooltipContent>Remove link</TooltipContent>
+				</Tooltip>
+			</TooltipProvider>
+		</Fragment>
 	);
 }
 
