@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import type { Editor } from "@tiptap/react";
 import { useState } from "react";
 import { useEditorFloatingMenu } from "./useFloatingMenu";
+import { Separator } from "@/components/ui/separator";
 
 export function FloatingLinkToolbar({
 	editor,
@@ -45,7 +46,7 @@ export function FloatingLinkToolbar({
 			) : (
 				<LinkPreviewPanel
 					url={initialUrl}
-					onClearUrl={() => {
+					onRemoveUrl={() => {
 						editor.chain().focus().extendMarkRange("link").unsetLink().run();
 						setIsShowEdit(false);
 						return null;
@@ -59,33 +60,30 @@ export function FloatingLinkToolbar({
 
 function LinkPreviewPanel({
 	url,
-	onClearUrl,
+	onRemoveUrl,
 	onOpenLinkEditor,
 }: {
 	url: string;
 	onOpenLinkEditor: () => void;
-	onClearUrl: () => void;
+	onRemoveUrl: () => void;
 }) {
 	return (
 		<Surface className="flex items-center gap-2 p-2">
-			<a
-				href={url}
-				target="_blank"
-				rel="noopener noreferrer"
-				className="text-sm underline break-all"
-			>
-				{url}
-			</a>
-			<Toolbar.Divider />
+			<Button variant="link" size="sm" asChild>
+				<a href={url} target="_blank" rel="noopener noreferrer">
+					{url}
+				</a>
+			</Button>
+			<Separator orientation="vertical" className="mx-1" />
 			<Tooltip title="Edit link">
-				<Toolbar.Button onClick={onOpenLinkEditor}>
+				<Button variant="ghost" size="icon" onClick={onOpenLinkEditor}>
 					<TiptapIcon name="Pen" />
-				</Toolbar.Button>
+				</Button>
 			</Tooltip>
 			<Tooltip title="Remove link">
-				<Toolbar.Button onClick={onClearUrl}>
+				<Button variant="ghost" size="icon" onClick={onRemoveUrl}>
 					<TiptapIcon name="Trash2" />
-				</Toolbar.Button>
+				</Button>
 			</Tooltip>
 		</Surface>
 	);
