@@ -13,7 +13,8 @@
 		"db:pull": "drizzle-kit introspect",
 		"db:push": "drizzle-kit push",
 		"db:studio": "drizzle-kit studio",
-		"db:check": "drizzle-kit check"
+		"db:check": "drizzle-kit check",
+		"push-handle": "git subtree push --prefix=packages/tiptap-extension-global-drag-handle tiptap-extension-global-drag-handle main"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.3",
