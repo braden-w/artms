@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/tooltip";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { FloatingToolbar } from "./FloatingToolbar";
 
 export function FloatingLinkToolbar({
 	editor,
@@ -19,20 +20,13 @@ export function FloatingLinkToolbar({
 	editor: Editor;
 }) {
 	const [isShowEdit, setIsShowEdit] = useState(false);
-	const { refs, floatingStyles, isFloatingToolbarOpen, getFloatingProps } =
-		useEditorFloatingToolbar({
-			editor,
-			shouldShow: (editor) => editor.isActive("link"),
-		});
 	const { href: initialUrl, target } = editor.getAttributes("link");
 	const { title: initialTitle } = editor.getAttributes("text");
-	if (!isFloatingToolbarOpen) return null;
+
 	return (
-		<div
-			ref={refs.setFloating}
-			style={floatingStyles}
-			{...getFloatingProps()}
-			className="z-50 bg-card text-card-foreground shadow-lg rounded-lg p-1"
+		<FloatingToolbar
+			editor={editor}
+			shouldShow={(editor) => editor.isActive("link")}
 		>
 			{isShowEdit ? (
 				<LinkEditorPanel
@@ -61,7 +55,7 @@ export function FloatingLinkToolbar({
 					onOpenLinkEditor={() => setIsShowEdit(true)}
 				/>
 			)}
-		</div>
+		</FloatingToolbar>
 	);
 }
 

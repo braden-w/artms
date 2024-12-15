@@ -34,7 +34,7 @@ import { NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
 import type { icons } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useEditorFloatingToolbar } from "./useFloatingToolbar";
+import { FloatingToolbar } from "./FloatingToolbar";
 
 export function FloatingEditorToolbar({
 	editor,
@@ -45,25 +45,15 @@ export function FloatingEditorToolbar({
 			toast.success("Success", { description: "Row added!" });
 		},
 	});
-	const { refs, floatingStyles, isFloatingToolbarOpen, getFloatingProps } =
-		useEditorFloatingToolbar({
-			editor,
-			shouldShow: (editor) => {
+	return (
+		<FloatingToolbar
+			editor={editor}
+			shouldShow={(editor) => {
 				const { state } = editor;
 				const { empty: isSelectionEmpty, from, to } = state.selection;
 				const isEmptyTextBlock = !state.doc.textBetween(from, to).length;
 				return !isSelectionEmpty && !isEmptyTextBlock && editor.isEditable;
-			},
-		});
-
-	if (!isFloatingToolbarOpen) return null;
-
-	return (
-		<div
-			ref={refs.setFloating}
-			style={floatingStyles}
-			{...getFloatingProps()}
-			className="z-50 bg-card text-card-foreground shadow-lg rounded-lg p-1"
+			}}
 		>
 			<div className="bg-card text-card-foreground inline-flex h-8 leading-none gap-1">
 				<ContentTypePicker editor={editor} />
@@ -181,7 +171,7 @@ export function FloatingEditorToolbar({
 					isActive={false}
 				/>
 			</div>
-		</div>
+		</FloatingToolbar>
 	);
 }
 
