@@ -428,121 +428,119 @@ function ContentTypePicker({ editor }: { editor: Editor }) {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Toolbar.Button isActive={activeNodeType !== "paragraph"}>
+				<Toggle pressed={activeNodeType !== "paragraph"}>
 					<TiptapIcon name={activeItemIcon} />
 					<TiptapIcon name="ChevronDown" className="w-2 h-2" />
-				</Toolbar.Button>
+				</Toggle>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="min-w-[180px]">
-				<div className="flex flex-col gap-1 px-2 py-4">
-					<DropdownMenuLabel>Hierarchy</DropdownMenuLabel>
-					<DropdownMenuItem
-						onClick={() =>
-							editor
-								.chain()
-								.focus()
-								.lift("taskItem")
-								.liftListItem("listItem")
-								.setParagraph()
-								.run()
-						}
-						className={cn(
-							activeNodeType === "paragraph" &&
-								"bg-accent text-accent-foreground ",
-						)}
-					>
-						<TiptapIcon name="Pilcrow" className="w-4 h-4 mr-2" />
-						Paragraph
-					</DropdownMenuItem>
-					<DropdownMenuItem
-						onClick={() =>
-							editor
-								.chain()
-								.focus()
-								.lift("taskItem")
-								.liftListItem("listItem")
-								.setHeading({ level: 1 })
-								.run()
-						}
-						className={cn(
-							activeNodeType === "heading1" &&
-								"bg-accent text-accent-foreground ",
-						)}
-					>
-						<TiptapIcon name="Heading1" className="w-4 h-4 mr-2" />
-						Heading 1
-					</DropdownMenuItem>
-					<DropdownMenuItem
-						onClick={() =>
-							editor
-								.chain()
-								.focus()
-								.lift("taskItem")
-								.liftListItem("listItem")
-								.setHeading({ level: 2 })
-								.run()
-						}
-						className={cn(
-							activeNodeType === "heading2" &&
-								"bg-accent text-accent-foreground ",
-						)}
-					>
-						<TiptapIcon name="Heading2" className="w-4 h-4 mr-2" />
-						Heading 2
-					</DropdownMenuItem>
-					<DropdownMenuItem
-						onClick={() =>
-							editor
-								.chain()
-								.focus()
-								.lift("taskItem")
-								.liftListItem("listItem")
-								.setHeading({ level: 3 })
-								.run()
-						}
-						className={cn(
-							activeNodeType === "heading3" &&
-								"bg-accent text-accent-foreground ",
-						)}
-					>
-						<TiptapIcon name="Heading3" className="w-4 h-4 mr-2" />
-						Heading 3
-					</DropdownMenuItem>
+				<DropdownMenuLabel>Hierarchy</DropdownMenuLabel>
+				<DropdownMenuItem
+					onClick={() =>
+						editor
+							.chain()
+							.focus()
+							.lift("taskItem")
+							.liftListItem("listItem")
+							.setParagraph()
+							.run()
+					}
+					className={cn(
+						activeNodeType === "paragraph" &&
+							"bg-accent text-accent-foreground ",
+					)}
+				>
+					<TiptapIcon name="Pilcrow" className="w-4 h-4 mr-2" />
+					Paragraph
+				</DropdownMenuItem>
+				<DropdownMenuItem
+					onClick={() =>
+						editor
+							.chain()
+							.focus()
+							.lift("taskItem")
+							.liftListItem("listItem")
+							.setHeading({ level: 1 })
+							.run()
+					}
+					className={cn(
+						activeNodeType === "heading1" &&
+							"bg-accent text-accent-foreground ",
+					)}
+				>
+					<TiptapIcon name="Heading1" className="w-4 h-4 mr-2" />
+					Heading 1
+				</DropdownMenuItem>
+				<DropdownMenuItem
+					onClick={() =>
+						editor
+							.chain()
+							.focus()
+							.lift("taskItem")
+							.liftListItem("listItem")
+							.setHeading({ level: 2 })
+							.run()
+					}
+					className={cn(
+						activeNodeType === "heading2" &&
+							"bg-accent text-accent-foreground ",
+					)}
+				>
+					<TiptapIcon name="Heading2" className="w-4 h-4 mr-2" />
+					Heading 2
+				</DropdownMenuItem>
+				<DropdownMenuItem
+					onClick={() =>
+						editor
+							.chain()
+							.focus()
+							.lift("taskItem")
+							.liftListItem("listItem")
+							.setHeading({ level: 3 })
+							.run()
+					}
+					className={cn(
+						activeNodeType === "heading3" &&
+							"bg-accent text-accent-foreground ",
+					)}
+				>
+					<TiptapIcon name="Heading3" className="w-4 h-4 mr-2" />
+					Heading 3
+				</DropdownMenuItem>
 
-					<DropdownMenuSeparator />
-					<DropdownMenuLabel>Lists</DropdownMenuLabel>
+				<DropdownMenuSeparator />
+				<DropdownMenuLabel>Lists</DropdownMenuLabel>
 
-					<DropdownMenuItem
-						onClick={() => editor.chain().focus().toggleBulletList().run()}
-						className={cn(
-							activeNodeType === "bulletList" &&
-								"bg-accent text-accent-foreground ",
-						)}
-					>
-						<TiptapIcon name="List" className="w-4 h-4 mr-2" />
-						Bullet list
-					</DropdownMenuItem>
-					<DropdownMenuItem
-						onClick={() => editor.chain().focus().toggleOrderedList().run()}
-						className={cn(
-							activeNodeType === "orderedList" &&
-								"bg-accent text-accent-foreground ",
-						)}
-					>
-						<TiptapIcon name="ListOrdered" className="w-4 h-4 mr-2" />
-						Numbered list
-					</DropdownMenuItem>
-					<DropdownMenuItem
-						onClick={() => editor.chain().focus().toggleTaskList().run()}
-						className={cn(
-							activeNodeType === "taskList" &&
-								"bg-accent text-accent-foreground ",
-						)}
-					>
-						<TiptapIcon name="ListTodo" className="w-4 h-4 mr-2" />
-						Todo list
-					</DropdownMenuItem>
-				</div>
+				<DropdownMenuItem
+					onClick={() => editor.chain().focus().toggleBulletList().run()}
+					className={cn(
+						activeNodeType === "bulletList" &&
+							"bg-accent text-accent-foreground ",
+					)}
+				>
+					<TiptapIcon name="List" className="w-4 h-4 mr-2" />
+					Bullet list
+				</DropdownMenuItem>
+				<DropdownMenuItem
+					onClick={() => editor.chain().focus().toggleOrderedList().run()}
+					className={cn(
+						activeNodeType === "orderedList" &&
+							"bg-accent text-accent-foreground ",
+					)}
+				>
+					<TiptapIcon name="ListOrdered" className="w-4 h-4 mr-2" />
+					Numbered list
+				</DropdownMenuItem>
+				<DropdownMenuItem
+					onClick={() => editor.chain().focus().toggleTaskList().run()}
+					className={cn(
+						activeNodeType === "taskList" &&
+							"bg-accent text-accent-foreground ",
+					)}
+				>
+					<TiptapIcon name="ListTodo" className="w-4 h-4 mr-2" />
+					Todo list
+				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);
