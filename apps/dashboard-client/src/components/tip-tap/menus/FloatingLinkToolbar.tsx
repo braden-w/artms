@@ -57,7 +57,7 @@ export function FloatingLinkToolbar({
 	);
 }
 
-export function LinkPreviewPanel({
+function LinkPreviewPanel({
 	url,
 	onClearUrl,
 	onOpenLinkEditor,
