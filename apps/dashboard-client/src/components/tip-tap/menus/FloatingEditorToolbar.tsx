@@ -198,13 +198,9 @@ function ToggleButtonWithTooltip({
 						<TiptapIcon name={iconName} />
 					</Toggle>
 				</TooltipTrigger>
-				<TooltipContent>
-					<span className="flex items-center gap-2 px-2.5 py-1 bg-white border border-neutral-100 rounded-lg shadow-sm z-[999]">
-						<span className="text-xs font-medium text-neutral-500">
-							{tooltipTitle}
-						</span>
-						{tooltipShortcut && <RenderShortcuts shortcut={tooltipShortcut} />}
-					</span>
+				<TooltipContent className="flex items-center gap-2">
+					{tooltipTitle}
+					{tooltipShortcut && <RenderShortcuts shortcut={tooltipShortcut} />}
 				</TooltipContent>
 			</Tooltip>
 		</TooltipProvider>
@@ -230,13 +226,9 @@ function ButtonWithTooltip({
 						{children}
 					</Button>
 				</TooltipTrigger>
-				<TooltipContent>
-					<span className="flex items-center gap-2 px-2.5 py-1 bg-white border border-neutral-100 rounded-lg shadow-sm z-[999]">
-						<span className="text-xs font-medium text-neutral-500">
-							{tooltipTitle}
-						</span>
-						{tooltipShortcut && <RenderShortcuts shortcut={tooltipShortcut} />}
-					</span>
+				<TooltipContent className="flex items-center gap-2">
+					{tooltipTitle}
+					{tooltipShortcut && <RenderShortcuts shortcut={tooltipShortcut} />}
 				</TooltipContent>
 			</Tooltip>
 		</TooltipProvider>
