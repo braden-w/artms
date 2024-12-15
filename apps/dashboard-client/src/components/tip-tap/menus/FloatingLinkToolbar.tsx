@@ -1,17 +1,16 @@
 import { TiptapIcon } from "@/components/tip-tap/ui/Icon";
 import { Surface } from "@/components/tip-tap/ui/Surface";
 import { Button, buttonVariants } from "@/components/ui/button";
-import type { Editor } from "@tiptap/react";
-import { Fragment, useState } from "react";
-import { useEditorFloatingToolbar } from "./useFloatingToolbar";
 import { Separator } from "@/components/ui/separator";
 import {
 	Tooltip,
 	TooltipContent,
+	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import type { Editor } from "@tiptap/react";
+import { Fragment, useState } from "react";
 import { FloatingToolbar } from "./FloatingToolbar";
 
 export function FloatingLinkToolbar({
