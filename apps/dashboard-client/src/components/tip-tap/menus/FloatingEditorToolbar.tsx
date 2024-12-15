@@ -1,4 +1,3 @@
-import { Button } from "@/components/tip-tap/ui/Button";
 import { TiptapIcon } from "@/components/tip-tap/ui/Icon";
 import { Surface } from "@/components/tip-tap/ui/Surface";
 import { TableOfContents } from "@/components/tip-tap/ui/TableOfContents";
@@ -35,6 +34,7 @@ import type { icons } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { FloatingToolbar } from "./FloatingToolbar";
+import { Button } from "@/components/ui/button";
 
 export function FloatingEditorToolbar({
 	editor,
@@ -427,11 +427,11 @@ function ContentTypePicker({ editor }: { editor: Editor }) {
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger asChild>
-				<Toggle pressed={activeNodeType !== "paragraph"}>
+			<DropdownMenuTrigger>
+				<Button variant="ghost">
 					<TiptapIcon name={activeItemIcon} />
 					<TiptapIcon name="ChevronDown" className="w-2 h-2" />
-				</Toggle>
+				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="min-w-[180px]">
 				<DropdownMenuLabel>Hierarchy</DropdownMenuLabel>
