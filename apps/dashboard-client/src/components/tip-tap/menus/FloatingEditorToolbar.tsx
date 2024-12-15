@@ -1,7 +1,6 @@
 import { TiptapIcon } from "@/components/tip-tap/ui/Icon";
-import { Surface } from "@/components/tip-tap/ui/Surface";
 import { TableOfContents } from "@/components/tip-tap/ui/TableOfContents";
-import { Toolbar } from "@/components/tip-tap/ui/Toolbar";
+import { Button, type ButtonProps } from "@/components/ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -10,6 +9,11 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { Toggle } from "@/components/ui/toggle";
 import {
@@ -20,7 +24,6 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/router";
-import * as Popover from "@radix-ui/react-popover";
 import type { SelectPage } from "@repo/dashboard-server/db/schema/pages";
 import { generateDefaultPage } from "@repo/dashboard-server/utils";
 import {
@@ -31,10 +34,9 @@ import {
 import type { Editor } from "@tiptap/react";
 import { NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
 import type { icons } from "lucide-react";
-import { useState } from "react";
+import { type PropsWithChildren, useState } from "react";
 import { toast } from "sonner";
 import { FloatingToolbar } from "./FloatingToolbar";
-import { Button } from "@/components/ui/button";
 
 export function FloatingEditorToolbar({
 	editor,
@@ -201,35 +203,71 @@ function ToggleButtonWithTooltip({
 						<span className="text-xs font-medium text-neutral-500">
 							{tooltipTitle}
 						</span>
-						{tooltipShortcut && (
-							<span className="flex items-center gap-0.5">
-								{tooltipShortcut.map((shortcutKey) => {
-									const shortcutKeyText = (() => {
-										if (shortcutKey === "Mod") {
-											return isMac ? "⌘" : "Ctrl";
-										}
-										if (shortcutKey === "Shift") {
-											return "⇧";
-										}
-										if (shortcutKey === "Alt") {
-											return isMac ? "⌥" : "Alt";
-										}
-										return shortcutKey;
-									})();
-									const className =
-										"inline-flex items-center justify-center w-5 h-5 p-1 text-[0.625rem] rounded font-semibold leading-none border border-neutral-200 text-neutral-500 border-b-2";
-									return (
-										<kbd className={className} key={shortcutKey}>
-											{shortcutKeyText}
-										</kbd>
-									);
-								})}
-							</span>
-						)}
+						{tooltipShortcut && <RenderShortcuts shortcut={tooltipShortcut} />}
 					</span>
 				</TooltipContent>
 			</Tooltip>
 		</TooltipProvider>
+	);
+}
+
+function ButtonWithTooltip({
+	tooltipTitle,
+	tooltipShortcut,
+	children,
+	...buttonProps
+}: PropsWithChildren<
+	{
+		tooltipTitle: string;
+		tooltipShortcut?: string[];
+	} & ButtonProps
+>) {
+	return (
+		<TooltipProvider>
+			<Tooltip>
+				<TooltipTrigger asChild>
+					<Button aria-label={tooltipTitle} {...buttonProps}>
+						{children}
+					</Button>
+				</TooltipTrigger>
+				<TooltipContent>
+					<span className="flex items-center gap-2 px-2.5 py-1 bg-white border border-neutral-100 rounded-lg shadow-sm z-[999]">
+						<span className="text-xs font-medium text-neutral-500">
+							{tooltipTitle}
+						</span>
+						{tooltipShortcut && <RenderShortcuts shortcut={tooltipShortcut} />}
+					</span>
+				</TooltipContent>
+			</Tooltip>
+		</TooltipProvider>
+	);
+}
+
+function RenderShortcuts({ shortcut }: { shortcut: string[] }) {
+	return (
+		<span className="flex items-center gap-0.5">
+			{shortcut.map((shortcutKey) => {
+				const shortcutKeyText = (() => {
+					if (shortcutKey === "Mod") {
+						return isMac ? "⌘" : "Ctrl";
+					}
+					if (shortcutKey === "Shift") {
+						return "⇧";
+					}
+					if (shortcutKey === "Alt") {
+						return isMac ? "⌥" : "Alt";
+					}
+					return shortcutKey;
+				})();
+				const className =
+					"inline-flex items-center justify-center w-5 h-5 p-1 text-[0.625rem] rounded font-semibold leading-none border border-neutral-200 text-neutral-500 border-b-2";
+				return (
+					<kbd className={className} key={shortcutKey}>
+						{shortcutKeyText}
+					</kbd>
+				);
+			})}
+		</span>
 	);
 }
 
@@ -550,50 +588,52 @@ function EditLinkPopover({ onSetUrl }: { onSetUrl: (link: string) => void }) {
 	const [url, setUrl] = useState("");
 	const isValidUrl = /^(\S+):(\/\/)?\S+|\/\S+$/.test(url);
 	return (
-		<Popover.Root>
-			<Popover.Trigger asChild>
-				<Toolbar.Button tooltip="Set Link">
+		<Popover>
+			<PopoverTrigger asChild>
+				<ButtonWithTooltip
+					tooltipTitle="Link"
+					tooltipShortcut={["⌘", "L"]}
+					variant="ghost"
+				>
 					<TiptapIcon name="Link" />
-				</Toolbar.Button>
-			</Popover.Trigger>
-			<Popover.Content>
-				<Surface className="p-2">
-					<form
-						onSubmit={(e: React.FormEvent) => {
-							e.preventDefault();
-							if (isValidUrl) onSetUrl(url);
-						}}
-						className="flex items-center gap-2"
+				</ButtonWithTooltip>
+			</PopoverTrigger>
+			<PopoverContent className="w-auto p-2">
+				<form
+					onSubmit={(e: React.FormEvent) => {
+						e.preventDefault();
+						if (isValidUrl) onSetUrl(url);
+					}}
+					className="flex items-center gap-2"
+				>
+					<label
+						htmlFor="url"
+						className="flex items-center gap-2 p-2 rounded-lg bg-neutral-100 dark:bg-neutral-900 cursor-text"
 					>
-						<label
-							htmlFor="url"
-							className="flex items-center gap-2 p-2 rounded-lg bg-neutral-100 dark:bg-neutral-900 cursor-text"
-						>
-							<TiptapIcon
-								name="Link"
-								className="flex-none text-black dark:text-white"
-							/>
-							<input
-								id="url"
-								className="flex-1 bg-transparent outline-none min-w-[12rem] text-black text-sm dark:text-white"
-								placeholder="Enter URL"
-								value={url}
-								onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-									setUrl(event.target.value);
-								}}
-							/>
-						</label>
-						<Button
-							variant="primary"
-							buttonSize="small"
-							type="submit"
-							disabled={!isValidUrl}
-						>
-							Set Link
-						</Button>
-					</form>
-				</Surface>
-			</Popover.Content>
-		</Popover.Root>
+						<TiptapIcon
+							name="Link"
+							className="flex-none text-black dark:text-white"
+						/>
+						<input
+							id="url"
+							className="flex-1 bg-transparent outline-none min-w-[12rem] text-black text-sm dark:text-white"
+							placeholder="Enter URL"
+							value={url}
+							onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+								setUrl(event.target.value);
+							}}
+						/>
+					</label>
+					<Button
+						variant="default"
+						size="sm"
+						type="submit"
+						disabled={!isValidUrl}
+					>
+						Set Link
+					</Button>
+				</form>
+			</PopoverContent>
+		</Popover>
 	);
 }
