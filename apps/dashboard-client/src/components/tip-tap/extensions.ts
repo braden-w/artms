@@ -1,7 +1,5 @@
 // import { // 	UpdatedImage, // } from 'novel/extensions';
 // import { UploadImagesPlugin } from 'novel/plugins';
-// import GlobalDragHandle from 'tiptap-extension-global-drag-handle';
-// import AutoJoiner from 'tiptap-extension-auto-joiner'; // optional
 import { cn, getFileStemAndExtension } from "@/lib/utils";
 import type { PageFts, SelectPage } from "@repo/dashboard-server/schema";
 import FileHandler from "@tiptap-pro/extension-file-handler";
@@ -28,10 +26,12 @@ import { SlashCommand } from "./extensions/SlashCommand";
 import { TabHandler } from "./extensions/TabHandler";
 import { YouTube } from "./extensions/YouTube";
 import { EmbedContent } from "./menus/EmbedContent";
+import GlobalDragHandle from "tiptap-extension-global-drag-handle";
+import AutoJoiner from "tiptap-extension-auto-joiner"; // optional
 
 export type ExtensionServices = {
 	page: SelectPage;
-	addPage: (page: SelectPage) => Promise<void>;
+	addPage: (page: SelectPage) => void;
 	getPagesByFts: (query: string) => Promise<PageFts[]>;
 };
 
@@ -235,18 +235,18 @@ export const createExtensions = (extensionServices: ExtensionServices) => [
 	YouTube,
 	EmbedContent,
 
-	// GlobalDragHandle.configure({
-	// 	dragHandleWidth: 20, // default
+	GlobalDragHandle.configure({
+		dragHandleWidth: 20, // default
 
-	// 	// The scrollTreshold specifies how close the user must drag an element to the edge of the lower/upper screen for automatic
-	// 	// scrolling to take place. For example, scrollTreshold = 100 means that scrolling starts automatically when the user drags an
-	// 	// element to a position that is max. 99px away from the edge of the screen
-	// 	// You can set this to 0 to prevent auto scrolling caused by this extension
-	// 	scrollTreshold: 100, // default
-	// }),
-	// AutoJoiner.configure({
-	// 	elementsToJoin: ['bulletList', 'orderedList'], // default
-	// }),
+		// The scrollTreshold specifies how close the user must drag an element to the edge of the lower/upper screen for automatic
+		// scrolling to take place. For example, scrollTreshold = 100 means that scrolling starts automatically when the user drags an
+		// element to a position that is max. 99px away from the edge of the screen
+		// You can set this to 0 to prevent auto scrolling caused by this extension
+		scrollTreshold: 100, // default
+	}),
+	AutoJoiner.configure({
+		elementsToJoin: ["bulletList", "orderedList"], // default
+	}),
 	CodeBlockLowlight.configure({
 		// configure lowlight: common /  all / use highlightJS in case there is a need to specify certain language grammars only
 		// common: covers 37 language grammars which should be good enough in most cases
