@@ -4,7 +4,13 @@ import { isNodeSelection, posToDOMRect } from "@tiptap/core";
 import type { Editor } from "@tiptap/react";
 import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 
-export function useEditorFloatingMenu({ editor }: { editor: Editor }) {
+export function useEditorFloatingMenu({
+	editor,
+	getShouldFloatingMenuBeVisible,
+}: {
+	editor: Editor;
+	getShouldFloatingMenuBeVisible: (editor: Editor) => boolean;
+}) {
 	const [isFloatingMenuOpen, setIsFloatingMenuOpen] = useState(false);
 
 	const { floatingStyles, refs } = useFloating({
@@ -16,6 +22,7 @@ export function useEditorFloatingMenu({ editor }: { editor: Editor }) {
 	useUpdateFloatingMenuVisibilityOnEditorSelection({
 		editor,
 		setIsFloatingMenuOpen,
+		getShouldFloatingMenuBeVisible,
 	});
 	useCloseFloatingMenuOnBlur({ editor, setIsFloatingMenuOpen });
 
@@ -55,18 +62,16 @@ function useUpdateFloatingMenuPositionReferenceOnEditorSelection<
 function useUpdateFloatingMenuVisibilityOnEditorSelection({
 	editor,
 	setIsFloatingMenuOpen,
+	getShouldFloatingMenuBeVisible,
 }: {
 	editor: Editor;
 	setIsFloatingMenuOpen: Dispatch<SetStateAction<boolean>>;
+	getShouldFloatingMenuBeVisible: (editor: Editor) => boolean;
 }) {
 	useEffect(() => {
 		const updateFloatingMenuVisibility = () => {
-			const shouldFloatingMenuBeVisible = (() => {
-				const { state } = editor;
-				const { empty: isSelectionEmpty, from, to } = state.selection;
-				const isEmptyTextBlock = !state.doc.textBetween(from, to).length;
-				return !isSelectionEmpty && !isEmptyTextBlock && editor.isEditable;
-			})();
+			const shouldFloatingMenuBeVisible =
+				getShouldFloatingMenuBeVisible(editor);
 
 			setIsFloatingMenuOpen(shouldFloatingMenuBeVisible);
 		};
@@ -76,7 +81,7 @@ function useUpdateFloatingMenuVisibilityOnEditorSelection({
 		return () => {
 			editor.off("selectionUpdate", updateFloatingMenuVisibility);
 		};
-	}, [editor, setIsFloatingMenuOpen]);
+	}, [editor, getShouldFloatingMenuBeVisible, setIsFloatingMenuOpen]);
 }
 
 function useCloseFloatingMenuOnBlur({

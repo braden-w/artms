@@ -47,6 +47,12 @@ export function FloatingEditorToolbar({
 	});
 	const { refs, floatingStyles, isFloatingMenuOpen } = useEditorFloatingMenu({
 		editor,
+		getShouldFloatingMenuBeVisible: (editor) => {
+			const { state } = editor;
+			const { empty: isSelectionEmpty, from, to } = state.selection;
+			const isEmptyTextBlock = !state.doc.textBetween(from, to).length;
+			return !isSelectionEmpty && !isEmptyTextBlock && editor.isEditable;
+		},
 	});
 
 	if (!isFloatingMenuOpen) return null;
