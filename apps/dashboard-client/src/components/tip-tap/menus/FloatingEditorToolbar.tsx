@@ -352,57 +352,77 @@ export const TableOfContentsNode = Node.create({
 	},
 });
 
+const getActiveNodeType = (editor: Editor) => {
+	if (editor.isActive("heading", { level: 1 })) return "heading1";
+	if (editor.isActive("heading", { level: 2 })) return "heading2";
+	if (editor.isActive("heading", { level: 3 })) return "heading3";
+	if (editor.isActive("heading", { level: 4 })) return "heading4";
+	if (editor.isActive("heading", { level: 5 })) return "heading5";
+	if (editor.isActive("heading", { level: 6 })) return "heading6";
+	if (editor.isActive("bulletList")) return "bulletList";
+	if (editor.isActive("orderedList")) return "orderedList";
+	if (editor.isActive("taskList")) return "taskList";
+	if (editor.isActive("codeBlock")) return "codeBlock";
+	if (editor.isActive("paragraph")) return "paragraph";
+	if (editor.isActive("blockquote")) return "blockquote";
+	if (editor.isActive("horizontalRule")) return "horizontalRule";
+	if (editor.isActive("table")) return "table";
+	if (editor.isActive("tableRow")) return "tableRow";
+	if (editor.isActive("tableCell")) return "tableCell";
+	if (editor.isActive("tableHeader")) return "tableHeader";
+	if (editor.isActive("image")) return "image";
+	if (editor.isActive("hardBreak")) return "hardBreak";
+	if (editor.isActive("listItem")) return "listItem";
+	if (editor.isActive("taskItem")) return "taskItem";
+	if (editor.isActive("mention")) return "mention";
+	if (editor.isActive("emoji")) return "emoji";
+	if (editor.isActive("placeholder")) return "placeholder";
+	if (editor.isActive("youtube")) return "youtube";
+	if (editor.isActive("iframe")) return "iframe";
+	if (editor.isActive("figcaption")) return "figcaption";
+	if (editor.isActive("figure")) return "figure";
+	if (editor.isActive("details")) return "details";
+	if (editor.isActive("summary")) return "summary";
+	return "paragraph";
+};
+
+type ActiveNodeType = ReturnType<typeof getActiveNodeType>;
+
+const activeNodeTypeToIcon = {
+	heading1: "Heading1",
+	heading2: "Heading2",
+	heading3: "Heading3",
+	heading4: "Heading4",
+	heading5: "Heading5",
+	heading6: "Heading6",
+	bulletList: "List",
+	orderedList: "ListOrdered",
+	taskList: "ListTodo",
+	codeBlock: "Code",
+	paragraph: "Pilcrow",
+	blockquote: "Quote",
+	horizontalRule: "Minus",
+	table: "Table",
+	tableRow: "TableProperties",
+	tableCell: "Table2",
+	tableHeader: "Heading",
+	image: "Image",
+	hardBreak: "Scissors",
+	listItem: "List",
+	taskItem: "SquareCheck",
+	mention: "AtSign",
+	emoji: "Smile",
+	placeholder: "Box",
+	youtube: "Play",
+	iframe: "Frame",
+	figcaption: "Text",
+	figure: "Image",
+	details: "Info",
+	summary: "ListCollapse",
+} satisfies Record<ActiveNodeType, keyof typeof icons>;
+
 function ContentTypePicker({ editor }: { editor: Editor }) {
-	const getActiveNodeType = () => {
-		if (editor.isActive("heading", { level: 1 })) return "heading1";
-		if (editor.isActive("heading", { level: 2 })) return "heading2";
-		if (editor.isActive("heading", { level: 3 })) return "heading3";
-		if (editor.isActive("heading", { level: 4 })) return "heading4";
-		if (editor.isActive("heading", { level: 5 })) return "heading5";
-		if (editor.isActive("heading", { level: 6 })) return "heading6";
-		if (editor.isActive("bulletList")) return "bulletList";
-		if (editor.isActive("orderedList")) return "orderedList";
-		if (editor.isActive("taskList")) return "taskList";
-		if (editor.isActive("codeBlock")) return "codeBlock";
-		if (editor.isActive("paragraph")) return "paragraph";
-		// if (editor.isActive('blockquote')) return 'blockquote';
-		// if (editor.isActive('horizontalRule')) return 'horizontalRule';
-		// if (editor.isActive('table')) return 'table';
-		// if (editor.isActive('tableRow')) return 'tableRow';
-		// if (editor.isActive('tableCell')) return 'tableCell';
-		// if (editor.isActive('tableHeader')) return 'tableHeader';
-		// if (editor.isActive('image')) return 'image';
-		// if (editor.isActive('hardBreak')) return 'hardBreak';
-		// if (editor.isActive('listItem')) return 'listItem';
-		// if (editor.isActive('taskItem')) return 'taskItem';
-		// if (editor.isActive('mention')) return 'mention';
-		// if (editor.isActive('emoji')) return 'emoji';
-		// if (editor.isActive('placeholder')) return 'placeholder';
-		// if (editor.isActive('youtube')) return 'youtube';
-		// if (editor.isActive('iframe')) return 'iframe';
-		// if (editor.isActive('figcaption')) return 'figcaption';
-		// if (editor.isActive('figure')) return 'figure';
-		// if (editor.isActive('details')) return 'details';
-		// if (editor.isActive('summary')) return 'summary';
-		return "paragraph";
-	};
-
-	const activeNodeType = getActiveNodeType();
-
-	const activeNodeTypeToIcon = {
-		heading1: "Heading1",
-		heading2: "Heading2",
-		heading3: "Heading3",
-		heading4: "Heading4",
-		heading5: "Heading5",
-		heading6: "Heading6",
-		bulletList: "List",
-		orderedList: "ListOrdered",
-		taskList: "ListTodo",
-		paragraph: "Pilcrow",
-		codeBlock: "Code",
-	} satisfies Record<typeof activeNodeType, keyof typeof icons>;
-
+	const activeNodeType = getActiveNodeType(editor);
 	const activeItemIcon = activeNodeTypeToIcon[activeNodeType];
 
 	return (
