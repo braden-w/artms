@@ -4,36 +4,27 @@ import { Toolbar } from "@/components/tip-tap/ui/Toolbar";
 import Tooltip from "@/components/tip-tap/ui/Tooltip";
 import { Button } from "@/components/ui/button";
 import type { Editor } from "@tiptap/react";
-import { BubbleMenu } from "@tiptap/react";
 import { useState } from "react";
+import { useEditorFloatingMenu } from "./useFloatingMenu";
 
 export function FloatingLinkToolbar({
 	editor,
-	appendTo,
 }: {
 	editor: Editor;
-	appendTo?: React.RefObject<HTMLDivElement>;
-}): JSX.Element {
+}) {
 	const [isShowEdit, setIsShowEdit] = useState(false);
+	const { refs, floatingStyles, isFloatingMenuOpen } = useEditorFloatingMenu({
+		editor,
+		getShouldFloatingMenuBeVisible: (editor) => editor.isActive("link"),
+	});
 	const { href: initialUrl, target } = editor.getAttributes("link");
 	const { title: initialTitle } = editor.getAttributes("text");
+	if (!isFloatingMenuOpen) return null;
 	return (
-		<BubbleMenu
-			editor={editor}
-			pluginKey="textMenu"
-			shouldShow={() => editor.isActive("link")}
-			updateDelay={0}
-			tippyOptions={{
-				popperOptions: {
-					modifiers: [{ name: "flip", enabled: false }],
-				},
-				appendTo: () => {
-					return appendTo?.current;
-				},
-				onHidden: () => {
-					setIsShowEdit(false);
-				},
-			}}
+		<div
+			ref={refs.setFloating}
+			style={floatingStyles}
+			className="z-50 bg-card text-card-foreground shadow-lg rounded-lg p-1"
 		>
 			{isShowEdit ? (
 				<LinkEditorPanel
@@ -62,7 +53,7 @@ export function FloatingLinkToolbar({
 					onOpenLinkEditor={() => setIsShowEdit(true)}
 				/>
 			)}
-		</BubbleMenu>
+		</div>
 	);
 }
 
