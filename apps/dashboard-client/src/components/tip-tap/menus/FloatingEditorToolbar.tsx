@@ -37,6 +37,7 @@ import type { icons } from "lucide-react";
 import { type PropsWithChildren, useState } from "react";
 import { toast } from "sonner";
 import { FloatingToolbar } from "./FloatingToolbar";
+import type { ToggleProps } from "@radix-ui/react-toggle";
 
 export function FloatingEditorToolbar({
 	editor,
@@ -60,73 +61,83 @@ export function FloatingEditorToolbar({
 			<ContentTypePicker editor={editor} />
 			<Separator orientation="vertical" className="mx-1" />
 			<ToggleButtonWithTooltip
-				icon="Bold"
 				tooltipTitle="Bold"
 				tooltipShortcut={["Mod", "B"]}
 				onClick={() => editor.chain().focus().toggleBold().run()}
-				isActive={editor.isActive("bold")}
-			/>
+				pressed={editor.isActive("bold")}
+			>
+				<TiptapIcon name="Bold" />
+			</ToggleButtonWithTooltip>
 			<ToggleButtonWithTooltip
-				icon="Italic"
 				tooltipTitle="Italic"
 				tooltipShortcut={["Mod", "I"]}
 				onClick={() => editor.chain().focus().toggleItalic().run()}
-				isActive={editor.isActive("italic")}
-			/>
+				pressed={editor.isActive("italic")}
+			>
+				<TiptapIcon name="Italic" />
+			</ToggleButtonWithTooltip>
 			<ToggleButtonWithTooltip
-				icon="Strikethrough"
 				tooltipTitle="Strikethrough"
 				tooltipShortcut={["Mod", "Shift", "S"]}
 				onClick={() => editor.chain().focus().toggleStrike().run()}
-				isActive={editor.isActive("strike")}
-			/>
+				pressed={editor.isActive("strike")}
+			>
+				<TiptapIcon name="Strikethrough" />
+			</ToggleButtonWithTooltip>
 			<ToggleButtonWithTooltip
-				icon="Subscript"
 				tooltipTitle="Subscript"
+				tooltipShortcut={["Mod", "Shift", "="]}
 				onClick={() => editor.chain().focus().toggleSubscript().run()}
-				isActive={editor.isActive("subscript")}
-			/>
+				pressed={editor.isActive("subscript")}
+			>
+				<TiptapIcon name="Subscript" />
+			</ToggleButtonWithTooltip>
 			<ToggleButtonWithTooltip
-				icon="Superscript"
 				tooltipTitle="Superscript"
+				tooltipShortcut={["Mod", "Shift", "="]}
 				onClick={() => editor.chain().focus().toggleSuperscript().run()}
-				isActive={editor.isActive("superscript")}
-			/>
+				pressed={editor.isActive("superscript")}
+			>
+				<TiptapIcon name="Superscript" />
+			</ToggleButtonWithTooltip>
 			<ToggleButtonWithTooltip
-				icon="Code"
 				tooltipTitle="Code"
 				tooltipShortcut={["Mod", "E"]}
 				onClick={() => editor.chain().focus().toggleCode().run()}
-				isActive={editor.isActive("code")}
-			/>
+				pressed={editor.isActive("code")}
+			>
+				<TiptapIcon name="Code" />
+			</ToggleButtonWithTooltip>
 			<ToggleButtonWithTooltip
-				icon="CodeXml"
 				tooltipTitle="Code block"
 				tooltipShortcut={["Mod", "E"]}
 				onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-				isActive={editor.isActive("codeBlock")}
-			/>
+				pressed={editor.isActive("codeBlock")}
+			>
+				<TiptapIcon name="CodeXml" />
+			</ToggleButtonWithTooltip>
 			<ToggleButtonWithTooltip
-				icon="Quote"
 				tooltipTitle="Quote"
 				tooltipShortcut={["Mod", "E"]}
 				onClick={() => editor.chain().focus().toggleBlockquote().run()}
-				isActive={editor.isActive("blockquote")}
-			/>
+				pressed={editor.isActive("blockquote")}
+			>
+				<TiptapIcon name="Quote" />
+			</ToggleButtonWithTooltip>
 			<EditLinkPopover
 				onSetUrl={(url: string) =>
 					editor.chain().focus().setLink({ href: url, target: "_blank" }).run()
 				}
 			/>
 			<ToggleButtonWithTooltip
-				icon="Highlighter"
 				tooltipTitle="Highlight text"
+				tooltipShortcut={["Mod", "H"]}
 				onClick={() => editor.chain().focus().toggleHighlight().run()}
-				isActive={editor.isActive("highlight")}
-			/>
-
+				pressed={editor.isActive("highlight")}
+			>
+				<TiptapIcon name="Highlighter" />
+			</ToggleButtonWithTooltip>
 			<ToggleButtonWithTooltip
-				icon="ExternalLink"
 				tooltipTitle="Extract to new page"
 				onClick={async () => {
 					const { from, to } = editor.view.state.selection;
@@ -148,10 +159,11 @@ export function FloatingEditorToolbar({
 					const pageLink = `[${newPage.title}](/pages/${newPage.id})` as const;
 					editor.chain().focus().insertContent(pageLink).run();
 				}}
-				isActive={false}
-			/>
+				pressed={false}
+			>
+				<TiptapIcon name="ExternalLink" />
+			</ToggleButtonWithTooltip>
 			<ToggleButtonWithTooltip
-				icon="Youtube"
 				tooltipTitle="Youtube"
 				onClick={() => {
 					const url = prompt("Enter YouTube URL");
@@ -164,8 +176,10 @@ export function FloatingEditorToolbar({
 						});
 					}
 				}}
-				isActive={false}
-			/>
+				pressed={false}
+			>
+				<TiptapIcon name="Youtube" />
+			</ToggleButtonWithTooltip>
 		</FloatingToolbar>
 	);
 }
@@ -176,26 +190,20 @@ const isMac =
 function ToggleButtonWithTooltip({
 	tooltipTitle,
 	tooltipShortcut,
-	onClick,
-	icon: iconName,
-	isActive,
-}: {
-	tooltipTitle: string;
-	tooltipShortcut?: string[];
-	onClick: () => void;
-	icon: keyof typeof icons;
-	isActive: boolean;
-}) {
+	children,
+	...toggleProps
+}: PropsWithChildren<
+	{
+		tooltipTitle: string;
+		tooltipShortcut?: string[];
+	} & ToggleProps
+>) {
 	return (
 		<TooltipProvider>
 			<Tooltip>
 				<TooltipTrigger>
-					<Toggle
-						aria-label={tooltipTitle}
-						pressed={isActive}
-						onPressedChange={onClick}
-					>
-						<TiptapIcon name={iconName} />
+					<Toggle aria-label={tooltipTitle} {...toggleProps}>
+						{children}
 					</Toggle>
 				</TooltipTrigger>
 				<TooltipContent className="flex items-center gap-2">
