@@ -45,15 +45,16 @@ export function FloatingEditorToolbar({
 			toast.success("Success", { description: "Row added!" });
 		},
 	});
-	const { refs, floatingStyles, isFloatingMenuOpen } = useEditorFloatingMenu({
-		editor,
-		getShouldFloatingMenuBeVisible: (editor) => {
-			const { state } = editor;
-			const { empty: isSelectionEmpty, from, to } = state.selection;
-			const isEmptyTextBlock = !state.doc.textBetween(from, to).length;
-			return !isSelectionEmpty && !isEmptyTextBlock && editor.isEditable;
-		},
-	});
+	const { refs, floatingStyles, isFloatingMenuOpen, getFloatingProps } =
+		useEditorFloatingMenu({
+			editor,
+			getShouldFloatingMenuBeVisible: (editor) => {
+				const { state } = editor;
+				const { empty: isSelectionEmpty, from, to } = state.selection;
+				const isEmptyTextBlock = !state.doc.textBetween(from, to).length;
+				return !isSelectionEmpty && !isEmptyTextBlock && editor.isEditable;
+			},
+		});
 
 	if (!isFloatingMenuOpen) return null;
 
@@ -61,6 +62,7 @@ export function FloatingEditorToolbar({
 		<div
 			ref={refs.setFloating}
 			style={floatingStyles}
+			{...getFloatingProps()}
 			className="z-50 bg-card text-card-foreground shadow-lg rounded-lg p-1"
 		>
 			<div className="bg-card text-card-foreground inline-flex h-8 leading-none gap-1">

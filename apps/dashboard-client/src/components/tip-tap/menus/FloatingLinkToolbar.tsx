@@ -19,10 +19,11 @@ export function FloatingLinkToolbar({
 	editor: Editor;
 }) {
 	const [isShowEdit, setIsShowEdit] = useState(false);
-	const { refs, floatingStyles, isFloatingMenuOpen } = useEditorFloatingMenu({
-		editor,
-		getShouldFloatingMenuBeVisible: (editor) => editor.isActive("link"),
-	});
+	const { refs, floatingStyles, isFloatingMenuOpen, getFloatingProps } =
+		useEditorFloatingMenu({
+			editor,
+			getShouldFloatingMenuBeVisible: (editor) => editor.isActive("link"),
+		});
 	const { href: initialUrl, target } = editor.getAttributes("link");
 	const { title: initialTitle } = editor.getAttributes("text");
 	if (!isFloatingMenuOpen) return null;
@@ -30,6 +31,7 @@ export function FloatingLinkToolbar({
 		<div
 			ref={refs.setFloating}
 			style={floatingStyles}
+			{...getFloatingProps()}
 			className="z-50 bg-card text-card-foreground shadow-lg rounded-lg p-1"
 		>
 			{isShowEdit ? (

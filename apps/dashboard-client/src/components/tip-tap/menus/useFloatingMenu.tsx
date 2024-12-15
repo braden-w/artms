@@ -1,5 +1,13 @@
-import type { ExtendedRefs, ReferenceType } from "@floating-ui/react";
-import { flip, offset, shift, useFloating } from "@floating-ui/react";
+import {
+	type ExtendedRefs,
+	type ReferenceType,
+	flip,
+	offset,
+	shift,
+	useFloating,
+	useDismiss,
+	useInteractions,
+} from "@floating-ui/react";
 import { isNodeSelection, posToDOMRect } from "@tiptap/core";
 import type { Editor } from "@tiptap/react";
 import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
@@ -13,10 +21,14 @@ export function useEditorFloatingMenu({
 }) {
 	const [isFloatingMenuOpen, setIsFloatingMenuOpen] = useState(false);
 
-	const { floatingStyles, refs } = useFloating({
+	const { refs, floatingStyles, context } = useFloating({
 		placement: "top",
 		middleware: [offset(8), shift(), flip()],
+		open: isFloatingMenuOpen,
+		onOpenChange: setIsFloatingMenuOpen,
 	});
+	const dismiss = useDismiss(context, { outsidePress: true });
+	const { getReferenceProps, getFloatingProps } = useInteractions([dismiss]);
 
 	useUpdateFloatingMenuPositionReferenceOnEditorSelection({ editor, refs });
 	useUpdateFloatingMenuVisibilityOnEditorSelection({
@@ -24,9 +36,14 @@ export function useEditorFloatingMenu({
 		setIsFloatingMenuOpen,
 		getShouldFloatingMenuBeVisible,
 	});
-	useCloseFloatingMenuOnBlur({ editor, setIsFloatingMenuOpen });
 
-	return { refs, floatingStyles, isFloatingMenuOpen };
+	return {
+		refs,
+		floatingStyles,
+		isFloatingMenuOpen,
+		getReferenceProps,
+		getFloatingProps,
+	};
 }
 
 function useUpdateFloatingMenuPositionReferenceOnEditorSelection<
@@ -82,19 +99,4 @@ function useUpdateFloatingMenuVisibilityOnEditorSelection({
 			editor.off("selectionUpdate", updateFloatingMenuVisibility);
 		};
 	}, [editor, getShouldFloatingMenuBeVisible, setIsFloatingMenuOpen]);
-}
-
-function useCloseFloatingMenuOnBlur({
-	editor,
-	setIsFloatingMenuOpen,
-}: {
-	editor: Editor;
-	setIsFloatingMenuOpen: Dispatch<SetStateAction<boolean>>;
-}) {
-	useEffect(() => {
-		editor.on("blur", () => setIsFloatingMenuOpen(false));
-		return () => {
-			editor.off("blur", () => setIsFloatingMenuOpen(false));
-		};
-	}, [editor, setIsFloatingMenuOpen]);
 }
