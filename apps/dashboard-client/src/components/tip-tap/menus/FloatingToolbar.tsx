@@ -1,6 +1,7 @@
+import { Menubar } from "@/components/ui/menubar";
 import type { Editor } from "@tiptap/core";
-import { useEditorFloatingToolbar } from "./useFloatingToolbar";
 import type { PropsWithChildren } from "react";
+import { useEditorFloatingToolbar } from "./useFloatingToolbar";
 
 export function FloatingToolbar({
 	editor,
@@ -15,13 +16,13 @@ export function FloatingToolbar({
 
 	if (!isFloatingToolbarOpen) return null;
 	return (
-		<div
+		<Menubar
 			ref={refs.setFloating}
 			style={floatingStyles}
 			{...getFloatingProps()}
-			className="z-50 bg-card text-card-foreground shadow-lg rounded-lg p-1"
+			className="h-fit"
 		>
 			{children}
-		</div>
+		</Menubar>
 	);
 }

@@ -55,122 +55,115 @@ export function FloatingEditorToolbar({
 				return !isSelectionEmpty && !isEmptyTextBlock && editor.isEditable;
 			}}
 		>
-			<div className="bg-card text-card-foreground inline-flex h-8 leading-none gap-1">
-				<ContentTypePicker editor={editor} />
-				<Separator orientation="vertical" className="mx-1" />
-				<ToggleButtonWithTooltip
-					icon="Bold"
-					tooltipTitle="Bold"
-					tooltipShortcut={["Mod", "B"]}
-					onClick={() => editor.chain().focus().toggleBold().run()}
-					isActive={editor.isActive("bold")}
-				/>
-				<ToggleButtonWithTooltip
-					icon="Italic"
-					tooltipTitle="Italic"
-					tooltipShortcut={["Mod", "I"]}
-					onClick={() => editor.chain().focus().toggleItalic().run()}
-					isActive={editor.isActive("italic")}
-				/>
-				<ToggleButtonWithTooltip
-					icon="Strikethrough"
-					tooltipTitle="Strikethrough"
-					tooltipShortcut={["Mod", "Shift", "S"]}
-					onClick={() => editor.chain().focus().toggleStrike().run()}
-					isActive={editor.isActive("strike")}
-				/>
-				<ToggleButtonWithTooltip
-					icon="Subscript"
-					tooltipTitle="Subscript"
-					onClick={() => editor.chain().focus().toggleSubscript().run()}
-					isActive={editor.isActive("subscript")}
-				/>
-				<ToggleButtonWithTooltip
-					icon="Superscript"
-					tooltipTitle="Superscript"
-					onClick={() => editor.chain().focus().toggleSuperscript().run()}
-					isActive={editor.isActive("superscript")}
-				/>
-				<ToggleButtonWithTooltip
-					icon="Code"
-					tooltipTitle="Code"
-					tooltipShortcut={["Mod", "E"]}
-					onClick={() => editor.chain().focus().toggleCode().run()}
-					isActive={editor.isActive("code")}
-				/>
-				<ToggleButtonWithTooltip
-					icon="CodeXml"
-					tooltipTitle="Code block"
-					tooltipShortcut={["Mod", "E"]}
-					onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-					isActive={editor.isActive("codeBlock")}
-				/>
-				<ToggleButtonWithTooltip
-					icon="Quote"
-					tooltipTitle="Quote"
-					tooltipShortcut={["Mod", "E"]}
-					onClick={() => editor.chain().focus().toggleBlockquote().run()}
-					isActive={editor.isActive("blockquote")}
-				/>
-				<EditLinkPopover
-					onSetUrl={(url: string) =>
-						editor
-							.chain()
-							.focus()
-							.setLink({ href: url, target: "_blank" })
-							.run()
-					}
-				/>
-				<ToggleButtonWithTooltip
-					icon="Highlighter"
-					tooltipTitle="Highlight text"
-					onClick={() => editor.chain().focus().toggleHighlight().run()}
-					isActive={editor.isActive("highlight")}
-				/>
+			<ContentTypePicker editor={editor} />
+			<Separator orientation="vertical" className="mx-1" />
+			<ToggleButtonWithTooltip
+				icon="Bold"
+				tooltipTitle="Bold"
+				tooltipShortcut={["Mod", "B"]}
+				onClick={() => editor.chain().focus().toggleBold().run()}
+				isActive={editor.isActive("bold")}
+			/>
+			<ToggleButtonWithTooltip
+				icon="Italic"
+				tooltipTitle="Italic"
+				tooltipShortcut={["Mod", "I"]}
+				onClick={() => editor.chain().focus().toggleItalic().run()}
+				isActive={editor.isActive("italic")}
+			/>
+			<ToggleButtonWithTooltip
+				icon="Strikethrough"
+				tooltipTitle="Strikethrough"
+				tooltipShortcut={["Mod", "Shift", "S"]}
+				onClick={() => editor.chain().focus().toggleStrike().run()}
+				isActive={editor.isActive("strike")}
+			/>
+			<ToggleButtonWithTooltip
+				icon="Subscript"
+				tooltipTitle="Subscript"
+				onClick={() => editor.chain().focus().toggleSubscript().run()}
+				isActive={editor.isActive("subscript")}
+			/>
+			<ToggleButtonWithTooltip
+				icon="Superscript"
+				tooltipTitle="Superscript"
+				onClick={() => editor.chain().focus().toggleSuperscript().run()}
+				isActive={editor.isActive("superscript")}
+			/>
+			<ToggleButtonWithTooltip
+				icon="Code"
+				tooltipTitle="Code"
+				tooltipShortcut={["Mod", "E"]}
+				onClick={() => editor.chain().focus().toggleCode().run()}
+				isActive={editor.isActive("code")}
+			/>
+			<ToggleButtonWithTooltip
+				icon="CodeXml"
+				tooltipTitle="Code block"
+				tooltipShortcut={["Mod", "E"]}
+				onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+				isActive={editor.isActive("codeBlock")}
+			/>
+			<ToggleButtonWithTooltip
+				icon="Quote"
+				tooltipTitle="Quote"
+				tooltipShortcut={["Mod", "E"]}
+				onClick={() => editor.chain().focus().toggleBlockquote().run()}
+				isActive={editor.isActive("blockquote")}
+			/>
+			<EditLinkPopover
+				onSetUrl={(url: string) =>
+					editor.chain().focus().setLink({ href: url, target: "_blank" }).run()
+				}
+			/>
+			<ToggleButtonWithTooltip
+				icon="Highlighter"
+				tooltipTitle="Highlight text"
+				onClick={() => editor.chain().focus().toggleHighlight().run()}
+				isActive={editor.isActive("highlight")}
+			/>
 
-				<ToggleButtonWithTooltip
-					icon="ExternalLink"
-					tooltipTitle="Extract to new page"
-					onClick={async () => {
-						const { from, to } = editor.view.state.selection;
-						const selectedText = editor.view.state.doc.textBetween(
-							from,
-							to,
-							"\n\n",
-						);
-						const title = prompt("Note title", selectedText) ?? selectedText;
-						const content = selectedText;
-						const newPage = generateDefaultPage({
-							...page,
-							on: [],
-							type: [],
-							title,
-							content,
+			<ToggleButtonWithTooltip
+				icon="ExternalLink"
+				tooltipTitle="Extract to new page"
+				onClick={async () => {
+					const { from, to } = editor.view.state.selection;
+					const selectedText = editor.view.state.doc.textBetween(
+						from,
+						to,
+						"\n\n",
+					);
+					const title = prompt("Note title", selectedText) ?? selectedText;
+					const content = selectedText;
+					const newPage = generateDefaultPage({
+						...page,
+						on: [],
+						type: [],
+						title,
+						content,
+					});
+					addPage(newPage);
+					const pageLink = `[${newPage.title}](/pages/${newPage.id})` as const;
+					editor.chain().focus().insertContent(pageLink).run();
+				}}
+				isActive={false}
+			/>
+			<ToggleButtonWithTooltip
+				icon="Youtube"
+				tooltipTitle="Youtube"
+				onClick={() => {
+					const url = prompt("Enter YouTube URL");
+
+					if (url) {
+						editor.commands.setYoutubeVideo({
+							src: url,
+							width: Math.max(320, 640),
+							height: Math.max(180, 480),
 						});
-						addPage(newPage);
-						const pageLink =
-							`[${newPage.title}](/pages/${newPage.id})` as const;
-						editor.chain().focus().insertContent(pageLink).run();
-					}}
-					isActive={false}
-				/>
-				<ToggleButtonWithTooltip
-					icon="Youtube"
-					tooltipTitle="Youtube"
-					onClick={() => {
-						const url = prompt("Enter YouTube URL");
-
-						if (url) {
-							editor.commands.setYoutubeVideo({
-								src: url,
-								width: Math.max(320, 640),
-								height: Math.max(180, 480),
-							});
-						}
-					}}
-					isActive={false}
-				/>
-			</div>
+					}
+				}}
+				isActive={false}
+			/>
 		</FloatingToolbar>
 	);
 }
