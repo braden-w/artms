@@ -79,10 +79,7 @@ export const createExtensions = () => [
 					marks: [
 						{
 							type: "link",
-							attrs: {
-								href: `/pages/${pageId}`,
-								target: "_blank",
-							},
+							attrs: { href: `/pages/${pageId}`, target: "_blank" },
 						},
 					],
 					text: cleanedTitle,
