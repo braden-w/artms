@@ -1,7 +1,11 @@
 // import { // 	UpdatedImage, // } from 'novel/extensions';
 // import { UploadImagesPlugin } from 'novel/plugins';
 import { cn, getFileStemAndExtension } from "@/lib/utils";
+import { trpcVanilla } from "@/router";
+import GlobalDragHandle from "@epicenterhq/tiptap-extension-global-drag-handle";
 import type { PageFts, SelectPage } from "@repo/dashboard-server/schema";
+import type { StringWithHtmlFragments } from "@repo/dashboard-server/services/index";
+import { generateDefaultPage } from "@repo/dashboard-server/utils";
 import FileHandler from "@tiptap-pro/extension-file-handler";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
 import Highlight from "@tiptap/extension-highlight";
@@ -18,24 +22,73 @@ import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
 import StarterKit from "@tiptap/starter-kit";
 import { common, createLowlight } from "lowlight";
+import { toast } from "sonner";
+import AutoJoiner from "tiptap-extension-auto-joiner"; // optional
 import { Markdown } from "tiptap-markdown";
 import { encodeArrayBufferToUrlSafeBase64 } from "./arrayBufferToBase64";
-import { MentionPage } from "./extensions/MentionPage";
 import { RenderMedia } from "./extensions/RenderMedia";
 import { SlashCommand } from "./extensions/SlashCommand";
 import { TabHandler } from "./extensions/TabHandler";
 import { YouTube } from "./extensions/YouTube";
 import { EmbedContent } from "./menus/EmbedContent";
-import GlobalDragHandle from "tiptap-extension-global-drag-handle";
-import AutoJoiner from "tiptap-extension-auto-joiner"; // optional
+import { stripHtml } from "./menus/SuggestionToolbar";
+import { SuggestionExtension } from "./menus/Suggestions/SuggestionExtension";
 
-export type ExtensionServices = {
-	page: SelectPage;
-	addPage: (page: SelectPage) => void;
-	getPagesByFts: (query: string) => Promise<PageFts[]>;
-};
+const NEW_PAGE_ID = "new";
 
-export const createExtensions = (extensionServices: ExtensionServices) => [
+const suggestionTriggerPrefix = "[[";
+export const createExtensions = () => [
+	SuggestionExtension.configure({
+		suggestionTriggerPrefix,
+		getSuggestionsFromQuery: async (query: string) => {
+			const pages = await trpcVanilla.pages.getPagesByFts.query({ query });
+			pages.push({
+				id: NEW_PAGE_ID,
+				title: query as StringWithHtmlFragments,
+				content: "" as StringWithHtmlFragments,
+			});
+			return pages;
+		},
+		onSuggestionSelected: async ({
+			selectedSuggestion,
+			suggestionText,
+			editor,
+		}) => {
+			const cleanedTitle = stripHtml(selectedSuggestion.title);
+
+			let pageId = selectedSuggestion.id;
+			if (selectedSuggestion.id === NEW_PAGE_ID) {
+				const newPage = generateDefaultPage({ title: cleanedTitle });
+				trpcVanilla.pages.addPage.mutate(newPage).catch((error) => {
+					toast.error("Failed to create new page");
+				});
+				pageId = newPage.id;
+			}
+
+			const { $from } = editor.state.selection;
+			const currentPos = $from.pos;
+			const startPos = currentPos - suggestionText.length;
+
+			editor
+				.chain()
+				.focus()
+				.deleteRange({ from: startPos, to: currentPos })
+				.insertContent({
+					type: "text",
+					marks: [
+						{
+							type: "link",
+							attrs: {
+								href: `/pages/${pageId}`,
+								target: "_blank",
+							},
+						},
+					],
+					text: cleanedTitle,
+				})
+				.run();
+		},
+	}),
 	StarterKit.configure({
 		bulletList: {
 			HTMLAttributes: {
@@ -231,18 +284,18 @@ export const createExtensions = (extensionServices: ExtensionServices) => [
 		},
 	}),
 	SlashCommand,
-	MentionPage(extensionServices),
+	// MentionPage(extensionServices),
 	YouTube,
 	EmbedContent,
 
 	GlobalDragHandle.configure({
 		dragHandleWidth: 20, // default
 
-		// The scrollTreshold specifies how close the user must drag an element to the edge of the lower/upper screen for automatic
-		// scrolling to take place. For example, scrollTreshold = 100 means that scrolling starts automatically when the user drags an
+		// The scrollThreshold specifies how close the user must drag an element to the edge of the lower/upper screen for automatic
+		// scrolling to take place. For example, scrollThreshold = 100 means that scrolling starts automatically when the user drags an
 		// element to a position that is max. 99px away from the edge of the screen
 		// You can set this to 0 to prevent auto scrolling caused by this extension
-		scrollTreshold: 100, // default
+		scrollThreshold: 100, // default
 	}),
 	AutoJoiner.configure({
 		elementsToJoin: ["bulletList", "orderedList"], // default
