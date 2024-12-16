@@ -1,4 +1,5 @@
 import type { EditorView } from '@tiptap/pm/view';
+import type { GlobalDragHandleOptions } from '..';
 
 
 export function absoluteRect(node: Element) {
@@ -54,7 +55,7 @@ export function nodePosAtDOM(
   const boundingRect = node.getBoundingClientRect();
 
   return view.posAtCoords({
-    left: boundingRect.left + 50 + options.dragHandleWidth,
+    left: boundingRect.left + options.dragHandleOffset + options.dragHandleWidth,
     top: boundingRect.top + 1,
   })?.inside;
 }

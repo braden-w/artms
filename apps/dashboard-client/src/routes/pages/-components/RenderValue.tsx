@@ -64,6 +64,7 @@ export function useDebouncedReplacePage({
 		 * Use this to show "Unsaved changes" indicators to users.
 		 */
 		hasUnsavedChanges,
+		saveStatus: hasUnsavedChanges ? ("Unsaved" as const) : ("Saved" as const),
 	};
 }
 
@@ -75,7 +76,7 @@ export function RenderValueAsCell({
 }: {
 	value: PagePropertyValue;
 	column: ColumnInDatabase;
-	onBlur: (finalValue: PagePropertyValue) => void;
+	onBlur?: (finalValue: PagePropertyValue) => void;
 	page: SelectPage;
 }) {
 	const { debouncedReplacePage, hasUnsavedChanges, isReplacePagePending } =
@@ -122,7 +123,7 @@ export function RenderValueAsCell({
 					className="rounded-none"
 					value={displayValue}
 					onChange={(e) => onChange(e.target.value)}
-					onBlur={(e) => onBlur(e.target.value)}
+					onBlur={(e) => onBlur?.(e.target.value)}
 					disabled={isDisabled}
 				/>
 			);
@@ -140,7 +141,7 @@ export function RenderValueAsCell({
 							id={id}
 							value={displayValue}
 							onChange={(e) => onChange(e.target.value)}
-							onBlur={(e) => onBlur(e.target.value)}
+							onBlur={(e) => onBlur?.(e.target.value)}
 							disabled={isDisabled}
 						/>
 					</PopoverContent>
@@ -150,7 +151,7 @@ export function RenderValueAsCell({
 			return (
 				<Dialog
 					onOpenChange={(isOpen) => {
-						if (!isOpen) onBlur(internalValue);
+						if (!isOpen) onBlur?.(internalValue);
 					}}
 				>
 					<DialogTrigger className={TRIGGER_CLASS} disabled={isDisabled}>
@@ -174,7 +175,7 @@ export function RenderValueAsCell({
 					dateDisplayFormat={column.dateDisplayFormat}
 					saveStatus={saveStatus}
 					setValue={onChange}
-					onPopoverClose={() => onBlur(internalValue)}
+					onPopoverClose={() => onBlur?.(internalValue)}
 					disabled={isDisabled}
 					className={TRIGGER_CLASS}
 					page={page}
@@ -186,7 +187,7 @@ export function RenderValueAsCell({
 					value={displayValue}
 					column={column}
 					setValue={onChange}
-					onPopoverClose={() => onBlur(internalValue)}
+					onPopoverClose={() => onBlur?.(internalValue)}
 					disabled={isDisabled}
 					className={TRIGGER_CLASS}
 				/>
@@ -197,7 +198,7 @@ export function RenderValueAsCell({
 					value={isStringArray(value) ? value : []}
 					column={column}
 					setValue={onChange}
-					onPopoverClose={() => onBlur(internalValue)}
+					onPopoverClose={() => onBlur?.(internalValue)}
 					disabled={isDisabled}
 					className={TRIGGER_CLASS}
 				/>
@@ -210,7 +211,7 @@ export function RenderValueAsCell({
 						if (value === "indeterminate") return;
 						const newValue = value ? "TRUE" : "FALSE";
 						onChange(newValue);
-						onBlur(newValue);
+						onBlur?.(newValue);
 					}}
 					disabled={isDisabled}
 				/>

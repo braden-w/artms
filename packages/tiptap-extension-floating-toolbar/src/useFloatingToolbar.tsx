@@ -4,8 +4,8 @@ import {
 	flip,
 	offset,
 	shift,
-	useDismiss,
 	useFloating,
+	useDismiss,
 	useInteractions,
 } from "@floating-ui/react";
 import { isNodeSelection, posToDOMRect } from "@tiptap/core";

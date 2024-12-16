@@ -1,4 +1,5 @@
 import { createExtensions } from "@/components/tip-tap/extensions";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/router";
 import type { SaveStatus } from "@/routes/pages/-components/RenderValue";
@@ -38,7 +39,6 @@ export function TiptapEditor({
 	page: SelectPage;
 }) {
 	const { mutate: addPage } = trpc.pages.addPage.useMutation();
-	const menuContainerRef = useRef<HTMLDivElement>(null);
 	const editorRef = useRef<HTMLDivElement>(null);
 	const editor = useEditor({
 		content: value,
@@ -63,20 +63,18 @@ export function TiptapEditor({
 
 	if (!editor) return null;
 	return (
-		<div className="flex h-full" ref={menuContainerRef}>
+		<div className="relative flex py-24">
 			<div className="bg-accent text-muted-foreground absolute right-5 top-5 z-10 mb-5 rounded-lg px-2 py-1 text-sm">
 				{saveStatus}
 			</div>
-			<div className="relative flex flex-col flex-1 h-full overflow-hidden">
-				<EditorContent
-					editor={editor}
-					ref={editorRef}
-					className="flex-1 overflow-y-auto"
-				/>
-				{/* <ContentItemMenu editor={editor} /> */}
-				<FloatingEditorToolbar editor={editor} page={page} />
-				<FloatingLinkToolbar editor={editor} appendTo={menuContainerRef} />
-			</div>
+			<EditorContent
+				editor={editor}
+				ref={editorRef}
+				className="flex-1 overflow-y-auto"
+			/>
+			{/* <ContentItemMenu editor={editor} /> */}
+			<FloatingEditorToolbar editor={editor} page={page} />
+			<FloatingLinkToolbar editor={editor} />
 		</div>
 	);
 }
