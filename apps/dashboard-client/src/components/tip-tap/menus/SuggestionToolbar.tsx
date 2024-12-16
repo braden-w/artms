@@ -18,7 +18,7 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 	const [suggestionText, setSuggestionText] = useState<string | null>(null);
 	const { data: suggestedPagesFromDb, isLoading: isLoadingSuggestedPages } =
 		trpc.pages.getPagesByFts.useQuery(
-			{ query: suggestionText },
+			{ query: suggestionText ?? "" },
 			{ enabled: !!suggestionText },
 		);
 
