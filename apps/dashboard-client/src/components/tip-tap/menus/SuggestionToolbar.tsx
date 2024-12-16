@@ -8,25 +8,26 @@ import { Loader2 } from "lucide-react";
 import { generateDefaultPage } from "@repo/dashboard-server/utils";
 import type { StringWithHtmlFragments } from "@repo/dashboard-server/services/index";
 
-const SUGGESTION_CHAR = "[[";
+const SUGGESTION_TRIGGER_PREFIX = "[[";
 
 export function SuggestionToolbar({ editor }: { editor: Editor }) {
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const [suggestionText, setSuggestionText] = useState("");
-	const { data: pagesByFts, isPending } = trpc.pages.getPagesByFts.useQuery(
-		{ query: suggestionText },
-		{ enabled: !!suggestionText },
-	);
+	const [isSuggesting, setIsSuggesting] = useState(false);
+	const { data: suggestedPagesFromDb, isPending } =
+		trpc.pages.getPagesByFts.useQuery(
+			{ query: suggestionText },
+			{ enabled: isSuggesting },
+		);
 
 	const newPage = generateDefaultPage({ title: suggestionText });
-
-	const suggestedPages = [...(pagesByFts ?? []), newPage];
+	const suggestedPages = [...(suggestedPagesFromDb ?? []), newPage];
 
 	const { mutate: addPage, isPending: isAddingPage } =
 		trpc.pages.addPage.useMutation();
 
 	const handleKeyDown = (event: KeyboardEvent) => {
-		if (!suggestedPages?.length) return;
+		if (!isSuggesting || !suggestedPages?.length) return;
 		if (event.key === "ArrowDown" || event.key === "ArrowUp") {
 			event.preventDefault();
 			const direction = event.key === "ArrowDown" ? 1 : -1;
@@ -44,17 +45,28 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 				if (selectedPage.id === newPage.id) {
 					addPage(newPage);
 				}
-				const cleanedTitle = stripHtml(selectedPage.title);
-				const pageLink =
-					`[${cleanedTitle}](/pages/${selectedPage.id})` as const;
-				editor.chain().focus().insertContent(pageLink).run();
+				const cleanedTitle = stripHtml(selectedPage.title ?? "");
+				editor
+					.chain()
+					.focus()
+					.insertContent({
+						type: "text",
+						marks: [
+							{
+								type: "link",
+								attrs: { href: `/pages/${selectedPage.id}`, target: "_blank" },
+							},
+						],
+						text: cleanedTitle,
+					})
+					.run();
 			}
 		}
 	};
 
 	useEffect(() => {
-		setSelectedIndex(0);
-	}, [suggestedPages?.length]);
+		if (suggestedPages.length) setSelectedIndex(0);
+	}, [suggestedPages.length]);
 
 	useEffect(() => {
 		document.addEventListener("keydown", handleKeyDown);
@@ -66,7 +78,8 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 			editor={editor}
 			shouldShow={(editor) => {
 				const { suggestionText, isSuggesting } = getEditorSelection(editor);
-				if (suggestionText) setSuggestionText(suggestionText);
+				setIsSuggesting(isSuggesting);
+				if (isSuggesting) setSuggestionText(suggestionText);
 				return isSuggesting;
 			}}
 			className="flex flex-col gap-0.5 p-1 max-h-[280px] overflow-y-auto"
@@ -93,26 +106,19 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 function getEditorSelection(editor: Editor) {
 	const { $from, from, to } = editor.state.selection;
 	const isCursorSelecting = from !== to;
-	if (isCursorSelecting)
-		return { suggestionText: "", isSuggesting: false } as const;
-	const currentPosition = from;
-	const lineStartPos = $from.start();
-	const lineTextBeforeCursor = $from.doc.textBetween(
-		lineStartPos,
-		currentPosition,
-	);
-	const triggerCharIndex = lineTextBeforeCursor.lastIndexOf(SUGGESTION_CHAR);
-	if (triggerCharIndex === -1)
-		return { suggestionText: "", isSuggesting: false } as const;
-	const triggerStartPos = lineStartPos + triggerCharIndex;
+	if (isCursorSelecting) return { isSuggesting: false } as const;
+	const cursorPos = from;
+	const currentLine = $from.doc.textBetween($from.start(), cursorPos);
+	const prefixIndex = currentLine.lastIndexOf(SUGGESTION_TRIGGER_PREFIX);
+	if (prefixIndex === -1) return { isSuggesting: false } as const;
 	const suggestionText = $from.doc.textBetween(
-		triggerStartPos + SUGGESTION_CHAR.length,
-		currentPosition,
+		$from.start() + prefixIndex + SUGGESTION_TRIGGER_PREFIX.length,
+		cursorPos,
 	);
 	return { suggestionText, isSuggesting: true } as const;
 }
 
-function stripHtml(strInputCode: StringWithHtmlFragments) {
+function stripHtml(strInputCode: string) {
 	const div = document.createElement("div");
 	div.innerHTML = strInputCode;
 	return div.textContent ?? div.innerText;
