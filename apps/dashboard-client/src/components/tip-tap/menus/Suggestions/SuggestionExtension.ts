@@ -100,7 +100,7 @@ function SuggestionPlugin<TSuggestion>(
 				return false;
 			},
 		},
-		view: () => {
+		view() {
 			return {
 				update: async (view) => {
 					const suggestionText = getSuggestionText({
@@ -131,7 +131,7 @@ function SuggestionPlugin<TSuggestion>(
 						},
 					});
 				},
-				destroy: () => {
+				destroy() {
 					suggestionToolbar.destroy();
 				},
 			};
