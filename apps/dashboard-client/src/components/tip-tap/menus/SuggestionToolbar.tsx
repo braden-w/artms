@@ -36,8 +36,12 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 
 	const insertSelectedPage = (selectedPage: SuggestedPage) => {
 		const cleanedTitle = stripHtml(selectedPage.title ?? "");
+		let pageId = selectedPage.id;
+
 		if (selectedPage.id === NEW_PAGE_ID) {
-			addPage(generateDefaultPage({ title: cleanedTitle }));
+			const newPage = generateDefaultPage({ title: cleanedTitle });
+			addPage(newPage);
+			pageId = newPage.id;
 		}
 
 		const { $from } = editor.state.selection;
@@ -54,7 +58,7 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 					{
 						type: "link",
 						attrs: {
-							href: `/pages/${selectedPage.id}`,
+							href: `/pages/${pageId}`,
 							target: "_blank",
 						},
 					},
