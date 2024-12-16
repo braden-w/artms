@@ -63,7 +63,7 @@ export function TiptapEditor({
 
 	if (!editor) return null;
 	return (
-		<div className="relative flex p-4">
+		<div className="relative flex py-24">
 			<div className="bg-accent text-muted-foreground absolute right-5 top-5 z-10 mb-5 rounded-lg px-2 py-1 text-sm">
 				{saveStatus}
 			</div>
