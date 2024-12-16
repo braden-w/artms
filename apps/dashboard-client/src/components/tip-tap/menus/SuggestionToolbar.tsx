@@ -42,8 +42,7 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 			}
 			const { $from } = editor.state.selection;
 			const currentPos = $from.pos;
-			const startPos =
-				currentPos - (suggestionText.length + SUGGESTION_TRIGGER_PREFIX.length);
+			const startPos = currentPos - suggestionText.length;
 
 			editor
 				.chain()
@@ -82,10 +81,6 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 			insertSelectedPage(suggestedPages[selectedIndex]);
 		}
 	};
-
-	useEffect(() => {
-		if (suggestedPages.length) setSelectedIndex(0);
-	}, [suggestedPages.length]);
 
 	useEffect(() => {
 		document.addEventListener("keydown", handleKeyDown);
