@@ -36,10 +36,10 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 
 	const insertSelectedPage = (selectedPage: SuggestedPage) => {
 		if (selectedPage) {
-			if (selectedPage.id === NEW_PAGE_ID) {
-				addPage(generateDefaultPage({ title: suggestionText }));
-			}
 			const cleanedTitle = stripHtml(selectedPage.title ?? "");
+			if (selectedPage.id === NEW_PAGE_ID) {
+				addPage(generateDefaultPage({ title: cleanedTitle }));
+			}
 			const { $from } = editor.state.selection;
 			const currentPos = $from.pos;
 			const startPos =
