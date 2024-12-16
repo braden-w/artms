@@ -1,11 +1,17 @@
 import { Toggle } from "@/components/ui/toggle";
-import { Separator } from "@radix-ui/react-dropdown-menu";
+import type { PageFts } from "@repo/dashboard-server/db/schema/pages";
 import type { Editor } from "@tiptap/react";
 import { FloatingToolbar } from "./FloatingToolbar";
 
 const SUGGESTION_CHAR = "[[";
 
-export function SuggestionToolbar({ editor }: { editor: Editor }) {
+export function SuggestionToolbar({
+	editor,
+	suggestedPages,
+}: {
+	editor: Editor;
+	suggestedPages: PageFts[];
+}) {
 	return (
 		<FloatingToolbar
 			editor={editor}
@@ -21,9 +27,9 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 			}}
 			className="flex flex-col"
 		>
-			<Toggle>Suggestions</Toggle>
-			<Separator />
-			<Toggle>Suggestions</Toggle>
+			{suggestedPages.map((page) => (
+				<Toggle key={page.id}>{page.title}</Toggle>
+			))}
 		</FloatingToolbar>
 	);
 }
