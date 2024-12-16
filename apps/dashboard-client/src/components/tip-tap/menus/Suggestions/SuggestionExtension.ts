@@ -16,7 +16,7 @@ const PLUGIN_NAME = "suggestion";
 
 type SuggestionOptions<TSuggestion> = {
 	suggestionTriggerPrefix: string;
-	getSuggestions: (query: string) => Promise<TSuggestion[]>;
+	getSuggestionsFromQuery: (query: string) => Promise<TSuggestion[]>;
 	onSuggestionSelected: ({
 		selectedSuggestion,
 		suggestionText,
@@ -43,7 +43,7 @@ function SuggestionPlugin<TSuggestion>(
 	editor: Editor,
 	{
 		suggestionTriggerPrefix,
-		getSuggestions,
+		getSuggestionsFromQuery,
 		onSuggestionSelected,
 	}: SuggestionOptions<TSuggestion>,
 ) {
@@ -64,7 +64,7 @@ function SuggestionPlugin<TSuggestion>(
 						return;
 					}
 
-					const suggestions = await getSuggestions(suggestionText);
+					const suggestions = await getSuggestionsFromQuery(suggestionText);
 					suggestionToolbar.openWithSuggestions({
 						suggestions,
 						anchor: {
