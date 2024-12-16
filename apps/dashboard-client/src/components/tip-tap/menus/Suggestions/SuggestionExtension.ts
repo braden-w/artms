@@ -48,10 +48,11 @@ function SuggestionPlugin<TSuggestion>(
 	}: SuggestionOptions<TSuggestion>,
 ) {
 	const suggestionToolbar = createSuggestionToolbar();
-	let pluginState = {
+	const pluginState = {
 		selectedIndex: 0,
 		isOpen: false,
 		suggestions: [] as TSuggestion[],
+		query: "",
 	};
 
 	return new Plugin({
@@ -83,13 +84,9 @@ function SuggestionPlugin<TSuggestion>(
 						const selectedSuggestion =
 							pluginState.suggestions[pluginState.selectedIndex];
 						if (selectedSuggestion) {
-							const query = getQuery({
-								selection: view.state.selection,
-								suggestionTriggerPrefix,
-							});
 							onSuggestionSelected({
 								selectedSuggestion,
-								query: query ?? "",
+								query: pluginState.query,
 								editor,
 							});
 							suggestionToolbar.closeSuggestions();
@@ -115,10 +112,13 @@ function SuggestionPlugin<TSuggestion>(
 					}
 
 					const suggestions = await getSuggestionsFromQuery(query);
-					pluginState = { selectedIndex: 0, isOpen: true, suggestions };
+					pluginState.selectedIndex = 0;
+					pluginState.isOpen = true;
+					pluginState.query = query;
+					pluginState.suggestions = suggestions;
 
 					suggestionToolbar.openWithSuggestions({
-						suggestions,
+						suggestions: pluginState.suggestions,
 						anchor: {
 							getBoundingClientRect: () => {
 								const { from } = view.state.selection;
