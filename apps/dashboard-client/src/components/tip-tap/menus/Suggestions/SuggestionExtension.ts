@@ -195,7 +195,7 @@ function createSuggestionToolbar() {
 
 			for (const suggestion of suggestions) {
 				const item = document.createElement("li");
-				item.textContent = suggestion.title;
+				item.innerHTML = suggestion.title;
 				item.className =
 					"flex-1 line-clamp-1 text-left cursor-pointer hover:bg-accent hover:text-accent-foreground px-2 py-1 rounded-sm";
 				item.addEventListener("click", () => {
