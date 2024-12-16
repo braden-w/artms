@@ -55,6 +55,7 @@ function SuggestionPlugin(
 		key: new PluginKey(PLUGIN_NAME),
 		view: () => {
 			const suggestionToolbar = createSuggestionToolbar();
+			suggestionToolbar.mount();
 
 			return {
 				update: async (view) => {
@@ -82,7 +83,7 @@ function SuggestionPlugin(
 					suggestionToolbar.update(suggestions);
 				},
 				destroy: () => {
-					suggestionToolbar.close();
+					suggestionToolbar.destroy();
 				},
 			};
 		},
@@ -108,40 +109,61 @@ function getSuggestionText({
 
 type SuggestionToolbar = ReturnType<typeof createSuggestionToolbar>;
 
-function createSuggestionToolbar() {
-	let toolbarShell: HTMLUListElement | null = null;
-	let cleanup: () => void;
+function createSuggestionToolbar(referenceElement: VirtualElement) {
+	let isVisible = false;
 
-	return {
-		open(referenceElement: VirtualElement) {
-			toolbarShell = document.createElement("ul");
-			toolbarShell.className =
-				"flex flex-col space-y-1 rounded-md border bg-background p-1";
+	const toolbarShell = document.createElement("ul");
+	toolbarShell.className =
+		"flex flex-col space-y-1 rounded-md border bg-background p-1 hidden";
+	document.body.appendChild(toolbarShell);
 
-			document.body.appendChild(toolbarShell);
+	const removeAutoUpdatePosition = autoUpdate(
+		referenceElement,
+		toolbarShell,
+		() => {
+			if (!toolbarShell) return;
 
-			cleanup = autoUpdate(referenceElement, toolbarShell, () => {
+			computePosition(referenceElement, toolbarShell, {
+				placement: "top-start",
+				middleware: [
+					inline(),
+					offset(8),
+					flip({ padding: 8 }),
+					shift({ padding: 8, limiter: limitShift() }),
+				],
+			}).then(({ x, y, strategy }) => {
 				if (!toolbarShell) return;
-				computePosition(referenceElement, toolbarShell, {
-					placement: "top-start",
-					middleware: [
-						inline(),
-						offset(8),
-						flip({ padding: 8 }),
-						shift({ padding: 8, limiter: limitShift() }),
-					],
-				}).then(({ x, y, strategy }) => {
-					if (!toolbarShell) return;
-					Object.assign(toolbarShell.style, {
-						position: strategy,
-						left: `${x}px`,
-						top: `${y}px`,
-					});
+				Object.assign(toolbarShell.style, {
+					position: strategy,
+					left: `${x}px`,
+					top: `${y}px`,
 				});
 			});
 		},
+	);
+
+	return {
+		open() {
+			if (isVisible) return;
+			toolbarShell.classList.remove("hidden");
+			isVisible = true;
+		},
+
+		close() {
+			if (!isVisible) return;
+			toolbarShell.classList.add("hidden");
+			isVisible = false;
+		},
+
+		destroy() {
+			removeAutoUpdatePosition();
+			toolbarShell.remove();
+			isVisible = false;
+		},
+
 		update(suggestions: SuggestedPage[]) {
 			if (!toolbarShell) return;
+
 			toolbarShell.innerHTML = "";
 			for (const suggestion of suggestions) {
 				const item = document.createElement("li");
@@ -153,11 +175,6 @@ function createSuggestionToolbar() {
 				});
 				toolbarShell.appendChild(item);
 			}
-		},
-		close() {
-			cleanup?.();
-			if (!toolbarShell) return;
-			toolbarShell.remove();
 		},
 	};
 }
