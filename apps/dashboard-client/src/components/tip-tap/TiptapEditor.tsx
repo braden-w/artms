@@ -1,5 +1,4 @@
 import { createExtensions } from "@/components/tip-tap/extensions";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/router";
 import type { SaveStatus } from "@/routes/pages/-components/RenderValue";
@@ -8,6 +7,7 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import { useRef } from "react";
 import { FloatingEditorToolbar } from "./menus/FloatingEditorToolbar";
 import { FloatingLinkToolbar } from "./menus/FloatingLinkToolbar";
+import { SuggestionToolbar } from "./menus/SuggestionToolbar";
 
 const PROSE_CLASSES = [
 	"prose dark:prose-invert",
@@ -75,6 +75,7 @@ export function TiptapEditor({
 			{/* <ContentItemMenu editor={editor} /> */}
 			<FloatingEditorToolbar editor={editor} page={page} />
 			<FloatingLinkToolbar editor={editor} />
+			<SuggestionToolbar editor={editor} />
 		</div>
 	);
 }
