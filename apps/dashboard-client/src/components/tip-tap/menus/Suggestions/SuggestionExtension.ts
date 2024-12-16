@@ -46,7 +46,17 @@ function SuggestionPlugin<TSuggestion>(
 		onSuggestionSelected,
 	}: SuggestionOptions<TSuggestion>,
 ) {
-	const suggestionToolbar = createSuggestionToolbar();
+	const suggestionToolbar = createSuggestionToolbar<TSuggestion, HTMLLIElement>(
+		{
+			renderSuggestion: (suggestion) => {
+				const item = document.createElement("li");
+				item.innerHTML = suggestion.title;
+				item.className =
+					"flex-1 line-clamp-1 text-left cursor-pointer hover:bg-accent hover:text-accent-foreground px-2 py-1 rounded-sm";
+				return item;
+			},
+		},
+	);
 	const pluginState = {
 		selectedIndex: 0,
 		isOpen: false,
@@ -141,7 +151,14 @@ function SuggestionPlugin<TSuggestion>(
 	});
 }
 
-function createSuggestionToolbar() {
+function createSuggestionToolbar<
+	TSuggestion,
+	SuggestionElement extends HTMLElement,
+>({
+	renderSuggestion,
+}: {
+	renderSuggestion: (suggestion: TSuggestion) => SuggestionElement;
+}) {
 	const element = document.createElement("ul");
 	element.className =
 		"flex flex-col space-y-1 rounded-md border bg-background p-1 hidden";
@@ -160,7 +177,7 @@ function createSuggestionToolbar() {
 				}
 			});
 		},
-		openWithSuggestions<TSuggestion>({
+		openWithSuggestions({
 			suggestions,
 			anchor,
 			selectSuggestion,
@@ -194,10 +211,7 @@ function createSuggestionToolbar() {
 			this.element.innerHTML = "";
 
 			for (const suggestion of suggestions) {
-				const item = document.createElement("li");
-				item.innerHTML = suggestion.title;
-				item.className =
-					"flex-1 line-clamp-1 text-left cursor-pointer hover:bg-accent hover:text-accent-foreground px-2 py-1 rounded-sm";
+				const item = renderSuggestion(suggestion);
 				item.addEventListener("click", () => {
 					selectSuggestion(suggestion);
 				});
