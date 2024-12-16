@@ -86,23 +86,6 @@ function SuggestionPlugin(
 	});
 }
 
-function getSuggestionText({
-	selection: { $from, from, to },
-	suggestionTriggerPrefix,
-}: { selection: Selection; suggestionTriggerPrefix: string }) {
-	const isCursorSelecting = from !== to;
-	if (isCursorSelecting) return null;
-	const cursorPos = from;
-	const currentLine = $from.doc.textBetween($from.start(), cursorPos);
-	const prefixIndex = currentLine.lastIndexOf(suggestionTriggerPrefix);
-	if (prefixIndex === -1) return null;
-	const suggestionText = $from.doc.textBetween(
-		$from.start() + prefixIndex + suggestionTriggerPrefix.length,
-		cursorPos,
-	);
-	return suggestionText;
-}
-
 function createSuggestionToolbar() {
 	const element = document.createElement("ul");
 	element.className =
@@ -167,4 +150,21 @@ function createSuggestionToolbar() {
 			element.remove();
 		},
 	};
+}
+
+function getSuggestionText({
+	selection: { $from, from, to },
+	suggestionTriggerPrefix,
+}: { selection: Selection; suggestionTriggerPrefix: string }) {
+	const isCursorSelecting = from !== to;
+	if (isCursorSelecting) return null;
+	const cursorPos = from;
+	const currentLine = $from.doc.textBetween($from.start(), cursorPos);
+	const prefixIndex = currentLine.lastIndexOf(suggestionTriggerPrefix);
+	if (prefixIndex === -1) return null;
+	const suggestionText = $from.doc.textBetween(
+		$from.start() + prefixIndex + suggestionTriggerPrefix.length,
+		cursorPos,
+	);
+	return suggestionText;
 }
