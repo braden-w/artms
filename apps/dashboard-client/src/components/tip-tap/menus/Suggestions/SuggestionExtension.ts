@@ -94,6 +94,39 @@ function createSuggestionToolbar() {
 	document.body.appendChild(element);
 
 	let stopFloatingUpdate: (() => void) | null = null;
+	let selectedIndex = 0;
+
+	const handleKeydown = (event: KeyboardEvent) => {
+		if (!element.children.length || element.classList.contains("hidden"))
+			return;
+
+		switch (event.key) {
+			case "ArrowDown":
+				event.preventDefault();
+				selectedIndex = (selectedIndex + 1) % element.children.length;
+				updateSelectedStyles();
+				break;
+			case "ArrowUp":
+				event.preventDefault();
+				selectedIndex =
+					(selectedIndex - 1 + element.children.length) %
+					element.children.length;
+				updateSelectedStyles();
+				break;
+		}
+	};
+
+	const updateSelectedStyles = () => {
+		Array.from(element.children).forEach((child, index) => {
+			if (index === selectedIndex) {
+				child.classList.add("bg-accent", "text-accent-foreground");
+			} else {
+				child.classList.remove("bg-accent", "text-accent-foreground");
+			}
+		});
+	};
+
+	document.addEventListener("keydown", handleKeydown);
 
 	const openSuggestions = (referenceElement: ReferenceElement) => {
 		stopFloatingUpdate = autoUpdate(referenceElement, element, () => {
@@ -131,23 +164,29 @@ function createSuggestionToolbar() {
 			}
 			openSuggestions(anchor);
 			this.element.innerHTML = "";
+			selectedIndex = 0;
+
 			for (const suggestion of suggestions) {
 				const item = document.createElement("li");
 				item.textContent = suggestion.title;
 				item.className =
-					"flex-1 line-clamp-1 text-left cursor-pointer hover:bg-accent";
+					"flex-1 line-clamp-1 text-left cursor-pointer hover:bg-accent hover:text-accent-foreground px-2 py-1 rounded-sm";
 				item.addEventListener("click", () => {
 					// Handle selection
 				});
 				this.element.appendChild(item);
 			}
+
+			updateSelectedStyles();
 		},
 		closeSuggestions() {
 			stopFloatingUpdate?.();
 			element.classList.add("hidden");
+			selectedIndex = 0;
 		},
 		destroy() {
 			stopFloatingUpdate?.();
+			document.removeEventListener("keydown", handleKeydown);
 			element.remove();
 		},
 	};
