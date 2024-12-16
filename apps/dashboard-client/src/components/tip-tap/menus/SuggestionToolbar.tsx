@@ -5,8 +5,13 @@ import type { Editor } from "@tiptap/react";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { FloatingToolbar } from "./FloatingToolbar";
+import type { RouterOutputs } from "@repo/dashboard-server/routers/_app";
+import type { StringWithHtmlFragments } from "@repo/dashboard-server/services/index";
 
+const NEW_PAGE_ID = "new";
 const SUGGESTION_TRIGGER_PREFIX = "[[";
+
+type SuggestedPage = RouterOutputs["pages"]["getPagesByFts"][number];
 
 export function SuggestionToolbar({ editor }: { editor: Editor }) {
 	const [selectedIndex, setSelectedIndex] = useState(0);
@@ -17,11 +22,49 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 			{ enabled: !!suggestionText },
 		);
 
-	const newPage = generateDefaultPage({ title: suggestionText });
-	const suggestedPages = [...(suggestedPagesFromDb ?? []), newPage];
+	const suggestedPages: SuggestedPage[] = [
+		...(suggestedPagesFromDb ?? []),
+		{
+			id: NEW_PAGE_ID,
+			title: suggestionText as StringWithHtmlFragments,
+			content: "" as StringWithHtmlFragments,
+		},
+	];
 
 	const { mutate: addPage, isPending: isAddingPage } =
 		trpc.pages.addPage.useMutation();
+
+	const insertSelectedPage = (selectedPage: SuggestedPage) => {
+		if (selectedPage) {
+			if (selectedPage.id === NEW_PAGE_ID) {
+				addPage(generateDefaultPage({ title: suggestionText }));
+			}
+			const cleanedTitle = stripHtml(selectedPage.title ?? "");
+			const { $from } = editor.state.selection;
+			const currentPos = $from.pos;
+			const startPos =
+				currentPos - (suggestionText.length + SUGGESTION_TRIGGER_PREFIX.length);
+
+			editor
+				.chain()
+				.focus()
+				.deleteRange({ from: startPos, to: currentPos })
+				.insertContent({
+					type: "text",
+					marks: [
+						{
+							type: "link",
+							attrs: {
+								href: `/pages/${selectedPage.id}`,
+								target: "_blank",
+							},
+						},
+					],
+					text: cleanedTitle,
+				})
+				.run();
+		}
+	};
 
 	const handleKeyDown = (event: KeyboardEvent) => {
 		if (!suggestionText) return;
@@ -36,38 +79,7 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 
 		if (event.key === "Enter") {
 			event.preventDefault();
-			const selectedPage = suggestedPages[selectedIndex];
-
-			if (selectedPage) {
-				if (selectedPage.id === newPage.id) {
-					addPage(newPage);
-				}
-				const cleanedTitle = stripHtml(selectedPage.title ?? "");
-				const { $from } = editor.state.selection;
-				const currentPos = $from.pos;
-				const startPos =
-					currentPos -
-					(suggestionText.length + SUGGESTION_TRIGGER_PREFIX.length);
-
-				editor
-					.chain()
-					.focus()
-					.deleteRange({ from: startPos, to: currentPos })
-					.insertContent({
-						type: "text",
-						marks: [
-							{
-								type: "link",
-								attrs: {
-									href: `/pages/${selectedPage.id}`,
-									target: "_blank",
-								},
-							},
-						],
-						text: cleanedTitle,
-					})
-					.run();
-			}
+			insertSelectedPage(suggestedPages[selectedIndex]);
 		}
 	};
 
@@ -99,7 +111,10 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 					<Toggle
 						key={page.id}
 						pressed={index === selectedIndex}
-						onPressedChange={() => setSelectedIndex(index)}
+						onPressedChange={() => {
+							setSelectedIndex(index);
+							insertSelectedPage(suggestedPages[index]);
+						}}
 						className="w-full line-clamp-1 text-left"
 						dangerouslySetInnerHTML={{ __html: page.title ?? "" }}
 					/>
