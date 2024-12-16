@@ -11,6 +11,9 @@ export function FloatingToolbar({
 	children,
 }: PropsWithChildren<{
 	editor: Editor;
+	/**
+	 * Runs on every editor update.
+	 */
 	shouldShow: (editor: Editor) => boolean;
 	className?: string;
 }>) {
