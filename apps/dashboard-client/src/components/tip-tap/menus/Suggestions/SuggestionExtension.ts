@@ -51,31 +51,6 @@ function SuggestionPlugin(
 		view: () => {
 			const suggestionToolbar = createSuggestionToolbar();
 
-			const openSuggestions = ({
-				suggestions,
-				anchor,
-			}: {
-				suggestions: SuggestedPage[];
-				anchor: VirtualElement;
-			}) => {
-				if (suggestions.length === 0) {
-					suggestionToolbar.close();
-					return;
-				}
-				suggestionToolbar.open(anchor);
-				suggestionToolbar.element.innerHTML = "";
-				for (const suggestion of suggestions) {
-					const item = document.createElement("li");
-					item.textContent = suggestion.title;
-					item.className =
-						"flex-1 line-clamp-1 text-left cursor-pointer hover:bg-accent";
-					item.addEventListener("click", () => {
-						// Handle selection
-					});
-					suggestionToolbar.element.appendChild(item);
-				}
-			};
-
 			return {
 				update: async (view) => {
 					const suggestionText = getSuggestionText({
@@ -84,12 +59,12 @@ function SuggestionPlugin(
 					});
 
 					if (!suggestionText) {
-						suggestionToolbar.close();
+						suggestionToolbar.closeSuggestions();
 						return;
 					}
 
 					const suggestions = await getSuggestions(suggestionText);
-					openSuggestions({
+					suggestionToolbar.openWithSuggestions({
 						suggestions,
 						anchor: {
 							getBoundingClientRect: () => {
@@ -134,36 +109,61 @@ function createSuggestionToolbar() {
 		"flex flex-col space-y-1 rounded-md border bg-background p-1 hidden";
 	document.body.appendChild(element);
 
-	let cleanup: (() => void) | null = null;
+	let stopFloatingUpdate: (() => void) | null = null;
+
+	const openSuggestions = (referenceElement: ReferenceElement) => {
+		stopFloatingUpdate = autoUpdate(referenceElement, element, () => {
+			computePosition(referenceElement, element, {
+				placement: "top-start",
+				middleware: [
+					inline(),
+					offset(8),
+					flip({ padding: 8 }),
+					shift({ padding: 8, limiter: limitShift() }),
+				],
+			}).then(({ x, y, strategy }) => {
+				Object.assign(element.style, {
+					position: strategy,
+					left: `${x}px`,
+					top: `${y}px`,
+				});
+			});
+		});
+		element.classList.remove("hidden");
+	};
 
 	return {
 		element,
-		open(referenceElement: ReferenceElement) {
-			cleanup = autoUpdate(referenceElement, element, () => {
-				computePosition(referenceElement, element, {
-					placement: "top-start",
-					middleware: [
-						inline(),
-						offset(8),
-						flip({ padding: 8 }),
-						shift({ padding: 8, limiter: limitShift() }),
-					],
-				}).then(({ x, y, strategy }) => {
-					Object.assign(element.style, {
-						position: strategy,
-						left: `${x}px`,
-						top: `${y}px`,
-					});
+		openWithSuggestions({
+			suggestions,
+			anchor,
+		}: {
+			suggestions: SuggestedPage[];
+			anchor: VirtualElement;
+		}) {
+			if (suggestions.length === 0) {
+				this.closeSuggestions();
+				return;
+			}
+			openSuggestions(anchor);
+			this.element.innerHTML = "";
+			for (const suggestion of suggestions) {
+				const item = document.createElement("li");
+				item.textContent = suggestion.title;
+				item.className =
+					"flex-1 line-clamp-1 text-left cursor-pointer hover:bg-accent";
+				item.addEventListener("click", () => {
+					// Handle selection
 				});
-			});
-			element.classList.remove("hidden");
+				this.element.appendChild(item);
+			}
 		},
-		close() {
-			cleanup?.();
+		closeSuggestions() {
+			stopFloatingUpdate?.();
 			element.classList.add("hidden");
 		},
 		destroy() {
-			cleanup?.();
+			stopFloatingUpdate?.();
 			element.remove();
 		},
 	};
