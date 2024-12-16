@@ -1,7 +1,7 @@
 import { Menubar } from "@/components/ui/menubar";
 import type { Editor } from "@tiptap/react";
 import type { PropsWithChildren } from "react";
-import { useEditorFloatingToolbar } from "./useFloatingToolbar";
+import { useEditorFloatingToolbar } from "@epicenterhq/tiptap-extension-floating-toolbar";
 
 export function FloatingToolbar({
 	editor,
