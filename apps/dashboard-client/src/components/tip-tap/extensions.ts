@@ -67,7 +67,8 @@ export const createExtensions = () => [
 
 			const { $from } = editor.state.selection;
 			const currentPos = $from.pos;
-			const startPos = currentPos - suggestionText.length;
+			const startPos =
+				currentPos - (suggestionText.length + suggestionTriggerPrefix.length);
 
 			editor
 				.chain()
