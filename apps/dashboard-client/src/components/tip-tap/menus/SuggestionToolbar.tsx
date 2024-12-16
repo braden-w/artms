@@ -18,7 +18,8 @@ const onPageSelect = (page: PageFts) => {
 const getEditorSelection = (editor: Editor) => {
 	const { $from, from, to } = editor.state.selection;
 	const isCursorSelecting = from !== to;
-	if (isCursorSelecting) return false;
+	if (isCursorSelecting)
+		return { suggestionText: "", isSuggesting: false } as const;
 	const currentPosition = from;
 	const lineStartPos = $from.start();
 	const lineTextBeforeCursor = $from.doc.textBetween(
@@ -26,22 +27,23 @@ const getEditorSelection = (editor: Editor) => {
 		currentPosition,
 	);
 	const triggerCharIndex = lineTextBeforeCursor.lastIndexOf(SUGGESTION_CHAR);
-	if (triggerCharIndex === -1) return false;
+	if (triggerCharIndex === -1)
+		return { suggestionText: "", isSuggesting: false } as const;
 	const triggerStartPos = lineStartPos + triggerCharIndex;
 	const suggestionText = $from.doc.textBetween(
 		triggerStartPos + SUGGESTION_CHAR.length,
 		currentPosition,
 	);
-	return suggestionText;
+	return { suggestionText, isSuggesting: true } as const;
 };
 
 export function SuggestionToolbar({ editor }: { editor: Editor }) {
-	const suggestionText = getEditorSelection(editor);
+	const { suggestionText, isSuggesting } = getEditorSelection(editor);
 
 	const [selectedIndex, setSelectedIndex] = useState(0);
 
 	const handleKeyDown = (event: KeyboardEvent) => {
-		if (!suggestionText || !suggestedPages.length) return;
+		if (!isSuggesting || !suggestedPages.length) return;
 		if (event.key === "ArrowDown" || event.key === "ArrowUp") {
 			event.preventDefault();
 			const direction = event.key === "ArrowDown" ? 1 : -1;
