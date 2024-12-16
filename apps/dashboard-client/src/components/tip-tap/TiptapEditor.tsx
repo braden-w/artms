@@ -38,7 +38,6 @@ export function TiptapEditor({
 	page: SelectPage;
 }) {
 	const { mutate: addPage } = trpc.pages.addPage.useMutation();
-	const menuContainerRef = useRef<HTMLDivElement>(null);
 	const editorRef = useRef<HTMLDivElement>(null);
 	const editor = useEditor({
 		content: value,
@@ -63,7 +62,7 @@ export function TiptapEditor({
 
 	if (!editor) return null;
 	return (
-		<div className="flex h-full" ref={menuContainerRef}>
+		<div className="flex h-full">
 			<div className="bg-accent text-muted-foreground absolute right-5 top-5 z-10 mb-5 rounded-lg px-2 py-1 text-sm">
 				{saveStatus}
 			</div>
@@ -75,7 +74,7 @@ export function TiptapEditor({
 				/>
 				{/* <ContentItemMenu editor={editor} /> */}
 				<FloatingEditorToolbar editor={editor} page={page} />
-				<FloatingLinkToolbar editor={editor} appendTo={menuContainerRef} />
+				<FloatingLinkToolbar editor={editor} />
 			</div>
 		</div>
 	);
