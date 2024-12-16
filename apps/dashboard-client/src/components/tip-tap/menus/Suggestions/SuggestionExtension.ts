@@ -32,7 +32,6 @@ export const SuggestionExtension = Extension.create<
 	SuggestionOptions<SuggestedPage>
 >({
 	name: PLUGIN_NAME,
-
 	addProseMirrorPlugins() {
 		const editor = this.editor;
 		return [SuggestionPlugin(editor, this.options)];
