@@ -15,7 +15,7 @@ type SuggestedPage = RouterOutputs["pages"]["getPagesByFts"][number];
 
 export function SuggestionToolbar({ editor }: { editor: Editor }) {
 	const [selectedIndex, setSelectedIndex] = useState(0);
-	const [suggestionText, setSuggestionText] = useState("");
+	const [suggestionText, setSuggestionText] = useState<string | null>(null);
 	const { data: suggestedPagesFromDb, isLoading: isLoadingSuggestedPages } =
 		trpc.pages.getPagesByFts.useQuery(
 			{ query: suggestionText },
@@ -70,7 +70,7 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 			.run();
 
 		// Reset state after insertion
-		setSuggestionText("");
+		setSuggestionText(null);
 		setSelectedIndex(0);
 	};
 
@@ -108,7 +108,7 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 			editor={editor}
 			shouldShow={(editor) => {
 				const text = getSuggestionText(editor);
-				setSuggestionText(text ?? "");
+				setSuggestionText(text);
 				return !!text;
 			}}
 			className="w-96 flex flex-col gap-0.5 p-1 max-h-[280px] overflow-y-auto"
