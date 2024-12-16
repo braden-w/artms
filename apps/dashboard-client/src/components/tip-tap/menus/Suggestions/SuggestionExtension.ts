@@ -103,18 +103,18 @@ function SuggestionPlugin<TSuggestion>(
 		view() {
 			return {
 				update: async (view) => {
-					const suggestionText = getQuery({
+					const query = getQuery({
 						selection: view.state.selection,
 						suggestionTriggerPrefix,
 					});
 
-					if (!suggestionText) {
+					if (!query) {
 						pluginState.isOpen = false;
 						suggestionToolbar.closeSuggestions();
 						return;
 					}
 
-					const suggestions = await getSuggestionsFromQuery(suggestionText);
+					const suggestions = await getSuggestionsFromQuery(query);
 					pluginState = { selectedIndex: 0, isOpen: true, suggestions };
 
 					suggestionToolbar.openWithSuggestions({
@@ -227,9 +227,9 @@ function getQuery({
 	const currentLine = $from.doc.textBetween($from.start(), cursorPos);
 	const prefixIndex = currentLine.lastIndexOf(suggestionTriggerPrefix);
 	if (prefixIndex === -1) return null;
-	const suggestionText = $from.doc.textBetween(
+	const query = $from.doc.textBetween(
 		$from.start() + prefixIndex + suggestionTriggerPrefix.length,
 		cursorPos,
 	);
-	return suggestionText;
+	return query;
 }
