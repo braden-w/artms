@@ -19,11 +19,11 @@ type SuggestionOptions<TSuggestion> = {
 	getSuggestionsFromQuery: (query: string) => Promise<TSuggestion[]>;
 	onSuggestionSelected: ({
 		selectedSuggestion,
-		suggestionText,
+		query,
 		editor,
 	}: {
 		selectedSuggestion: TSuggestion;
-		suggestionText: string;
+		query: string;
 		editor: Editor;
 	}) => void;
 };
@@ -83,13 +83,13 @@ function SuggestionPlugin<TSuggestion>(
 						const selectedSuggestion =
 							pluginState.suggestions[pluginState.selectedIndex];
 						if (selectedSuggestion) {
-							const suggestionText = getSuggestionText({
+							const query = getQuery({
 								selection: view.state.selection,
 								suggestionTriggerPrefix,
 							});
 							onSuggestionSelected({
 								selectedSuggestion,
-								suggestionText: suggestionText || "",
+								query: query ?? "",
 								editor,
 							});
 							suggestionToolbar.closeSuggestions();
@@ -103,7 +103,7 @@ function SuggestionPlugin<TSuggestion>(
 		view() {
 			return {
 				update: async (view) => {
-					const suggestionText = getSuggestionText({
+					const suggestionText = getQuery({
 						selection: view.state.selection,
 						suggestionTriggerPrefix,
 					});
@@ -217,7 +217,7 @@ function createSuggestionToolbar() {
 	};
 }
 
-function getSuggestionText({
+function getQuery({
 	selection: { $from, from, to },
 	suggestionTriggerPrefix,
 }: { selection: Selection; suggestionTriggerPrefix: string }) {
