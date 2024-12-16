@@ -47,11 +47,60 @@ function SuggestionPlugin<TSuggestion>(
 		onSuggestionSelected,
 	}: SuggestionOptions<TSuggestion>,
 ) {
+	const suggestionToolbar = createSuggestionToolbar();
+	let pluginState = {
+		selectedIndex: 0,
+		isOpen: false,
+		suggestions: [] as TSuggestion[],
+	};
+
 	return new Plugin({
 		key: new PluginKey(PLUGIN_NAME),
-		view: () => {
-			const suggestionToolbar = createSuggestionToolbar();
+		props: {
+			handleKeyDown(view, event) {
+				if (!pluginState.isOpen || pluginState.suggestions.length === 0) {
+					return false;
+				}
 
+				switch (event.key) {
+					case "ArrowDown": {
+						event.preventDefault();
+						pluginState.selectedIndex =
+							(pluginState.selectedIndex + 1) % pluginState.suggestions.length;
+						suggestionToolbar.updateSelectedStyles(pluginState.selectedIndex);
+						return true;
+					}
+					case "ArrowUp": {
+						event.preventDefault();
+						pluginState.selectedIndex =
+							(pluginState.selectedIndex - 1 + pluginState.suggestions.length) %
+							pluginState.suggestions.length;
+						suggestionToolbar.updateSelectedStyles(pluginState.selectedIndex);
+						return true;
+					}
+					case "Enter": {
+						event.preventDefault();
+						const selectedSuggestion =
+							pluginState.suggestions[pluginState.selectedIndex];
+						if (selectedSuggestion) {
+							const suggestionText = getSuggestionText({
+								selection: view.state.selection,
+								suggestionTriggerPrefix,
+							});
+							onSuggestionSelected({
+								selectedSuggestion,
+								suggestionText: suggestionText || "",
+								editor,
+							});
+							suggestionToolbar.closeSuggestions();
+						}
+						return true;
+					}
+				}
+				return false;
+			},
+		},
+		view: () => {
 			return {
 				update: async (view) => {
 					const suggestionText = getSuggestionText({
@@ -60,11 +109,14 @@ function SuggestionPlugin<TSuggestion>(
 					});
 
 					if (!suggestionText) {
+						pluginState.isOpen = false;
 						suggestionToolbar.closeSuggestions();
 						return;
 					}
 
 					const suggestions = await getSuggestionsFromQuery(suggestionText);
+					pluginState = { selectedIndex: 0, isOpen: true, suggestions };
+
 					suggestionToolbar.openWithSuggestions({
 						suggestions,
 						anchor: {
@@ -94,39 +146,6 @@ function createSuggestionToolbar() {
 	document.body.appendChild(element);
 
 	let stopFloatingUpdate: (() => void) | null = null;
-	let selectedIndex = 0;
-
-	const handleKeydown = (event: KeyboardEvent) => {
-		if (!element.children.length || element.classList.contains("hidden"))
-			return;
-
-		switch (event.key) {
-			case "ArrowDown":
-				event.preventDefault();
-				selectedIndex = (selectedIndex + 1) % element.children.length;
-				updateSelectedStyles();
-				break;
-			case "ArrowUp":
-				event.preventDefault();
-				selectedIndex =
-					(selectedIndex - 1 + element.children.length) %
-					element.children.length;
-				updateSelectedStyles();
-				break;
-		}
-	};
-
-	const updateSelectedStyles = () => {
-		Array.from(element.children).forEach((child, index) => {
-			if (index === selectedIndex) {
-				child.classList.add("bg-accent", "text-accent-foreground");
-			} else {
-				child.classList.remove("bg-accent", "text-accent-foreground");
-			}
-		});
-	};
-
-	document.addEventListener("keydown", handleKeydown);
 
 	const openSuggestions = (referenceElement: ReferenceElement) => {
 		stopFloatingUpdate = autoUpdate(referenceElement, element, () => {
@@ -151,6 +170,15 @@ function createSuggestionToolbar() {
 
 	return {
 		element,
+		updateSelectedStyles(selectedIndex: number) {
+			Array.from(element.children).forEach((child, index) => {
+				if (index === selectedIndex) {
+					child.classList.add("bg-accent", "text-accent-foreground");
+				} else {
+					child.classList.remove("bg-accent", "text-accent-foreground");
+				}
+			});
+		},
 		openWithSuggestions<TSuggestion>({
 			suggestions,
 			anchor,
@@ -164,7 +192,6 @@ function createSuggestionToolbar() {
 			}
 			openSuggestions(anchor);
 			this.element.innerHTML = "";
-			selectedIndex = 0;
 
 			for (const suggestion of suggestions) {
 				const item = document.createElement("li");
@@ -177,16 +204,14 @@ function createSuggestionToolbar() {
 				this.element.appendChild(item);
 			}
 
-			updateSelectedStyles();
+			this.updateSelectedStyles(0);
 		},
 		closeSuggestions() {
 			stopFloatingUpdate?.();
 			element.classList.add("hidden");
-			selectedIndex = 0;
 		},
 		destroy() {
 			stopFloatingUpdate?.();
-			document.removeEventListener("keydown", handleKeydown);
 			element.remove();
 		},
 	};
