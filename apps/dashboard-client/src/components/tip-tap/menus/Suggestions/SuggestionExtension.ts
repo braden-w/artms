@@ -2,8 +2,12 @@ import {
 	autoUpdate,
 	computePosition,
 	flip,
+	inline,
+	limitShift,
 	offset,
+	ReferenceElement,
 	shift,
+	VirtualElement,
 } from "@floating-ui/dom";
 import { type Editor, Extension, posToDOMRect } from "@tiptap/core";
 import {
@@ -51,7 +55,6 @@ function SuggestionPlugin(
 		key: new PluginKey(PLUGIN_NAME),
 		view: () => {
 			let toolbar: SuggestionToolbar | null = null;
-			let cleanup: (() => void) | null = null;
 
 			return {
 				update: async (view) => {
@@ -63,49 +66,21 @@ function SuggestionPlugin(
 					if (suggestionText) {
 						if (!toolbar) {
 							toolbar = createSuggestionToolbar();
-							document.body.appendChild(toolbar.element);
-
-							const suggestions = await getSuggestions(suggestionText);
-							toolbar.update(suggestions);
-
-							const virtualElement = {
+							toolbar.mount({
 								getBoundingClientRect: () => {
 									const { from } = view.state.selection;
 									return posToDOMRect(view, from, from);
 								},
-							};
-
-							cleanup = autoUpdate(
-								virtualElement,
-								toolbar.element,
-								async () => {
-									const { x, y, strategy, placement } = await computePosition(
-										virtualElement,
-										toolbar?.element,
-										{
-											placement: "top-start",
-											middleware: [offset(8), flip(), shift()],
-										},
-									);
-
-									Object.assign(toolbar?.element.style, {
-										position: strategy,
-										left: `${x}px`,
-										top: `${y}px`,
-										zIndex: "9999",
-										width: "max-content",
-										transformOrigin: placement.includes("top")
-											? "bottom"
-											: "top",
-									});
+								getClientRects: () => {
+									const { from } = view.state.selection;
+									return [posToDOMRect(view, from, from)];
 								},
-							);
+							});
+
+							const suggestions = await getSuggestions(suggestionText);
+							toolbar.update(suggestions);
 						}
 					} else {
-						if (cleanup) {
-							cleanup();
-							cleanup = null;
-						}
 						if (toolbar) {
 							toolbar.destroy();
 							toolbar = null;
@@ -113,7 +88,6 @@ function SuggestionPlugin(
 					}
 				},
 				destroy: () => {
-					if (cleanup) cleanup();
 					if (toolbar) toolbar.destroy();
 				},
 			};
@@ -145,8 +119,31 @@ function createSuggestionToolbar() {
 	toolbar.className =
 		"flex flex-col space-y-1 rounded-md border bg-background p-1";
 
+	let cleanup: () => void;
+
 	return {
 		element: toolbar,
+		mount(referenceElement: VirtualElement) {
+			document.body.appendChild(toolbar);
+
+			cleanup = autoUpdate(referenceElement, toolbar, () => {
+				computePosition(referenceElement, toolbar, {
+					placement: "top-start",
+					middleware: [
+						inline(),
+						offset(8),
+						flip({ padding: 8 }),
+						shift({ padding: 8, limiter: limitShift() }),
+					],
+				}).then(({ x, y, strategy }) => {
+					Object.assign(toolbar.style, {
+						position: strategy,
+						left: `${x}px`,
+						top: `${y}px`,
+					});
+				});
+			});
+		},
 		update(suggestions: SuggestedPage[]) {
 			toolbar.innerHTML = "";
 			for (const suggestion of suggestions) {
@@ -161,6 +158,7 @@ function createSuggestionToolbar() {
 			}
 		},
 		destroy() {
+			cleanup?.();
 			toolbar.remove();
 		},
 	};
