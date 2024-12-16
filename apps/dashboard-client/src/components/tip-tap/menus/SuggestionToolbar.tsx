@@ -1,12 +1,10 @@
 import { Toggle } from "@/components/ui/toggle";
-import type { PageFts } from "@repo/dashboard-server/db/schema/pages";
+import { trpc } from "@/router";
+import { generateDefaultPage } from "@repo/dashboard-server/utils";
 import type { Editor } from "@tiptap/react";
+import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { FloatingToolbar } from "./FloatingToolbar";
-import { trpc } from "@/router";
-import { Loader2 } from "lucide-react";
-import { generateDefaultPage } from "@repo/dashboard-server/utils";
-import type { StringWithHtmlFragments } from "@repo/dashboard-server/services/index";
 
 const SUGGESTION_TRIGGER_PREFIX = "[[";
 
@@ -14,7 +12,7 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const [suggestionText, setSuggestionText] = useState("");
 	const [isSuggesting, setIsSuggesting] = useState(false);
-	const { data: suggestedPagesFromDb, isPending } =
+	const { data: suggestedPagesFromDb, isLoading: isLoadingSuggestedPages } =
 		trpc.pages.getPagesByFts.useQuery(
 			{ query: suggestionText },
 			{ enabled: isSuggesting },
@@ -27,7 +25,6 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 		trpc.pages.addPage.useMutation();
 
 	const handleKeyDown = (event: KeyboardEvent) => {
-		if (!isSuggesting || !suggestedPages?.length) return;
 		if (event.key === "ArrowDown" || event.key === "ArrowUp") {
 			event.preventDefault();
 			const direction = event.key === "ArrowDown" ? 1 : -1;
@@ -84,7 +81,7 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 			}}
 			className="flex flex-col gap-0.5 p-1 max-h-[280px] overflow-y-auto"
 		>
-			{isPending ? (
+			{isLoadingSuggestedPages ? (
 				<div className="flex-1 flex items-center justify-center">
 					<Loader2 className="h-4 w-4 animate-spin" />
 				</div>
