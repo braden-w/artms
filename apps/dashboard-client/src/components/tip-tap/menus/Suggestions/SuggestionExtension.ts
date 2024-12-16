@@ -51,6 +51,31 @@ function SuggestionPlugin(
 		view: () => {
 			const suggestionToolbar = createSuggestionToolbar();
 
+			const openSuggestions = ({
+				suggestions,
+				anchor,
+			}: {
+				suggestions: SuggestedPage[];
+				anchor: VirtualElement;
+			}) => {
+				if (suggestions.length === 0) {
+					suggestionToolbar.close();
+					return;
+				}
+				suggestionToolbar.open(anchor);
+				suggestionToolbar.element.innerHTML = "";
+				for (const suggestion of suggestions) {
+					const item = document.createElement("li");
+					item.textContent = suggestion.title;
+					item.className =
+						"flex-1 line-clamp-1 text-left cursor-pointer hover:bg-accent";
+					item.addEventListener("click", () => {
+						// Handle selection
+					});
+					suggestionToolbar.element.appendChild(item);
+				}
+			};
+
 			return {
 				update: async (view) => {
 					const suggestionText = getSuggestionText({
@@ -63,18 +88,20 @@ function SuggestionPlugin(
 						return;
 					}
 
-					suggestionToolbar.open({
-						getBoundingClientRect: () => {
-							const { from } = view.state.selection;
-							return posToDOMRect(view, from, from);
-						},
-						getClientRects: () => {
-							const { from } = view.state.selection;
-							return [posToDOMRect(view, from, from)];
+					const suggestions = await getSuggestions(suggestionText);
+					openSuggestions({
+						suggestions,
+						anchor: {
+							getBoundingClientRect: () => {
+								const { from } = view.state.selection;
+								return posToDOMRect(view, from, from);
+							},
+							getClientRects: () => {
+								const { from } = view.state.selection;
+								return [posToDOMRect(view, from, from)];
+							},
 						},
 					});
-					const suggestions = await getSuggestions(suggestionText);
-					suggestionToolbar.update(suggestions);
 				},
 				destroy: () => {
 					suggestionToolbar.destroy();
@@ -102,46 +129,6 @@ function getSuggestionText({
 }
 
 function createSuggestionToolbar() {
-	let isVisible = false;
-	const toolbarShell = createSuggestionToolbarShell();
-
-	return {
-		open(referenceElement: VirtualElement) {
-			if (isVisible) return;
-			toolbarShell.open(referenceElement);
-			isVisible = true;
-		},
-
-		close() {
-			if (!isVisible) return;
-			toolbarShell.close();
-			isVisible = false;
-		},
-
-		destroy() {
-			toolbarShell.destroy();
-			isVisible = false;
-		},
-
-		update(suggestions: SuggestedPage[]) {
-			const element = toolbarShell.element;
-
-			element.innerHTML = "";
-			for (const suggestion of suggestions) {
-				const item = document.createElement("li");
-				item.textContent = suggestion.title;
-				item.className =
-					"flex-1 line-clamp-1 text-left cursor-pointer hover:bg-accent";
-				item.addEventListener("click", () => {
-					// Handle selection
-				});
-				element.appendChild(item);
-			}
-		},
-	};
-}
-
-function createSuggestionToolbarShell() {
 	const element = document.createElement("ul");
 	element.className =
 		"flex flex-col space-y-1 rounded-md border bg-background p-1 hidden";
