@@ -35,6 +35,7 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 		trpc.pages.addPage.useMutation();
 
 	const insertSelectedPage = (selectedPage: SuggestedPage) => {
+		if (!suggestionText) return;
 		const cleanedTitle = stripHtml(selectedPage.title ?? "");
 
 		const pageId = (() => {
