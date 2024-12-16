@@ -1,3 +1,5 @@
+import { Toggle } from "@/components/ui/toggle";
+import { Separator } from "@radix-ui/react-dropdown-menu";
 import type { Editor } from "@tiptap/react";
 import { FloatingToolbar } from "./FloatingToolbar";
 
@@ -17,6 +19,11 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 				const textBefore = editor.state.doc.textBetween(start, currentPosition);
 				return textBefore === SUGGESTION_CHAR;
 			}}
-		></FloatingToolbar>
+			className="flex flex-col"
+		>
+			<Toggle>Suggestions</Toggle>
+			<Separator />
+			<Toggle>Suggestions</Toggle>
+		</FloatingToolbar>
 	);
 }
