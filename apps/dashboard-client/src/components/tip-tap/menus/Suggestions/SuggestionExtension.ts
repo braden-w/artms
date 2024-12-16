@@ -107,9 +107,9 @@ function SuggestionPlugin(
 							cleanup();
 							cleanup = null;
 						}
-						if (reactRenderer) {
-							reactRenderer.destroy();
-							reactRenderer = null;
+						if (toolbar) {
+							toolbar.destroy();
+							toolbar = null;
 						}
 					}
 				},
@@ -149,7 +149,7 @@ function createSuggestionToolbar() {
 
 	return {
 		element: toolbar,
-		update: (suggestions: SuggestedPage[]) => {
+		update(suggestions: SuggestedPage[]) {
 			list.innerHTML = "";
 			for (const suggestion of suggestions) {
 				const item = document.createElement("li");
@@ -160,7 +160,7 @@ function createSuggestionToolbar() {
 				list.appendChild(item);
 			}
 		},
-		destroy: () => {
+		destroy() {
 			toolbar.remove();
 		},
 	};
