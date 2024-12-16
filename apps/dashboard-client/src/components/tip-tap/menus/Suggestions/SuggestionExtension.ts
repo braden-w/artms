@@ -54,7 +54,7 @@ function SuggestionPlugin(
 	return new Plugin({
 		key: new PluginKey(PLUGIN_NAME),
 		view: () => {
-			const toolbar = createSuggestionToolbar();
+			const suggestionToolbar = createSuggestionToolbar();
 
 			return {
 				update: async (view) => {
@@ -64,11 +64,11 @@ function SuggestionPlugin(
 					});
 
 					if (!suggestionText) {
-						toolbar.destroy();
+						suggestionToolbar.close();
 						return;
 					}
 
-					toolbar.mount({
+					suggestionToolbar.open({
 						getBoundingClientRect: () => {
 							const { from } = view.state.selection;
 							return posToDOMRect(view, from, from);
@@ -79,10 +79,10 @@ function SuggestionPlugin(
 						},
 					});
 					const suggestions = await getSuggestions(suggestionText);
-					toolbar.update(suggestions);
+					suggestionToolbar.update(suggestions);
 				},
 				destroy: () => {
-					toolbar.destroy();
+					suggestionToolbar.close();
 				},
 			};
 		},
@@ -113,7 +113,7 @@ function createSuggestionToolbar() {
 	let cleanup: () => void;
 
 	return {
-		mount(referenceElement: VirtualElement) {
+		open(referenceElement: VirtualElement) {
 			toolbarShell = document.createElement("ul");
 			toolbarShell.className =
 				"flex flex-col space-y-1 rounded-md border bg-background p-1";
@@ -154,7 +154,7 @@ function createSuggestionToolbar() {
 				toolbarShell.appendChild(item);
 			}
 		},
-		destroy() {
+		close() {
 			cleanup?.();
 			if (!toolbarShell) return;
 			toolbarShell.remove();
