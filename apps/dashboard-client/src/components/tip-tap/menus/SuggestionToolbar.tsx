@@ -94,9 +94,8 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 						key={page.id}
 						pressed={index === selectedIndex}
 						onPressedChange={() => setSelectedIndex(index)}
-					>
-						{page.title}
-					</Toggle>
+						dangerouslySetInnerHTML={{ __html: page.title ?? "" }}
+					/>
 				))
 			)}
 		</FloatingToolbar>
