@@ -11,11 +11,10 @@ const SUGGESTION_TRIGGER_PREFIX = "[[";
 export function SuggestionToolbar({ editor }: { editor: Editor }) {
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const [suggestionText, setSuggestionText] = useState("");
-	const [isSuggesting, setIsSuggesting] = useState(false);
 	const { data: suggestedPagesFromDb, isLoading: isLoadingSuggestedPages } =
 		trpc.pages.getPagesByFts.useQuery(
 			{ query: suggestionText },
-			{ enabled: isSuggesting },
+			{ enabled: !!suggestionText },
 		);
 
 	const newPage = generateDefaultPage({ title: suggestionText });
@@ -84,10 +83,9 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 		<FloatingToolbar
 			editor={editor}
 			shouldShow={(editor) => {
-				const { suggestionText, isSuggesting } = getEditorSelection(editor);
-				setIsSuggesting(isSuggesting);
-				if (isSuggesting) setSuggestionText(suggestionText);
-				return isSuggesting;
+				const suggestionText = getSuggestionText(editor);
+				if (suggestionText) setSuggestionText(suggestionText);
+				return !!suggestionText;
 			}}
 			className="w-96 flex flex-col gap-0.5 p-1 max-h-[280px] overflow-y-auto"
 		>
@@ -110,19 +108,19 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 	);
 }
 
-function getEditorSelection(editor: Editor) {
+function getSuggestionText(editor: Editor) {
 	const { $from, from, to } = editor.state.selection;
 	const isCursorSelecting = from !== to;
-	if (isCursorSelecting) return { isSuggesting: false } as const;
+	if (isCursorSelecting) return null;
 	const cursorPos = from;
 	const currentLine = $from.doc.textBetween($from.start(), cursorPos);
 	const prefixIndex = currentLine.lastIndexOf(SUGGESTION_TRIGGER_PREFIX);
-	if (prefixIndex === -1) return { isSuggesting: false } as const;
+	if (prefixIndex === -1) return null;
 	const suggestionText = $from.doc.textBetween(
 		$from.start() + prefixIndex + SUGGESTION_TRIGGER_PREFIX.length,
 		cursorPos,
 	);
-	return { suggestionText, isSuggesting: true } as const;
+	return suggestionText;
 }
 
 function stripHtml(strInputCode: string) {
