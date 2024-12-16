@@ -35,65 +35,75 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 		trpc.pages.addPage.useMutation();
 
 	const insertSelectedPage = (selectedPage: SuggestedPage) => {
-		if (selectedPage) {
-			const cleanedTitle = stripHtml(selectedPage.title ?? "");
-			if (selectedPage.id === NEW_PAGE_ID) {
-				addPage(generateDefaultPage({ title: cleanedTitle }));
-			}
-			const { $from } = editor.state.selection;
-			const currentPos = $from.pos;
-			const startPos = currentPos - suggestionText.length;
+		const cleanedTitle = stripHtml(selectedPage.title ?? "");
+		if (selectedPage.id === NEW_PAGE_ID) {
+			addPage(generateDefaultPage({ title: cleanedTitle }));
+		}
 
-			editor
-				.chain()
-				.focus()
-				.deleteRange({ from: startPos, to: currentPos })
-				.insertContent({
-					type: "text",
-					marks: [
-						{
-							type: "link",
-							attrs: {
-								href: `/pages/${selectedPage.id}`,
-								target: "_blank",
-							},
+		const { $from } = editor.state.selection;
+		const currentPos = $from.pos;
+		const startPos = currentPos - suggestionText.length;
+
+		editor
+			.chain()
+			.focus()
+			.deleteRange({ from: startPos, to: currentPos })
+			.insertContent({
+				type: "text",
+				marks: [
+					{
+						type: "link",
+						attrs: {
+							href: `/pages/${selectedPage.id}`,
+							target: "_blank",
 						},
-					],
-					text: cleanedTitle,
-				})
-				.run();
-		}
-	};
+					},
+				],
+				text: cleanedTitle,
+			})
+			.run();
 
-	const handleKeyDown = (event: KeyboardEvent) => {
-		if (!suggestionText) return;
-		if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-			event.preventDefault();
-			const direction = event.key === "ArrowDown" ? 1 : -1;
-			setSelectedIndex(
-				(current) =>
-					(current + direction + suggestedPages.length) % suggestedPages.length,
-			);
-		}
-
-		if (event.key === "Enter") {
-			event.preventDefault();
-			insertSelectedPage(suggestedPages[selectedIndex]);
-		}
+		// Reset state after insertion
+		setSuggestionText("");
+		setSelectedIndex(0);
 	};
 
 	useEffect(() => {
+		function handleKeyDown(event: KeyboardEvent) {
+			if (!suggestionText || !suggestedPages.length) return;
+
+			if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+				event.preventDefault();
+				const direction = event.key === "ArrowDown" ? 1 : -1;
+				setSelectedIndex(
+					(current) =>
+						(current + direction + suggestedPages.length) %
+						suggestedPages.length,
+				);
+			}
+
+			if (event.key === "Enter") {
+				event.preventDefault();
+				insertSelectedPage(suggestedPages[selectedIndex]);
+			}
+		}
+
 		document.addEventListener("keydown", handleKeyDown);
 		return () => document.removeEventListener("keydown", handleKeyDown);
-	}, [handleKeyDown]);
+	}, [suggestionText, suggestedPages, selectedIndex]); // Only depend on required state
+
+	// Reset selected index when suggestion text changes
+	useEffect(() => {
+		setSelectedIndex(0);
+	}, [suggestionText]);
 
 	return (
 		<FloatingToolbar
 			editor={editor}
 			shouldShow={(editor) => {
-				const suggestionText = getSuggestionText(editor);
-				if (suggestionText) setSuggestionText(suggestionText);
-				return !!suggestionText;
+				const text = getSuggestionText(editor);
+				setSuggestionText(text ?? "");
+				return !!text;
 			}}
 			className="w-96 flex flex-col gap-0.5 p-1 max-h-[280px] overflow-y-auto"
 		>
@@ -108,7 +118,7 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 						pressed={index === selectedIndex}
 						onPressedChange={() => {
 							setSelectedIndex(index);
-							insertSelectedPage(suggestedPages[index]);
+							insertSelectedPage(page);
 						}}
 						className="w-full line-clamp-1 text-left"
 						dangerouslySetInnerHTML={{ __html: page.title ?? "" }}
