@@ -7,16 +7,14 @@ import {
 } from '@tiptap/pm/state';
 import { type EditorView, __serializeForClipboard } from '@tiptap/pm/view';
 import type { GlobalDragHandleOptions } from '.';
+import { DOM, MIME_TYPES, NODE_TYPES, PLUGIN_NAME } from './constants';
 import { absoluteRect, nodeDOMAtCoords, nodePosAtDOM } from './utils/dom';
-import { DOM, NODE_TYPES, DEFAULT_OPTIONS, MIME_TYPES } from './constants';
 
-export function DragHandlePlugin(
-  options: GlobalDragHandleOptions & { pluginKey: string },
-) {
+export function DragHandlePlugin(options: GlobalDragHandleOptions) {
   const dragHandle = createDragHandle(options);
 
   return new Plugin({
-    key: new PluginKey(options.pluginKey),
+    key: new PluginKey(PLUGIN_NAME),
     view: (view) => {
       const { destroy } = dragHandle.init(view);
       return { destroy };
