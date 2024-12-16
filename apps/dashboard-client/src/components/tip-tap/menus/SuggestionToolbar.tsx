@@ -5,42 +5,25 @@ import { useEffect, useState } from "react";
 import { FloatingToolbar } from "./FloatingToolbar";
 import { trpc } from "@/router";
 import { Loader2 } from "lucide-react";
+import { generateDefaultPage } from "@repo/dashboard-server/utils";
+import type { StringWithHtmlFragments } from "@repo/dashboard-server/services/index";
 
 const SUGGESTION_CHAR = "[[";
-
-const onPageSelect = (page: PageFts) => {
-	console.log(page);
-};
-
-const getEditorSelection = (editor: Editor) => {
-	const { $from, from, to } = editor.state.selection;
-	const isCursorSelecting = from !== to;
-	if (isCursorSelecting)
-		return { suggestionText: "", isSuggesting: false } as const;
-	const currentPosition = from;
-	const lineStartPos = $from.start();
-	const lineTextBeforeCursor = $from.doc.textBetween(
-		lineStartPos,
-		currentPosition,
-	);
-	const triggerCharIndex = lineTextBeforeCursor.lastIndexOf(SUGGESTION_CHAR);
-	if (triggerCharIndex === -1)
-		return { suggestionText: "", isSuggesting: false } as const;
-	const triggerStartPos = lineStartPos + triggerCharIndex;
-	const suggestionText = $from.doc.textBetween(
-		triggerStartPos + SUGGESTION_CHAR.length,
-		currentPosition,
-	);
-	return { suggestionText, isSuggesting: true } as const;
-};
 
 export function SuggestionToolbar({ editor }: { editor: Editor }) {
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const [suggestionText, setSuggestionText] = useState("");
-	const { data: suggestedPages, isPending } = trpc.pages.getPagesByFts.useQuery(
+	const { data: pagesByFts, isPending } = trpc.pages.getPagesByFts.useQuery(
 		{ query: suggestionText },
 		{ enabled: !!suggestionText },
 	);
+
+	const newPage = generateDefaultPage({ title: suggestionText });
+
+	const suggestedPages = [...(pagesByFts ?? []), newPage];
+
+	const { mutate: addPage, isPending: isAddingPage } =
+		trpc.pages.addPage.useMutation();
 
 	const handleKeyDown = (event: KeyboardEvent) => {
 		if (!suggestedPages?.length) return;
@@ -56,7 +39,16 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 		if (event.key === "Enter") {
 			event.preventDefault();
 			const selectedPage = suggestedPages[selectedIndex];
-			if (selectedPage) onPageSelect(selectedPage);
+
+			if (selectedPage) {
+				if (selectedPage.id === newPage.id) {
+					addPage(newPage);
+				}
+				const cleanedTitle = stripHtml(selectedPage.title);
+				const pageLink =
+					`[${cleanedTitle}](/pages/${selectedPage.id})` as const;
+				editor.chain().focus().insertContent(pageLink).run();
+			}
 		}
 	};
 
@@ -96,4 +88,32 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 			)}
 		</FloatingToolbar>
 	);
+}
+
+function getEditorSelection(editor: Editor) {
+	const { $from, from, to } = editor.state.selection;
+	const isCursorSelecting = from !== to;
+	if (isCursorSelecting)
+		return { suggestionText: "", isSuggesting: false } as const;
+	const currentPosition = from;
+	const lineStartPos = $from.start();
+	const lineTextBeforeCursor = $from.doc.textBetween(
+		lineStartPos,
+		currentPosition,
+	);
+	const triggerCharIndex = lineTextBeforeCursor.lastIndexOf(SUGGESTION_CHAR);
+	if (triggerCharIndex === -1)
+		return { suggestionText: "", isSuggesting: false } as const;
+	const triggerStartPos = lineStartPos + triggerCharIndex;
+	const suggestionText = $from.doc.textBetween(
+		triggerStartPos + SUGGESTION_CHAR.length,
+		currentPosition,
+	);
+	return { suggestionText, isSuggesting: true } as const;
+}
+
+function stripHtml(strInputCode: StringWithHtmlFragments) {
+	const div = document.createElement("div");
+	div.innerHTML = strInputCode;
+	return div.textContent ?? div.innerText;
 }
