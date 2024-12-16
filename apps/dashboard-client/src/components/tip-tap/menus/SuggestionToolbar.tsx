@@ -51,7 +51,10 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 						marks: [
 							{
 								type: "link",
-								attrs: { href: `/pages/${selectedPage.id}`, target: "_blank" },
+								attrs: {
+									href: `/pages/${selectedPage.id}`,
+									target: "_blank",
+								},
 							},
 						],
 						text: cleanedTitle,
@@ -68,7 +71,7 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 	useEffect(() => {
 		document.addEventListener("keydown", handleKeyDown);
 		return () => document.removeEventListener("keydown", handleKeyDown);
-	}, []);
+	}, [handleKeyDown]);
 
 	return (
 		<FloatingToolbar
