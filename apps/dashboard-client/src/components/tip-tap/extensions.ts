@@ -49,11 +49,7 @@ export const createExtensions = () => [
 			});
 			return pages;
 		},
-		onSuggestionSelected: async ({
-			selectedSuggestion,
-			suggestionText,
-			editor,
-		}) => {
+		onSuggestionSelected: async ({ selectedSuggestion, query, editor }) => {
 			const cleanedTitle = stripHtml(selectedSuggestion.title);
 
 			let pageId = selectedSuggestion.id;
@@ -68,7 +64,7 @@ export const createExtensions = () => [
 			const { $from } = editor.state.selection;
 			const currentPos = $from.pos;
 			const startPos =
-				currentPos - (suggestionText.length + suggestionTriggerPrefix.length);
+				currentPos - (query.length + suggestionTriggerPrefix.length);
 
 			editor
 				.chain()
