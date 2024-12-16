@@ -1,4 +1,3 @@
-import { suggest, Suggester } from "prosemirror-suggest";
 import {
 	autoUpdate,
 	computePosition,
@@ -7,9 +6,12 @@ import {
 	shift,
 } from "@floating-ui/dom";
 import { type Editor, Extension, posToDOMRect } from "@tiptap/core";
-import { type EditorState, Plugin, PluginKey } from "@tiptap/pm/state";
-import { ReactRenderer } from "@tiptap/react";
-import { SuggestionToolbar } from "./SuggestionToolbar";
+import {
+	type Selection,
+	type EditorState,
+	Plugin,
+	PluginKey,
+} from "@tiptap/pm/state";
 import type { SuggestedPage } from "../SuggestionToolbar";
 
 const PLUGIN_NAME = "suggestion";
@@ -54,7 +56,7 @@ function SuggestionPlugin(
 			return {
 				update: async (view) => {
 					const suggestionText = getSuggestionText({
-						state: view.state,
+						selection: view.state.selection,
 						suggestionTriggerPrefix,
 					});
 					console.log("suggestionText", suggestionText);
@@ -121,10 +123,9 @@ function SuggestionPlugin(
 }
 
 function getSuggestionText({
-	state,
+	selection: { $from, from, to },
 	suggestionTriggerPrefix,
-}: { state: EditorState; suggestionTriggerPrefix: string }) {
-	const { $from, from, to } = state.selection;
+}: { selection: Selection; suggestionTriggerPrefix: string }) {
 	const isCursorSelecting = from !== to;
 	if (isCursorSelecting) return null;
 	const cursorPos = from;
