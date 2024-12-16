@@ -149,27 +149,6 @@ function createSuggestionToolbar() {
 
 	let stopFloatingUpdate: (() => void) | null = null;
 
-	const openSuggestions = (referenceElement: ReferenceElement) => {
-		stopFloatingUpdate = autoUpdate(referenceElement, element, () => {
-			computePosition(referenceElement, element, {
-				placement: "top-start",
-				middleware: [
-					inline(),
-					offset(8),
-					flip({ padding: 8 }),
-					shift({ padding: 8, limiter: limitShift() }),
-				],
-			}).then(({ x, y, strategy }) => {
-				Object.assign(element.style, {
-					position: strategy,
-					left: `${x}px`,
-					top: `${y}px`,
-				});
-			});
-		});
-		element.classList.remove("hidden");
-	};
-
 	return {
 		element,
 		updateSelectedStyles(selectedIndex: number) {
@@ -194,7 +173,24 @@ function createSuggestionToolbar() {
 				this.closeSuggestions();
 				return;
 			}
-			openSuggestions(anchor);
+			stopFloatingUpdate = autoUpdate(anchor, element, () => {
+				computePosition(anchor, element, {
+					placement: "top-start",
+					middleware: [
+						inline(),
+						offset(8),
+						flip({ padding: 8 }),
+						shift({ padding: 8, limiter: limitShift() }),
+					],
+				}).then(({ x, y, strategy }) => {
+					Object.assign(element.style, {
+						position: strategy,
+						left: `${x}px`,
+						top: `${y}px`,
+					});
+				});
+			});
+			element.classList.remove("hidden");
 			this.element.innerHTML = "";
 
 			for (const suggestion of suggestions) {
