@@ -54,7 +54,7 @@ function SuggestionPlugin(
 	return new Plugin({
 		key: new PluginKey(PLUGIN_NAME),
 		view: () => {
-			let toolbar: SuggestionToolbar | null = null;
+			const toolbar = createSuggestionToolbar();
 
 			return {
 				update: async (view) => {
@@ -63,32 +63,26 @@ function SuggestionPlugin(
 						suggestionTriggerPrefix,
 					});
 
-					if (suggestionText) {
-						if (!toolbar) {
-							toolbar = createSuggestionToolbar();
-							toolbar.mount({
-								getBoundingClientRect: () => {
-									const { from } = view.state.selection;
-									return posToDOMRect(view, from, from);
-								},
-								getClientRects: () => {
-									const { from } = view.state.selection;
-									return [posToDOMRect(view, from, from)];
-								},
-							});
-
-							const suggestions = await getSuggestions(suggestionText);
-							toolbar.update(suggestions);
-						}
-					} else {
-						if (toolbar) {
-							toolbar.destroy();
-							toolbar = null;
-						}
+					if (!suggestionText) {
+						toolbar.destroy();
+						return;
 					}
+
+					toolbar.mount({
+						getBoundingClientRect: () => {
+							const { from } = view.state.selection;
+							return posToDOMRect(view, from, from);
+						},
+						getClientRects: () => {
+							const { from } = view.state.selection;
+							return [posToDOMRect(view, from, from)];
+						},
+					});
+					const suggestions = await getSuggestions(suggestionText);
+					toolbar.update(suggestions);
 				},
 				destroy: () => {
-					if (toolbar) toolbar.destroy();
+					toolbar.destroy();
 				},
 			};
 		},
@@ -115,19 +109,20 @@ function getSuggestionText({
 type SuggestionToolbar = ReturnType<typeof createSuggestionToolbar>;
 
 function createSuggestionToolbar() {
-	const toolbar = document.createElement("ul");
-	toolbar.className =
-		"flex flex-col space-y-1 rounded-md border bg-background p-1";
-
+	let toolbarShell: HTMLUListElement | null = null;
 	let cleanup: () => void;
 
 	return {
-		element: toolbar,
 		mount(referenceElement: VirtualElement) {
-			document.body.appendChild(toolbar);
+			toolbarShell = document.createElement("ul");
+			toolbarShell.className =
+				"flex flex-col space-y-1 rounded-md border bg-background p-1";
 
-			cleanup = autoUpdate(referenceElement, toolbar, () => {
-				computePosition(referenceElement, toolbar, {
+			document.body.appendChild(toolbarShell);
+
+			cleanup = autoUpdate(referenceElement, toolbarShell, () => {
+				if (!toolbarShell) return;
+				computePosition(referenceElement, toolbarShell, {
 					placement: "top-start",
 					middleware: [
 						inline(),
@@ -136,7 +131,8 @@ function createSuggestionToolbar() {
 						shift({ padding: 8, limiter: limitShift() }),
 					],
 				}).then(({ x, y, strategy }) => {
-					Object.assign(toolbar.style, {
+					if (!toolbarShell) return;
+					Object.assign(toolbarShell.style, {
 						position: strategy,
 						left: `${x}px`,
 						top: `${y}px`,
@@ -145,7 +141,8 @@ function createSuggestionToolbar() {
 			});
 		},
 		update(suggestions: SuggestedPage[]) {
-			toolbar.innerHTML = "";
+			if (!toolbarShell) return;
+			toolbarShell.innerHTML = "";
 			for (const suggestion of suggestions) {
 				const item = document.createElement("li");
 				item.textContent = suggestion.title;
@@ -154,12 +151,13 @@ function createSuggestionToolbar() {
 				item.addEventListener("click", () => {
 					// Handle selection
 				});
-				toolbar.appendChild(item);
+				toolbarShell.appendChild(item);
 			}
 		},
 		destroy() {
 			cleanup?.();
-			toolbar.remove();
+			if (!toolbarShell) return;
+			toolbarShell.remove();
 		},
 	};
 }
