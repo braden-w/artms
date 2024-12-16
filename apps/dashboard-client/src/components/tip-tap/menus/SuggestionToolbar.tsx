@@ -24,6 +24,7 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 		trpc.pages.addPage.useMutation();
 
 	const handleKeyDown = (event: KeyboardEvent) => {
+		if (!suggestionText) return;
 		if (event.key === "ArrowDown" || event.key === "ArrowUp") {
 			event.preventDefault();
 			const direction = event.key === "ArrowDown" ? 1 : -1;
