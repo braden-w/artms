@@ -1,21 +1,16 @@
 import {
+	ReferenceElement,
+	VirtualElement,
 	autoUpdate,
 	computePosition,
 	flip,
 	inline,
 	limitShift,
 	offset,
-	ReferenceElement,
 	shift,
-	VirtualElement,
 } from "@floating-ui/dom";
 import { type Editor, Extension, posToDOMRect } from "@tiptap/core";
-import {
-	type Selection,
-	type EditorState,
-	Plugin,
-	PluginKey,
-} from "@tiptap/pm/state";
+import { Plugin, PluginKey, type Selection } from "@tiptap/pm/state";
 import type { SuggestedPage } from "../SuggestionToolbar";
 
 const PLUGIN_NAME = "suggestion";
@@ -55,7 +50,6 @@ function SuggestionPlugin(
 		key: new PluginKey(PLUGIN_NAME),
 		view: () => {
 			const suggestionToolbar = createSuggestionToolbar();
-			suggestionToolbar.mount();
 
 			return {
 				update: async (view) => {
@@ -107,64 +101,32 @@ function getSuggestionText({
 	return suggestionText;
 }
 
-type SuggestionToolbar = ReturnType<typeof createSuggestionToolbar>;
-
-function createSuggestionToolbar(referenceElement: VirtualElement) {
+function createSuggestionToolbar() {
 	let isVisible = false;
-
-	const toolbarShell = document.createElement("ul");
-	toolbarShell.className =
-		"flex flex-col space-y-1 rounded-md border bg-background p-1 hidden";
-	document.body.appendChild(toolbarShell);
-
-	const removeAutoUpdatePosition = autoUpdate(
-		referenceElement,
-		toolbarShell,
-		() => {
-			if (!toolbarShell) return;
-
-			computePosition(referenceElement, toolbarShell, {
-				placement: "top-start",
-				middleware: [
-					inline(),
-					offset(8),
-					flip({ padding: 8 }),
-					shift({ padding: 8, limiter: limitShift() }),
-				],
-			}).then(({ x, y, strategy }) => {
-				if (!toolbarShell) return;
-				Object.assign(toolbarShell.style, {
-					position: strategy,
-					left: `${x}px`,
-					top: `${y}px`,
-				});
-			});
-		},
-	);
+	const toolbarShell = createSuggestionToolbarShell();
 
 	return {
-		open() {
+		open(referenceElement: VirtualElement) {
 			if (isVisible) return;
-			toolbarShell.classList.remove("hidden");
+			toolbarShell.open(referenceElement);
 			isVisible = true;
 		},
 
 		close() {
 			if (!isVisible) return;
-			toolbarShell.classList.add("hidden");
+			toolbarShell.close();
 			isVisible = false;
 		},
 
 		destroy() {
-			removeAutoUpdatePosition();
-			toolbarShell.remove();
+			toolbarShell.destroy();
 			isVisible = false;
 		},
 
 		update(suggestions: SuggestedPage[]) {
-			if (!toolbarShell) return;
+			const element = toolbarShell.element;
 
-			toolbarShell.innerHTML = "";
+			element.innerHTML = "";
 			for (const suggestion of suggestions) {
 				const item = document.createElement("li");
 				item.textContent = suggestion.title;
@@ -173,8 +135,49 @@ function createSuggestionToolbar(referenceElement: VirtualElement) {
 				item.addEventListener("click", () => {
 					// Handle selection
 				});
-				toolbarShell.appendChild(item);
+				element.appendChild(item);
 			}
+		},
+	};
+}
+
+function createSuggestionToolbarShell() {
+	const element = document.createElement("ul");
+	element.className =
+		"flex flex-col space-y-1 rounded-md border bg-background p-1 hidden";
+	document.body.appendChild(element);
+
+	let cleanup: (() => void) | null = null;
+
+	return {
+		element,
+		open(referenceElement: ReferenceElement) {
+			cleanup = autoUpdate(referenceElement, element, () => {
+				computePosition(referenceElement, element, {
+					placement: "top-start",
+					middleware: [
+						inline(),
+						offset(8),
+						flip({ padding: 8 }),
+						shift({ padding: 8, limiter: limitShift() }),
+					],
+				}).then(({ x, y, strategy }) => {
+					Object.assign(element.style, {
+						position: strategy,
+						left: `${x}px`,
+						top: `${y}px`,
+					});
+				});
+			});
+			element.classList.remove("hidden");
+		},
+		close() {
+			cleanup?.();
+			element.classList.add("hidden");
+		},
+		destroy() {
+			cleanup?.();
+			element.remove();
 		},
 	};
 }
