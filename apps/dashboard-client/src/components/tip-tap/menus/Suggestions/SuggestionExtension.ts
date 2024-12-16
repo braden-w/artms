@@ -55,6 +55,15 @@ function SuggestionPlugin<TSuggestion>(
 		query: "",
 	};
 
+	const selectSuggestion = (selectedSuggestion: TSuggestion) => {
+		onSuggestionSelected({
+			selectedSuggestion,
+			query: pluginState.query,
+			editor,
+		});
+		suggestionToolbar.closeSuggestions();
+	};
+
 	return new Plugin({
 		key: new PluginKey(PLUGIN_NAME),
 		props: {
@@ -83,14 +92,7 @@ function SuggestionPlugin<TSuggestion>(
 						event.preventDefault();
 						const selectedSuggestion =
 							pluginState.suggestions[pluginState.selectedIndex];
-						if (selectedSuggestion) {
-							onSuggestionSelected({
-								selectedSuggestion,
-								query: pluginState.query,
-								editor,
-							});
-							suggestionToolbar.closeSuggestions();
-						}
+						selectSuggestion(selectedSuggestion);
 						return true;
 					}
 				}
@@ -119,6 +121,7 @@ function SuggestionPlugin<TSuggestion>(
 
 					suggestionToolbar.openWithSuggestions({
 						suggestions: pluginState.suggestions,
+						selectSuggestion,
 						anchor: {
 							getBoundingClientRect: () => {
 								const { from } = view.state.selection;
@@ -182,9 +185,11 @@ function createSuggestionToolbar() {
 		openWithSuggestions<TSuggestion>({
 			suggestions,
 			anchor,
+			selectSuggestion,
 		}: {
 			suggestions: TSuggestion[];
 			anchor: VirtualElement;
+			selectSuggestion: (selectedSuggestion: TSuggestion) => void;
 		}) {
 			if (suggestions.length === 0) {
 				this.closeSuggestions();
@@ -199,7 +204,7 @@ function createSuggestionToolbar() {
 				item.className =
 					"flex-1 line-clamp-1 text-left cursor-pointer hover:bg-accent hover:text-accent-foreground px-2 py-1 rounded-sm";
 				item.addEventListener("click", () => {
-					// Handle selection
+					selectSuggestion(suggestion);
 				});
 				this.element.appendChild(item);
 			}
