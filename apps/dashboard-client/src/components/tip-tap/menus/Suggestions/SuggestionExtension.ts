@@ -141,24 +141,23 @@ function getSuggestionText({
 type SuggestionToolbar = ReturnType<typeof createSuggestionToolbar>;
 
 function createSuggestionToolbar() {
-	const toolbar = document.createElement("div");
-	toolbar.className = "suggestion-toolbar";
-
-	const list = document.createElement("ul");
-	list.className = "suggestion-list";
-	toolbar.appendChild(list);
+	const toolbar = document.createElement("ul");
+	toolbar.className =
+		"flex flex-col space-y-1 rounded-md border bg-background p-1";
 
 	return {
 		element: toolbar,
 		update(suggestions: SuggestedPage[]) {
-			list.innerHTML = "";
+			toolbar.innerHTML = "";
 			for (const suggestion of suggestions) {
 				const item = document.createElement("li");
 				item.textContent = suggestion.title;
+				item.className =
+					"flex-1 line-clamp-1 text-left cursor-pointer hover:bg-accent";
 				item.addEventListener("click", () => {
 					// Handle selection
 				});
-				list.appendChild(item);
+				toolbar.appendChild(item);
 			}
 		},
 		destroy() {
