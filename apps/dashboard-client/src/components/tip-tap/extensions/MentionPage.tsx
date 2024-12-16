@@ -1,12 +1,19 @@
 import type { StringWithHtmlFragments } from "@repo/dashboard-server/services/index";
 import { generateDefaultPage } from "@repo/dashboard-server/utils";
 import { toast } from "sonner";
-import type { ExtensionServices } from "../extensions";
 import { type Entry, createSuggestionExtension } from "./createSuggestion";
+import type { PageFts } from "@repo/dashboard-server/db/schema/pages";
+import type { SelectPage } from "@repo/dashboard-server/db/schema/pages";
 
 interface PageEntry extends Entry {
 	action: () => void;
 }
+
+type ExtensionServices = {
+	page: SelectPage;
+	addPage: (page: SelectPage) => void;
+	getPagesByFts: (query: string) => Promise<PageFts[]>;
+};
 
 export const MentionPage = ({
 	page,
