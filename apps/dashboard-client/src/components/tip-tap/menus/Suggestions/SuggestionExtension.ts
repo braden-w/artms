@@ -50,7 +50,7 @@ function SuggestionPlugin(
 	return new Plugin({
 		key: new PluginKey(PLUGIN_NAME),
 		view: () => {
-			let toolbar: ReturnType<typeof createSuggestionToolbar> | null = null;
+			let toolbar: SuggestionToolbar | null = null;
 			let cleanup: (() => void) | null = null;
 
 			return {
@@ -59,7 +59,6 @@ function SuggestionPlugin(
 						selection: view.state.selection,
 						suggestionTriggerPrefix,
 					});
-					console.log("suggestionText", suggestionText);
 
 					if (suggestionText) {
 						if (!toolbar) {
@@ -115,7 +114,7 @@ function SuggestionPlugin(
 				},
 				destroy: () => {
 					if (cleanup) cleanup();
-					if (reactRenderer) reactRenderer.destroy();
+					if (toolbar) toolbar.destroy();
 				},
 			};
 		},
@@ -138,6 +137,8 @@ function getSuggestionText({
 	);
 	return suggestionText;
 }
+
+type SuggestionToolbar = ReturnType<typeof createSuggestionToolbar>;
 
 function createSuggestionToolbar() {
 	const toolbar = document.createElement("div");
