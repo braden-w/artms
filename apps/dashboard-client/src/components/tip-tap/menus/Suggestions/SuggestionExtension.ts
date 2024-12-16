@@ -1,6 +1,5 @@
+import type { ReferenceElement, VirtualElement } from "@floating-ui/dom";
 import {
-	ReferenceElement,
-	VirtualElement,
 	autoUpdate,
 	computePosition,
 	flip,
@@ -15,21 +14,23 @@ import type { SuggestedPage } from "../SuggestionToolbar";
 
 const PLUGIN_NAME = "suggestion";
 
-type SuggestionOptions = {
+type SuggestionOptions<TSuggestion> = {
 	suggestionTriggerPrefix: string;
-	getSuggestions: (query: string) => Promise<SuggestedPage[]>;
+	getSuggestions: (query: string) => Promise<TSuggestion[]>;
 	onSuggestionSelected: ({
 		selectedSuggestion,
 		suggestionText,
 		editor,
 	}: {
-		selectedSuggestion: SuggestedPage;
+		selectedSuggestion: TSuggestion;
 		suggestionText: string;
 		editor: Editor;
 	}) => void;
 };
 
-export const SuggestionExtension = Extension.create<SuggestionOptions>({
+export const SuggestionExtension = Extension.create<
+	SuggestionOptions<SuggestedPage>
+>({
 	name: PLUGIN_NAME,
 
 	addProseMirrorPlugins() {
@@ -38,13 +39,13 @@ export const SuggestionExtension = Extension.create<SuggestionOptions>({
 	},
 });
 
-function SuggestionPlugin(
+function SuggestionPlugin<TSuggestion>(
 	editor: Editor,
 	{
 		suggestionTriggerPrefix,
 		getSuggestions,
 		onSuggestionSelected,
-	}: SuggestionOptions,
+	}: SuggestionOptions<TSuggestion>,
 ) {
 	return new Plugin({
 		key: new PluginKey(PLUGIN_NAME),
@@ -117,11 +118,11 @@ function createSuggestionToolbar() {
 
 	return {
 		element,
-		openWithSuggestions({
+		openWithSuggestions<TSuggestion>({
 			suggestions,
 			anchor,
 		}: {
-			suggestions: SuggestedPage[];
+			suggestions: TSuggestion[];
 			anchor: VirtualElement;
 		}) {
 			if (suggestions.length === 0) {
