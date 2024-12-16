@@ -43,9 +43,16 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 					addPage(newPage);
 				}
 				const cleanedTitle = stripHtml(selectedPage.title ?? "");
+				const { $from } = editor.state.selection;
+				const currentPos = $from.pos;
+				const startPos =
+					currentPos -
+					(suggestionText.length + SUGGESTION_TRIGGER_PREFIX.length);
+
 				editor
 					.chain()
 					.focus()
+					.deleteRange({ from: startPos, to: currentPos })
 					.insertContent({
 						type: "text",
 						marks: [
