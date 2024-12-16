@@ -79,7 +79,7 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 				if (isSuggesting) setSuggestionText(suggestionText);
 				return isSuggesting;
 			}}
-			className="flex flex-col gap-0.5 p-1 max-h-[280px] overflow-y-auto"
+			className="w-96 flex flex-col gap-0.5 p-1 max-h-[280px] overflow-y-auto"
 		>
 			{isLoadingSuggestedPages ? (
 				<div className="flex-1 flex items-center justify-center">
@@ -91,6 +91,7 @@ export function SuggestionToolbar({ editor }: { editor: Editor }) {
 						key={page.id}
 						pressed={index === selectedIndex}
 						onPressedChange={() => setSelectedIndex(index)}
+						className="w-full line-clamp-1 text-left"
 						dangerouslySetInnerHTML={{ __html: page.title ?? "" }}
 					/>
 				))
