@@ -159,17 +159,17 @@ function createSuggestionToolbar<
 }: {
 	renderSuggestion: (suggestion: TSuggestion) => SuggestionElement;
 }) {
-	const element = document.createElement("ul");
-	element.className =
+	const wrapperElement = document.createElement("ul");
+	wrapperElement.className =
 		"flex flex-col space-y-1 rounded-md border bg-background p-1 hidden";
-	document.body.appendChild(element);
+	document.body.appendChild(wrapperElement);
 
 	let stopFloatingUpdate: (() => void) | null = null;
 
 	return {
-		element,
+		element: wrapperElement,
 		updateSelectedStyles(selectedIndex: number) {
-			Array.from(element.children).forEach((child, index) => {
+			Array.from(wrapperElement.children).forEach((child, index) => {
 				if (index === selectedIndex) {
 					child.classList.add("bg-accent", "text-accent-foreground");
 				} else {
@@ -190,8 +190,8 @@ function createSuggestionToolbar<
 				this.closeSuggestions();
 				return;
 			}
-			stopFloatingUpdate = autoUpdate(anchor, element, () => {
-				computePosition(anchor, element, {
+			stopFloatingUpdate = autoUpdate(anchor, wrapperElement, () => {
+				computePosition(anchor, wrapperElement, {
 					placement: "top-start",
 					middleware: [
 						inline(),
@@ -200,14 +200,14 @@ function createSuggestionToolbar<
 						shift({ padding: 8, limiter: limitShift() }),
 					],
 				}).then(({ x, y, strategy }) => {
-					Object.assign(element.style, {
+					Object.assign(wrapperElement.style, {
 						position: strategy,
 						left: `${x}px`,
 						top: `${y}px`,
 					});
 				});
 			});
-			element.classList.remove("hidden");
+			wrapperElement.classList.remove("hidden");
 			this.element.innerHTML = "";
 
 			for (const suggestion of suggestions) {
@@ -222,11 +222,11 @@ function createSuggestionToolbar<
 		},
 		closeSuggestions() {
 			stopFloatingUpdate?.();
-			element.classList.add("hidden");
+			wrapperElement.classList.add("hidden");
 		},
 		destroy() {
 			stopFloatingUpdate?.();
-			element.remove();
+			wrapperElement.remove();
 		},
 	};
 }
