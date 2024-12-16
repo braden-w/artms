@@ -14,7 +14,8 @@
 		"db:push": "drizzle-kit push",
 		"db:studio": "drizzle-kit studio",
 		"db:check": "drizzle-kit check",
-		"push-handle": "git subtree push --prefix=packages/tiptap-extension-global-drag-handle tiptap-extension-global-drag-handle main"
+		"git-push-tiptap-extension-global-drag-handle": "git subtree push --prefix=packages/tiptap-extension-global-drag-handle tiptap-extension-global-drag-handle main",
+		"git-push-tiptap-extension-floating-toolbar": "git subtree push --prefix=packages/tiptap-extension-floating-toolbar tiptap-extension-floating-toolbar main"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.3",
