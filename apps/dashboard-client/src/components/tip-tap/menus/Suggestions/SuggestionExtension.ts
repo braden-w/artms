@@ -1,3 +1,8 @@
+import { trpcVanilla } from "@/router";
+import type { StringWithHtmlFragments } from "@repo/dashboard-server/services/index";
+import { generateDefaultPage } from "@repo/dashboard-server/utils";
+import { toast } from "sonner";
+
 import type { VirtualElement } from "@floating-ui/dom";
 import {
 	autoUpdate,
@@ -11,7 +16,7 @@ import {
 import { Extension, posToDOMRect } from "@tiptap/core";
 import { Plugin, PluginKey, type Selection } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
-import type { SuggestedPage } from "../SuggestionToolbar";
+import { stripHtml, type SuggestedPage } from "../SuggestionToolbar";
 
 const PLUGIN_NAME = "suggestion";
 
@@ -47,10 +52,80 @@ type SuggestionOptions<
 	};
 };
 
+const NEW_PAGE_ID = "new";
+
+const suggestionTriggerPrefix = "[[";
+
 export const SuggestionExtension = Extension.create<
 	SuggestionOptions<SuggestedPage, HTMLUListElement, HTMLLIElement>
 >({
 	name: PLUGIN_NAME,
+	addOptions() {
+		return {
+			suggestionTriggerPrefix,
+			getSuggestionsFromQuery: async (query: string) => {
+				const pages = await trpcVanilla.pages.getPagesByFts.query({ query });
+				pages.push({
+					id: NEW_PAGE_ID,
+					title: query as StringWithHtmlFragments,
+					content: "" as StringWithHtmlFragments,
+				});
+				return pages;
+			},
+			onSuggestionSelected: async ({ selectedSuggestion, query, view }) => {
+				const cleanedTitle = stripHtml(selectedSuggestion.title);
+
+				let pageId = selectedSuggestion.id;
+				if (selectedSuggestion.id === NEW_PAGE_ID) {
+					const newPage = generateDefaultPage({ title: cleanedTitle });
+					trpcVanilla.pages.addPage.mutate(newPage).catch((error) => {
+						toast.error("Failed to create new page");
+					});
+					pageId = newPage.id;
+				}
+
+				const { $from } = view.state.selection;
+				const currentPos = $from.pos;
+				const startPos =
+					currentPos - (query.length + suggestionTriggerPrefix.length);
+
+				const tr = view.state.tr
+					.delete(startPos, currentPos)
+					.addMark(
+						startPos,
+						startPos + cleanedTitle.length,
+						view.state.schema.marks.link.create({
+							href: `/pages/${pageId}`,
+							target: "_blank",
+						}),
+					)
+					.insertText(cleanedTitle, startPos);
+				view.dispatch(tr);
+				view.focus();
+			},
+			toolbarWrapper: {
+				mount: () => {
+					const wrapperElement = document.createElement("ul");
+					wrapperElement.className =
+						"flex flex-col space-y-1 rounded-md border bg-background p-1 hidden";
+					return wrapperElement;
+				},
+				show: (element) => element.classList.remove("hidden"),
+				hide: (element) => element.classList.add("hidden"),
+			},
+			suggestionItem: {
+				mount: (suggestion) => {
+					const item = document.createElement("li");
+					item.innerHTML = suggestion.title;
+					item.className =
+						"flex-1 line-clamp-1 text-left cursor-pointer hover:bg-accent hover:text-accent-foreground px-2 py-1 rounded-sm";
+					return item;
+				},
+				updateSelected: (element, isSelected) =>
+					element.classList.toggle("bg-accent", isSelected),
+			},
+		};
+	},
 	addProseMirrorPlugins() {
 		return [SuggestionPlugin(this.options)];
 	},

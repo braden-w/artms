@@ -1,11 +1,8 @@
 // import { // 	UpdatedImage, // } from 'novel/extensions';
 // import { UploadImagesPlugin } from 'novel/plugins';
 import { cn, getFileStemAndExtension } from "@/lib/utils";
-import { trpcVanilla } from "@/router";
 import GlobalDragHandle from "@epicenterhq/tiptap-extension-global-drag-handle";
-import type { PageFts, SelectPage } from "@repo/dashboard-server/schema";
-import type { StringWithHtmlFragments } from "@repo/dashboard-server/services/index";
-import { generateDefaultPage } from "@repo/dashboard-server/utils";
+import { nanoid } from "@repo/dashboard-server/utils";
 import FileHandler from "@tiptap-pro/extension-file-handler";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
 import Highlight from "@tiptap/extension-highlight";
@@ -22,87 +19,18 @@ import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
 import StarterKit from "@tiptap/starter-kit";
 import { common, createLowlight } from "lowlight";
-import { toast } from "sonner";
 import AutoJoiner from "tiptap-extension-auto-joiner"; // optional
 import { Markdown } from "tiptap-markdown";
 import { encodeArrayBufferToUrlSafeBase64 } from "./arrayBufferToBase64";
 import { RenderMedia } from "./extensions/RenderMedia";
 import { SlashCommand } from "./extensions/SlashCommand";
-import { nanoid } from "@repo/dashboard-server/utils";
 import { TabHandler } from "./extensions/TabHandler";
 import { YouTube } from "./extensions/YouTube";
 import { EmbedContent } from "./menus/EmbedContent";
-import { stripHtml } from "./menus/SuggestionToolbar";
 import { SuggestionExtension } from "./menus/Suggestions/SuggestionExtension";
 
-const NEW_PAGE_ID = "new";
-
-const suggestionTriggerPrefix = "[[";
 export const createExtensions = () => [
-	SuggestionExtension.configure({
-		suggestionTriggerPrefix,
-		getSuggestionsFromQuery: async (query: string) => {
-			const pages = await trpcVanilla.pages.getPagesByFts.query({ query });
-			pages.push({
-				id: NEW_PAGE_ID,
-				title: query as StringWithHtmlFragments,
-				content: "" as StringWithHtmlFragments,
-			});
-			return pages;
-		},
-		onSuggestionSelected: async ({ selectedSuggestion, query, view }) => {
-			const cleanedTitle = stripHtml(selectedSuggestion.title);
-
-			let pageId = selectedSuggestion.id;
-			if (selectedSuggestion.id === NEW_PAGE_ID) {
-				const newPage = generateDefaultPage({ title: cleanedTitle });
-				trpcVanilla.pages.addPage.mutate(newPage).catch((error) => {
-					toast.error("Failed to create new page");
-				});
-				pageId = newPage.id;
-			}
-
-			const { $from } = view.state.selection;
-			const currentPos = $from.pos;
-			const startPos =
-				currentPos - (query.length + suggestionTriggerPrefix.length);
-
-			const tr = view.state.tr
-				.delete(startPos, currentPos)
-				.addMark(
-					startPos,
-					startPos + cleanedTitle.length,
-					view.state.schema.marks.link.create({
-						href: `/pages/${pageId}`,
-						target: "_blank",
-					}),
-				)
-				.insertText(cleanedTitle, startPos);
-			view.dispatch(tr);
-			view.focus();
-		},
-		toolbarWrapper: {
-			mount: () => {
-				const wrapperElement = document.createElement("ul");
-				wrapperElement.className =
-					"flex flex-col space-y-1 rounded-md border bg-background p-1 hidden";
-				return wrapperElement;
-			},
-			show: (element) => element.classList.remove("hidden"),
-			hide: (element) => element.classList.add("hidden"),
-		},
-		suggestionItem: {
-			mount: (suggestion) => {
-				const item = document.createElement("li");
-				item.innerHTML = suggestion.title;
-				item.className =
-					"flex-1 line-clamp-1 text-left cursor-pointer hover:bg-accent hover:text-accent-foreground px-2 py-1 rounded-sm";
-				return item;
-			},
-			updateSelected: (element, isSelected) =>
-				element.classList.toggle("bg-accent", isSelected),
-		},
-	}),
+	SuggestionExtension,
 	StarterKit.configure({
 		bulletList: {
 			HTMLAttributes: {
