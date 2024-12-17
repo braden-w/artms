@@ -49,7 +49,7 @@ export const createExtensions = () => [
 			});
 			return pages;
 		},
-		onSuggestionSelected: async ({ selectedSuggestion, query, editor }) => {
+		onSuggestionSelected: async ({ selectedSuggestion, query, view }) => {
 			const cleanedTitle = stripHtml(selectedSuggestion.title);
 
 			let pageId = selectedSuggestion.id;
@@ -61,26 +61,24 @@ export const createExtensions = () => [
 				pageId = newPage.id;
 			}
 
-			const { $from } = editor.state.selection;
+			const { $from } = view.state.selection;
 			const currentPos = $from.pos;
 			const startPos =
 				currentPos - (query.length + suggestionTriggerPrefix.length);
 
-			editor
-				.chain()
-				.focus()
-				.deleteRange({ from: startPos, to: currentPos })
-				.insertContent({
-					type: "text",
-					marks: [
-						{
-							type: "link",
-							attrs: { href: `/pages/${pageId}`, target: "_blank" },
-						},
-					],
-					text: cleanedTitle,
-				})
-				.run();
+			const tr = view.state.tr
+				.delete(startPos, currentPos)
+				.addMark(
+					startPos,
+					startPos + cleanedTitle.length,
+					view.state.schema.marks.link.create({
+						href: `/pages/${pageId}`,
+						target: "_blank",
+					}),
+				)
+				.insertText(cleanedTitle, startPos);
+			view.dispatch(tr);
+			view.focus();
 		},
 	}),
 	StarterKit.configure({
