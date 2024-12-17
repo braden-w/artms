@@ -17,7 +17,11 @@ const PLUGIN_NAME = "suggestion";
 
 type SuggestionItem = { title: string };
 
-type SuggestionOptions<TSuggestion extends SuggestionItem> = {
+type SuggestionOptions<
+	TSuggestion extends SuggestionItem,
+	ToolbarWrapperElement extends HTMLElement,
+	SuggestionItemElement extends HTMLElement,
+> = {
 	suggestionTriggerPrefix: string;
 	getSuggestionsFromQuery: (query: string) => Promise<TSuggestion[]>;
 	onSuggestionSelected: ({
@@ -29,10 +33,22 @@ type SuggestionOptions<TSuggestion extends SuggestionItem> = {
 		query: string;
 		view: EditorView;
 	}) => void;
+	toolbarWrapper: {
+		mount: () => ToolbarWrapperElement;
+		show: (element: ToolbarWrapperElement) => void;
+		hide: (element: ToolbarWrapperElement) => void;
+	};
+	suggestionItem: {
+		mount: (suggestion: TSuggestion) => SuggestionItemElement;
+		updateSelected: (
+			element: SuggestionItemElement,
+			isSelected: boolean,
+		) => void;
+	};
 };
 
 export const SuggestionExtension = Extension.create<
-	SuggestionOptions<SuggestedPage>
+	SuggestionOptions<SuggestedPage, HTMLUListElement, HTMLLIElement>
 >({
 	name: PLUGIN_NAME,
 	addProseMirrorPlugins() {
@@ -40,43 +56,24 @@ export const SuggestionExtension = Extension.create<
 	},
 });
 
-function SuggestionPlugin<TSuggestion extends SuggestionItem>({
-	suggestionTriggerPrefix,
-	getSuggestionsFromQuery,
-	onSuggestionSelected,
-}: SuggestionOptions<TSuggestion>) {
-	const suggestionToolbar = createSuggestionToolbar<
-		HTMLUListElement,
-		HTMLLIElement,
-		TSuggestion
-	>({
-		toolbarWrapper: {
-			mount: () => {
-				const wrapperElement = document.createElement("ul");
-				wrapperElement.className =
-					"flex flex-col space-y-1 rounded-md border bg-background p-1 hidden";
-				return wrapperElement;
-			},
-			hide: (element) => {
-				element.classList.add("hidden");
-			},
-			show: (element) => {
-				element.classList.remove("hidden");
-			},
-		},
-		suggestionItem: {
-			mount: (suggestion) => {
-				const item = document.createElement("li");
-				item.innerHTML = suggestion.title;
-				item.className =
-					"flex-1 line-clamp-1 text-left cursor-pointer hover:bg-accent hover:text-accent-foreground px-2 py-1 rounded-sm";
-				return item;
-			},
-			updateSelected: (element, isSelected) => {
-				element.classList.toggle("bg-accent", isSelected);
-			},
-		},
-	});
+function SuggestionPlugin<
+	TSuggestion extends SuggestionItem,
+	ToolbarWrapperElement extends HTMLElement,
+	SuggestionItemElement extends HTMLElement,
+>(
+	options: SuggestionOptions<
+		TSuggestion,
+		ToolbarWrapperElement,
+		SuggestionItemElement
+	>,
+) {
+	const {
+		suggestionTriggerPrefix,
+		getSuggestionsFromQuery,
+		onSuggestionSelected,
+	} = options;
+	const suggestionToolbar = createSuggestionToolbar(options);
+
 	const pluginState = {
 		selectedIndex: 0,
 		isOpen: false,
@@ -176,26 +173,17 @@ function SuggestionPlugin<TSuggestion extends SuggestionItem>({
 }
 
 function createSuggestionToolbar<
+	TSuggestion extends SuggestionItem,
 	ToolbarWrapperElement extends HTMLElement,
 	SuggestionItemElement extends HTMLElement,
-	TSuggestion extends SuggestionItem,
 >({
 	toolbarWrapper,
 	suggestionItem,
-}: {
-	toolbarWrapper: {
-		mount: () => ToolbarWrapperElement;
-		show: (element: ToolbarWrapperElement) => void;
-		hide: (element: ToolbarWrapperElement) => void;
-	};
-	suggestionItem: {
-		mount: (suggestion: TSuggestion) => SuggestionItemElement;
-		updateSelected: (
-			element: SuggestionItemElement,
-			isSelected: boolean,
-		) => void;
-	};
-}) {
+}: SuggestionOptions<
+	TSuggestion,
+	ToolbarWrapperElement,
+	SuggestionItemElement
+>) {
 	const wrapperElement = toolbarWrapper.mount();
 	document.body.appendChild(wrapperElement);
 
