@@ -14,7 +14,11 @@ import type { SuggestedPage } from "../SuggestionToolbar";
 
 const PLUGIN_NAME = "suggestion";
 
-type SuggestionOptions<TSuggestion> = {
+type SuggestionItem = {
+	title: string;
+};
+
+type SuggestionOptions<TSuggestion extends SuggestionItem> = {
 	suggestionTriggerPrefix: string;
 	getSuggestionsFromQuery: (query: string) => Promise<TSuggestion[]>;
 	onSuggestionSelected: ({
@@ -38,7 +42,7 @@ export const SuggestionExtension = Extension.create<
 	},
 });
 
-function SuggestionPlugin<TSuggestion>(
+function SuggestionPlugin<TSuggestion extends SuggestionItem>(
 	editor: Editor,
 	{
 		suggestionTriggerPrefix,
@@ -171,7 +175,7 @@ function SuggestionPlugin<TSuggestion>(
 function createSuggestionToolbar<
 	ToolbarWrapperElement extends HTMLElement,
 	SuggestionItemElement extends HTMLElement,
-	TSuggestion,
+	TSuggestion extends SuggestionItem,
 >({
 	toolbarWrapper,
 	suggestionItem,
