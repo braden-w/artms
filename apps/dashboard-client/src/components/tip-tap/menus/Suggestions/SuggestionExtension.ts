@@ -35,13 +35,13 @@ type SuggestionOptions<TSuggestion extends SuggestionItem> = {
 		view: EditorView;
 	}) => void;
 	toolbarWrapper: {
-		mount: () => HTMLElement;
-		show: (element: HTMLElement) => void;
-		hide: (element: HTMLElement) => void;
+		mount: () => Element;
+		show: (element: Element) => void;
+		hide: (element: Element) => void;
 	};
 	suggestionItem: {
-		mount: (suggestion: TSuggestion) => HTMLElement;
-		updateSelected: (element: HTMLElement, isSelected: boolean) => void;
+		mount: (suggestion: TSuggestion) => Element;
+		updateSelected: (element: Element, isSelected: boolean) => void;
 	};
 };
 
