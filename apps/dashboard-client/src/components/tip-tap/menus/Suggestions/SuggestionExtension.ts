@@ -45,7 +45,11 @@ function SuggestionPlugin<TSuggestion extends SuggestionItem>({
 	getSuggestionsFromQuery,
 	onSuggestionSelected,
 }: SuggestionOptions<TSuggestion>) {
-	const suggestionToolbar = createSuggestionToolbar({
+	const suggestionToolbar = createSuggestionToolbar<
+		HTMLUListElement,
+		HTMLLIElement,
+		TSuggestion
+	>({
 		toolbarWrapper: {
 			mount: () => {
 				const wrapperElement = document.createElement("ul");
