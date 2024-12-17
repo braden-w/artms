@@ -8,15 +8,14 @@ import {
 	offset,
 	shift,
 } from "@floating-ui/dom";
-import { type Editor, Extension, posToDOMRect } from "@tiptap/core";
+import { Extension, posToDOMRect } from "@tiptap/core";
 import { Plugin, PluginKey, type Selection } from "@tiptap/pm/state";
+import type { EditorView } from "@tiptap/pm/view";
 import type { SuggestedPage } from "../SuggestionToolbar";
 
 const PLUGIN_NAME = "suggestion";
 
-type SuggestionItem = {
-	title: string;
-};
+type SuggestionItem = { title: string };
 
 type SuggestionOptions<TSuggestion extends SuggestionItem> = {
 	suggestionTriggerPrefix: string;
@@ -24,11 +23,11 @@ type SuggestionOptions<TSuggestion extends SuggestionItem> = {
 	onSuggestionSelected: ({
 		selectedSuggestion,
 		query,
-		editor,
+		view,
 	}: {
 		selectedSuggestion: TSuggestion;
 		query: string;
-		editor: Editor;
+		view: EditorView;
 	}) => void;
 };
 
@@ -37,19 +36,15 @@ export const SuggestionExtension = Extension.create<
 >({
 	name: PLUGIN_NAME,
 	addProseMirrorPlugins() {
-		const editor = this.editor;
-		return [SuggestionPlugin(editor, this.options)];
+		return [SuggestionPlugin(this.options)];
 	},
 });
 
-function SuggestionPlugin<TSuggestion extends SuggestionItem>(
-	editor: Editor,
-	{
-		suggestionTriggerPrefix,
-		getSuggestionsFromQuery,
-		onSuggestionSelected,
-	}: SuggestionOptions<TSuggestion>,
-) {
+function SuggestionPlugin<TSuggestion extends SuggestionItem>({
+	suggestionTriggerPrefix,
+	getSuggestionsFromQuery,
+	onSuggestionSelected,
+}: SuggestionOptions<TSuggestion>) {
 	const suggestionToolbar = createSuggestionToolbar({
 		toolbarWrapper: {
 			mount: () => {
@@ -85,11 +80,14 @@ function SuggestionPlugin<TSuggestion extends SuggestionItem>(
 		query: "",
 	};
 
-	const selectSuggestion = (selectedSuggestion: TSuggestion) => {
+	const selectSuggestion = (
+		selectedSuggestion: TSuggestion,
+		view: EditorView,
+	) => {
 		onSuggestionSelected({
 			selectedSuggestion,
 			query: pluginState.query,
-			editor,
+			view,
 		});
 		suggestionToolbar.closeSuggestions();
 	};
@@ -122,7 +120,7 @@ function SuggestionPlugin<TSuggestion extends SuggestionItem>(
 						event.preventDefault();
 						const selectedSuggestion =
 							pluginState.suggestions[pluginState.selectedIndex];
-						selectSuggestion(selectedSuggestion);
+						selectSuggestion(selectedSuggestion, view);
 						return true;
 					}
 				}
@@ -151,7 +149,8 @@ function SuggestionPlugin<TSuggestion extends SuggestionItem>(
 
 					suggestionToolbar.openWithSuggestions({
 						suggestions: pluginState.suggestions,
-						selectSuggestion,
+						selectSuggestion: (selectedSuggestion) =>
+							selectSuggestion(selectedSuggestion, view),
 						anchor: {
 							getBoundingClientRect: () => {
 								const { from } = view.state.selection;
