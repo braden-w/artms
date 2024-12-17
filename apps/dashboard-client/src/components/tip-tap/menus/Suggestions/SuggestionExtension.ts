@@ -241,8 +241,11 @@ function createSuggestionToolbar<TSuggestion extends SuggestionItem>({
 
 	return {
 		updateSelectedStyles(selectedIndex: number) {
-			Array.from(wrapperElement.children).forEach((child, index) => {
-				updateSuggestionSelection(child, index === selectedIndex);
+			const suggestionElements = Array.from(
+				wrapperElement.children,
+			) as HTMLElement[];
+			suggestionElements.forEach((suggestionElement, index) => {
+				updateSuggestionSelection(suggestionElement, index === selectedIndex);
 			});
 		},
 		openWithSuggestions({
