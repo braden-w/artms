@@ -22,11 +22,7 @@ const PLUGIN_NAME = "suggestion";
 
 type SuggestionItem = { title: string };
 
-type SuggestionOptions<
-	TSuggestion extends SuggestionItem,
-	ToolbarWrapperElement extends HTMLElement,
-	SuggestionItemElement extends HTMLElement,
-> = {
+type SuggestionOptions<TSuggestion extends SuggestionItem> = {
 	suggestionTriggerPrefix: string;
 	getSuggestionsFromQuery: (query: string) => Promise<TSuggestion[]>;
 	onSuggestionSelected: ({
@@ -39,16 +35,13 @@ type SuggestionOptions<
 		view: EditorView;
 	}) => void;
 	toolbarWrapper: {
-		mount: () => ToolbarWrapperElement;
-		show: (element: ToolbarWrapperElement) => void;
-		hide: (element: ToolbarWrapperElement) => void;
+		mount: () => HTMLElement;
+		show: (element: HTMLElement) => void;
+		hide: (element: HTMLElement) => void;
 	};
 	suggestionItem: {
-		mount: (suggestion: TSuggestion) => SuggestionItemElement;
-		updateSelected: (
-			element: SuggestionItemElement,
-			isSelected: boolean,
-		) => void;
+		mount: (suggestion: TSuggestion) => HTMLElement;
+		updateSelected: (element: HTMLElement, isSelected: boolean) => void;
 	};
 };
 
@@ -57,7 +50,7 @@ const NEW_PAGE_ID = "new";
 const suggestionTriggerPrefix = "[[";
 
 export const SuggestionExtension = Extension.create<
-	SuggestionOptions<SuggestedPage, HTMLUListElement, HTMLLIElement>
+	SuggestionOptions<SuggestedPage>
 >({
 	name: PLUGIN_NAME,
 	addOptions() {
@@ -131,16 +124,8 @@ export const SuggestionExtension = Extension.create<
 	},
 });
 
-function SuggestionPlugin<
-	TSuggestion extends SuggestionItem,
-	ToolbarWrapperElement extends HTMLElement,
-	SuggestionItemElement extends HTMLElement,
->(
-	options: SuggestionOptions<
-		TSuggestion,
-		ToolbarWrapperElement,
-		SuggestionItemElement
-	>,
+function SuggestionPlugin<TSuggestion extends SuggestionItem>(
+	options: SuggestionOptions<TSuggestion>,
 ) {
 	const {
 		suggestionTriggerPrefix,
@@ -247,18 +232,10 @@ function SuggestionPlugin<
 	});
 }
 
-function createSuggestionToolbar<
-	TSuggestion extends SuggestionItem,
-	ToolbarWrapperElement extends HTMLElement,
-	SuggestionItemElement extends HTMLElement,
->({
+function createSuggestionToolbar<TSuggestion extends SuggestionItem>({
 	toolbarWrapper,
 	suggestionItem,
-}: SuggestionOptions<
-	TSuggestion,
-	ToolbarWrapperElement,
-	SuggestionItemElement
->) {
+}: SuggestionOptions<TSuggestion>) {
 	const wrapperElement = toolbarWrapper.mount();
 	document.body.appendChild(wrapperElement);
 
@@ -267,11 +244,9 @@ function createSuggestionToolbar<
 	return {
 		element: wrapperElement,
 		updateSelectedStyles(selectedIndex: number) {
-			(Array.from(wrapperElement.children) as SuggestionItemElement[]).forEach(
-				(child, index) => {
-					suggestionItem.updateSelected(child, index === selectedIndex);
-				},
-			);
+			Array.from(wrapperElement.children).forEach((child, index) => {
+				suggestionItem.updateSelected(child, index === selectedIndex);
+			});
 		},
 		openWithSuggestions({
 			suggestions,
