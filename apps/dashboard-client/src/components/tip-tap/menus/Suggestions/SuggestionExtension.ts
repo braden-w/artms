@@ -46,17 +46,7 @@ function SuggestionPlugin<TSuggestion>(
 		onSuggestionSelected,
 	}: SuggestionOptions<TSuggestion>,
 ) {
-	const suggestionToolbar = createSuggestionToolbar<TSuggestion, HTMLLIElement>(
-		{
-			renderSuggestion: (suggestion) => {
-				const item = document.createElement("li");
-				item.innerHTML = suggestion.title;
-				item.className =
-					"flex-1 line-clamp-1 text-left cursor-pointer hover:bg-accent hover:text-accent-foreground px-2 py-1 rounded-sm";
-				return item;
-			},
-		},
-	);
+	const suggestionToolbar = createSuggestionToolbar();
 	const pluginState = {
 		selectedIndex: 0,
 		isOpen: false,
@@ -151,14 +141,7 @@ function SuggestionPlugin<TSuggestion>(
 	});
 }
 
-function createSuggestionToolbar<
-	TSuggestion,
-	SuggestionElement extends HTMLElement,
->({
-	renderSuggestion,
-}: {
-	renderSuggestion: (suggestion: TSuggestion) => SuggestionElement;
-}) {
+function createSuggestionToolbar() {
 	const wrapperElement = document.createElement("ul");
 	wrapperElement.className =
 		"flex flex-col space-y-1 rounded-md border bg-background p-1 hidden";
@@ -211,7 +194,10 @@ function createSuggestionToolbar<
 			this.element.innerHTML = "";
 
 			for (const suggestion of suggestions) {
-				const item = renderSuggestion(suggestion);
+				const item = document.createElement("li");
+				item.innerHTML = suggestion.title;
+				item.className =
+					"flex-1 line-clamp-1 text-left cursor-pointer hover:bg-accent hover:text-accent-foreground px-2 py-1 rounded-sm";
 				item.addEventListener("click", () => {
 					selectSuggestion(suggestion);
 				});
