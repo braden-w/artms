@@ -1,4 +1,4 @@
-import type { ReferenceElement, VirtualElement } from "@floating-ui/dom";
+import type { VirtualElement } from "@floating-ui/dom";
 import {
 	autoUpdate,
 	computePosition,
@@ -46,7 +46,34 @@ function SuggestionPlugin<TSuggestion>(
 		onSuggestionSelected,
 	}: SuggestionOptions<TSuggestion>,
 ) {
-	const suggestionToolbar = createSuggestionToolbar();
+	const suggestionToolbar = createSuggestionToolbar({
+		toolbarWrapper: {
+			mount: () => {
+				const wrapperElement = document.createElement("ul");
+				wrapperElement.className =
+					"flex flex-col space-y-1 rounded-md border bg-background p-1 hidden";
+				return wrapperElement;
+			},
+			hide: (element) => {
+				element.classList.add("hidden");
+			},
+			show: (element) => {
+				element.classList.remove("hidden");
+			},
+		},
+		suggestionItem: {
+			mount: (suggestion) => {
+				const item = document.createElement("li");
+				item.innerHTML = suggestion.title;
+				item.className =
+					"flex-1 line-clamp-1 text-left cursor-pointer hover:bg-accent hover:text-accent-foreground px-2 py-1 rounded-sm";
+				return item;
+			},
+			updateSelected: (element, isSelected) => {
+				element.classList.toggle("bg-accent", isSelected);
+			},
+		},
+	});
 	const pluginState = {
 		selectedIndex: 0,
 		isOpen: false,
@@ -141,10 +168,28 @@ function SuggestionPlugin<TSuggestion>(
 	});
 }
 
-function createSuggestionToolbar() {
-	const wrapperElement = document.createElement("ul");
-	wrapperElement.className =
-		"flex flex-col space-y-1 rounded-md border bg-background p-1 hidden";
+function createSuggestionToolbar<
+	ToolbarWrapperElement extends HTMLElement,
+	SuggestionItemElement extends HTMLElement,
+	TSuggestion,
+>({
+	toolbarWrapper,
+	suggestionItem,
+}: {
+	toolbarWrapper: {
+		mount: () => ToolbarWrapperElement;
+		show: (element: ToolbarWrapperElement) => void;
+		hide: (element: ToolbarWrapperElement) => void;
+	};
+	suggestionItem: {
+		mount: (suggestion: TSuggestion) => SuggestionItemElement;
+		updateSelected: (
+			element: SuggestionItemElement,
+			isSelected: boolean,
+		) => void;
+	};
+}) {
+	const wrapperElement = toolbarWrapper.mount();
 	document.body.appendChild(wrapperElement);
 
 	let stopFloatingUpdate: (() => void) | null = null;
@@ -152,13 +197,11 @@ function createSuggestionToolbar() {
 	return {
 		element: wrapperElement,
 		updateSelectedStyles(selectedIndex: number) {
-			Array.from(wrapperElement.children).forEach((child, index) => {
-				if (index === selectedIndex) {
-					child.classList.add("bg-accent", "text-accent-foreground");
-				} else {
-					child.classList.remove("bg-accent", "text-accent-foreground");
-				}
-			});
+			(Array.from(wrapperElement.children) as SuggestionItemElement[]).forEach(
+				(child, index) => {
+					suggestionItem.updateSelected(child, index === selectedIndex);
+				},
+			);
 		},
 		openWithSuggestions({
 			suggestions,
@@ -190,14 +233,11 @@ function createSuggestionToolbar() {
 					});
 				});
 			});
-			wrapperElement.classList.remove("hidden");
+			toolbarWrapper.show(wrapperElement);
 			this.element.innerHTML = "";
 
 			for (const suggestion of suggestions) {
-				const item = document.createElement("li");
-				item.innerHTML = suggestion.title;
-				item.className =
-					"flex-1 line-clamp-1 text-left cursor-pointer hover:bg-accent hover:text-accent-foreground px-2 py-1 rounded-sm";
+				const item = suggestionItem.mount(suggestion);
 				item.addEventListener("click", () => {
 					selectSuggestion(suggestion);
 				});
@@ -208,7 +248,7 @@ function createSuggestionToolbar() {
 		},
 		closeSuggestions() {
 			stopFloatingUpdate?.();
-			wrapperElement.classList.add("hidden");
+			toolbarWrapper.hide(wrapperElement);
 		},
 		destroy() {
 			stopFloatingUpdate?.();
