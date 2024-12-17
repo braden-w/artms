@@ -34,15 +34,13 @@ type SuggestionOptions<TSuggestion extends SuggestionItem> = {
 		query: string;
 		view: EditorView;
 	}) => void;
-	toolbarWrapper: {
-		mount: () => Element;
-		show: (element: Element) => void;
-		hide: (element: Element) => void;
-	};
-	suggestionItem: {
-		mount: (suggestion: TSuggestion) => Element;
-		updateSelected: (element: Element, isSelected: boolean) => void;
-	};
+	createToolbarElement: () => HTMLElement;
+	createSuggestionElement: (suggestion: TSuggestion) => HTMLElement;
+	updateToolbarVisibility: (element: HTMLElement, isVisible: boolean) => void;
+	updateSuggestionSelection: (
+		element: HTMLElement,
+		isSelected: boolean,
+	) => void;
 };
 
 const NEW_PAGE_ID = "new";
@@ -96,26 +94,24 @@ export const SuggestionExtension = Extension.create<
 				view.dispatch(tr);
 				view.focus();
 			},
-			toolbarWrapper: {
-				mount: () => {
-					const wrapperElement = document.createElement("ul");
-					wrapperElement.className =
-						"flex flex-col space-y-1 rounded-md border bg-background p-1 hidden";
-					return wrapperElement;
-				},
-				show: (element) => element.classList.remove("hidden"),
-				hide: (element) => element.classList.add("hidden"),
+			createToolbarElement: () => {
+				const toolbarElement = document.createElement("ul");
+				toolbarElement.className =
+					"flex flex-col space-y-1 rounded-md border bg-background p-1";
+				return toolbarElement;
 			},
-			suggestionItem: {
-				mount: (suggestion) => {
-					const item = document.createElement("li");
-					item.innerHTML = suggestion.title;
-					item.className =
-						"flex-1 line-clamp-1 text-left cursor-pointer hover:bg-accent hover:text-accent-foreground px-2 py-1 rounded-sm";
-					return item;
-				},
-				updateSelected: (element, isSelected) =>
-					element.classList.toggle("bg-accent", isSelected),
+			createSuggestionElement: (suggestion) => {
+				const suggestionElement = document.createElement("li");
+				suggestionElement.innerHTML = suggestion.title;
+				suggestionElement.className =
+					"flex-1 line-clamp-1 text-left cursor-pointer hover:bg-accent hover:text-accent-foreground px-2 py-1 rounded-sm";
+				return suggestionElement;
+			},
+			updateToolbarVisibility: (element, isVisible) => {
+				element.classList.toggle("hidden", !isVisible);
+			},
+			updateSuggestionSelection: (element, isSelected) => {
+				element.classList.toggle("bg-accent", isSelected);
 			},
 		};
 	},
@@ -233,19 +229,20 @@ function SuggestionPlugin<TSuggestion extends SuggestionItem>(
 }
 
 function createSuggestionToolbar<TSuggestion extends SuggestionItem>({
-	toolbarWrapper,
-	suggestionItem,
+	createToolbarElement,
+	createSuggestionElement,
+	updateToolbarVisibility,
+	updateSuggestionSelection,
 }: SuggestionOptions<TSuggestion>) {
-	const wrapperElement = toolbarWrapper.mount();
+	const wrapperElement = createToolbarElement();
 	document.body.appendChild(wrapperElement);
 
 	let stopFloatingUpdate: (() => void) | null = null;
 
 	return {
-		element: wrapperElement,
 		updateSelectedStyles(selectedIndex: number) {
 			Array.from(wrapperElement.children).forEach((child, index) => {
-				suggestionItem.updateSelected(child, index === selectedIndex);
+				updateSuggestionSelection(child, index === selectedIndex);
 			});
 		},
 		openWithSuggestions({
@@ -278,22 +275,22 @@ function createSuggestionToolbar<TSuggestion extends SuggestionItem>({
 					});
 				});
 			});
-			toolbarWrapper.show(wrapperElement);
-			this.element.innerHTML = "";
+			updateToolbarVisibility(wrapperElement, true);
+			wrapperElement.innerHTML = "";
 
 			for (const suggestion of suggestions) {
-				const item = suggestionItem.mount(suggestion);
+				const item = createSuggestionElement(suggestion);
 				item.addEventListener("click", () => {
 					selectSuggestion(suggestion);
 				});
-				this.element.appendChild(item);
+				wrapperElement.appendChild(item);
 			}
 
 			this.updateSelectedStyles(0);
 		},
 		closeSuggestions() {
 			stopFloatingUpdate?.();
-			toolbarWrapper.hide(wrapperElement);
+			updateToolbarVisibility(wrapperElement, false);
 		},
 		destroy() {
 			stopFloatingUpdate?.();
