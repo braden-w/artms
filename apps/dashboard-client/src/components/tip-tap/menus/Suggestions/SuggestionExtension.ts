@@ -1,8 +1,3 @@
-import { trpcVanilla } from "@/router";
-import type { StringWithHtmlFragments } from "@repo/dashboard-server/services/index";
-import { generateDefaultPage } from "@repo/dashboard-server/utils";
-import { toast } from "sonner";
-
 import type { VirtualElement } from "@floating-ui/dom";
 import {
 	autoUpdate,
@@ -16,15 +11,28 @@ import {
 import { Extension, posToDOMRect } from "@tiptap/core";
 import { Plugin, PluginKey, type Selection } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
-import { stripHtml, type SuggestedPage } from "../SuggestionToolbar";
+import type { SuggestedPage } from "../SuggestionToolbar";
 
 const PLUGIN_NAME = "suggestion";
 
 type SuggestionItem = { title: string };
 
 type SuggestionOptions<TSuggestion extends SuggestionItem> = {
+	/**
+	 * The string that triggers the suggestion popup (e.g. "@" for mentions or "[[" for page links)
+	 * @default "[["
+	 */
 	suggestionTriggerPrefix: string;
+
+	/**
+	 * Async function to fetch suggestions based on user input after the suggestion trigger prefix
+	 */
 	getSuggestionsFromQuery: (query: string) => Promise<TSuggestion[]>;
+
+	/**
+	 * Callback fired when a suggestion is selected
+	 * @default
+	 */
 	onSuggestionSelected: ({
 		selectedSuggestion,
 		query,
@@ -34,18 +42,36 @@ type SuggestionOptions<TSuggestion extends SuggestionItem> = {
 		query: string;
 		view: EditorView;
 	}) => void;
+
+	/**
+	 * Creates the container element for the suggestion toolbar
+	 * @default Returns a <ul> with Tailwind classes for styling
+	 */
 	createToolbarElement: () => HTMLElement;
+
+	/**
+	 * Creates an element for an individual suggestion item
+	 * @default Returns a <li> with the suggestion title and hover styles
+	 */
 	createSuggestionElement: (suggestion: TSuggestion) => HTMLElement;
+
+	/**
+	 * Implementation of the visibility of the suggestion toolbar
+	 * @default Toggles 'hidden' class on the element
+	 */
 	updateToolbarVisibility: (element: HTMLElement, isVisible: boolean) => void;
+
+	/**
+	 * Implementation of the visual selection state of a suggestion item
+	 * @default Toggles 'bg-accent' and 'text-accent-foreground' classes on the element
+	 */
 	updateSuggestionSelection: (
 		element: HTMLElement,
 		isSelected: boolean,
 	) => void;
 };
 
-const NEW_PAGE_ID = "new";
-
-const suggestionTriggerPrefix = "[[";
+const DEFAULT_SUGGESTION_TRIGGER_PREFIX = "[[";
 
 export const SuggestionExtension = Extension.create<
 	SuggestionOptions<SuggestedPage>
@@ -53,47 +79,9 @@ export const SuggestionExtension = Extension.create<
 	name: PLUGIN_NAME,
 	addOptions() {
 		return {
-			suggestionTriggerPrefix,
-			getSuggestionsFromQuery: async (query: string) => {
-				const pages = await trpcVanilla.pages.getPagesByFts.query({ query });
-				pages.push({
-					id: NEW_PAGE_ID,
-					title: query as StringWithHtmlFragments,
-					content: "" as StringWithHtmlFragments,
-				});
-				return pages;
-			},
-			onSuggestionSelected: async ({ selectedSuggestion, query, view }) => {
-				const cleanedTitle = stripHtml(selectedSuggestion.title);
-
-				let pageId = selectedSuggestion.id;
-				if (selectedSuggestion.id === NEW_PAGE_ID) {
-					const newPage = generateDefaultPage({ title: cleanedTitle });
-					trpcVanilla.pages.addPage.mutate(newPage).catch((error) => {
-						toast.error("Failed to create new page");
-					});
-					pageId = newPage.id;
-				}
-
-				const { $from } = view.state.selection;
-				const currentPos = $from.pos;
-				const startPos =
-					currentPos - (query.length + suggestionTriggerPrefix.length);
-
-				const tr = view.state.tr
-					.delete(startPos, currentPos)
-					.addMark(
-						startPos,
-						startPos + cleanedTitle.length,
-						view.state.schema.marks.link.create({
-							href: `/pages/${pageId}`,
-							target: "_blank",
-						}),
-					)
-					.insertText(cleanedTitle, startPos);
-				view.dispatch(tr);
-				view.focus();
-			},
+			suggestionTriggerPrefix: DEFAULT_SUGGESTION_TRIGGER_PREFIX,
+			getSuggestionsFromQuery: async () => [],
+			onSuggestionSelected: async () => {},
 			createToolbarElement: () => {
 				const toolbarElement = document.createElement("ul");
 				toolbarElement.className =
@@ -112,6 +100,7 @@ export const SuggestionExtension = Extension.create<
 			},
 			updateSuggestionSelection: (element, isSelected) => {
 				element.classList.toggle("bg-accent", isSelected);
+				element.classList.toggle("text-accent-foreground", isSelected);
 			},
 		};
 	},
